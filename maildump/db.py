@@ -100,6 +100,74 @@ def get_message(message_id):
     return row
 
 
+def get_message_attachments(message_id):
+    sql = """
+        SELECT
+            cid, type, filename, size
+        FROM
+            message_part
+        WHERE
+            message_id = ? AND
+            is_attachment = 1
+        ORDER BY
+            filename ASC
+    """
+    return _conn.execute(sql, (message_id,)).fetchall()
+
+
+def _get_message_part_types(message_id, types):
+    sql = """
+        SELECT
+            *
+        FROM
+            message_part
+        WHERE
+            message_id = ? AND
+            type IN ({}) AND
+            is_attachment = 0
+        LIMIT
+            1
+    """.format(','.join('?' * len(types)))
+    return _conn.execute(sql, (message_id,) + types).fetchone()
+
+
+def get_message_part_html(message_id):
+    return _get_message_part_types(message_id, ('text/html', 'application/xhtml+xml'))
+
+
+def get_message_part_plain(message_id):
+    return _get_message_part_types(message_id, ('text/plain',))
+
+
+def get_message_part_cid(message_id, cid):
+    return _conn.execute('SELECT * FROM message_part WHERE id = ? AND cid = ?', (message_id, cid)).fetchone()
+
+
+def _message_has_types(message_id, types):
+    sql = """
+        SELECT
+            1
+        FROM
+            message_part
+        WHERE
+            message_id = ? AND
+            is_attachment = 0 AND
+            type IN ({})
+        LIMIT
+            1
+    """.format(','.join('?' * len(types)))
+    res = _conn.execute(sql, (message_id,) + types).fetchone()
+    return res is not None
+
+
+def message_has_html(message_id):
+    return _message_has_types(message_id, ('application/xhtml+xml', 'text/html'))
+
+
+def message_has_plain(message_id):
+    return _message_has_types(message_id, ('text/plain',))
+
+
 def get_messages():
     rows = map(dict, _conn.execute('SELECT * FROM message').fetchall())
     for row in rows:
