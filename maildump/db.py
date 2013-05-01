@@ -188,3 +188,4 @@ def delete_messages():
     _conn.execute('DELETE FROM message_part')
     _conn.commit()
     log.debug('Deleted all messages')
+    # TODO: Notify websocket clients
