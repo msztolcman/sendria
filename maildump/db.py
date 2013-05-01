@@ -63,7 +63,7 @@ def add_message(sender, recipients, body, message):
     message_id = cur.lastrowid
     # Store parts (why do we do this for non-multipart at all?!)
     parts = [message] if not message.is_multipart() else message.get_payload()
-    for cid, part in enumerate(parts):
+    for cid, part in enumerate(parts, 1):
         _add_message_part(message_id, cid, part)
     _conn.commit()
     cur.close()
