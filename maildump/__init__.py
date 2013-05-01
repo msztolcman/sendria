@@ -1,5 +1,5 @@
 import asyncore
-from gevent.wsgi import WSGIServer
+from gevent.pywsgi import WSGIServer
 from gevent.monkey import patch_all
 from logbook import Logger
 
