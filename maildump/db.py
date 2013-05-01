@@ -80,7 +80,7 @@ def _add_message_part(message_id, cid, part):
             (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     """
 
-    body = str(part)
+    body = part.get_payload()
     _conn.execute(sql, (message_id,
                         cid,
                         part.get_content_type(),
