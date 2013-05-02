@@ -154,7 +154,7 @@ def get_message_part_plain(message_id):
 
 
 def get_message_part_cid(message_id, cid):
-    return _conn.execute('SELECT * FROM message_part WHERE id = ? AND cid = ?', (message_id, cid)).fetchone()
+    return _conn.execute('SELECT * FROM message_part WHERE message_id = ? AND cid = ?', (message_id, cid)).fetchone()
 
 
 def _message_has_types(message_id, types):
