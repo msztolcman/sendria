@@ -14,6 +14,14 @@ def connect(db=None):
     _conn.row_factory = sqlite3.Row
 
 
+def disconnect():
+    global _conn
+    if _conn:
+        log.debug('Closing database')
+        _conn.close()
+        _conn = None
+
+
 def create_tables():
     log.debug('Creating tables')
     _conn.execute("""
