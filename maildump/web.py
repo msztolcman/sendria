@@ -90,6 +90,14 @@ def _part_url(part):
     return url_for('get_message_part', message_id=part['message_id'], cid=part['cid'])
 
 
+def _part_response(part, body=None):
+    io = StringIO(part['body'] if body is None else body)
+    io.seek(0)
+    response = send_file(io, part['type'], part['is_attachment'], part['filename'])
+    response.charset = part['charset'] or 'utf-8'
+    return response
+
+
 @app.route('/messages/<int:message_id>.json', methods=('GET',))
 @rest
 def get_message_info(message_id):
@@ -106,14 +114,41 @@ def get_message_info(message_id):
     return message
 
 
+@app.route('/messages/<int:message_id>.plain', methods=('GET',))
+@rest
+def get_message_plain(message_id):
+    part = db.get_message_part_plain(message_id)
+    if not part:
+        return 404, 'part does not exist'
+    return _part_response(part)
+
+
+@app.route('/messages/<int:message_id>.source', methods=('GET',))
+@rest
+def get_message_source(message_id):
+    message = db.get_message(message_id)
+    if not message:
+        return 404, 'message does not exist'
+    io = StringIO(message['source'])
+    io.seek(0)
+    return send_file(io, message['type'])
+
+
+@app.route('/messages/<int:message_id>.eml', methods=('GET',))
+@rest
+def get_message_eml(message_id):
+    message = db.get_message(message_id)
+    if not message:
+        return 404, 'message does not exist'
+    io = StringIO(message['source'])
+    io.seek(0)
+    return send_file(io, 'message/rfc822')
+
+
 @app.route('/messages/<int:message_id>/parts/<int:cid>', methods=('GET',))
 @rest
 def get_message_part(message_id, cid):
     part = db.get_message_part_cid(message_id, cid)
     if not part:
         return 404, 'part does not exist'
-    io = StringIO(part['body'])
-    io.seek(0)
-    response = send_file(io, part['type'], part['is_attachment'], part['filename'])
-    response.charset = part['charset'] or 'utf-8'
-    return response
+    return _part_response(part)
