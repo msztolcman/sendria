@@ -1,4 +1,6 @@
 import argparse
+from gevent.monkey import patch_all
+patch_all()  # must be done before other stuff is imported
 
 from maildump import app, start
 

@@ -1,6 +1,5 @@
 import asyncore
 from gevent.pywsgi import WSGIServer
-from gevent.monkey import patch_all
 from logbook import Logger
 
 from maildump.db import connect, create_tables
@@ -12,8 +11,6 @@ log = Logger(__name__)
 
 
 def start(http_host, http_port, smtp_host, smtp_port, db_path=None):
-    # gevent patches
-    patch_all()
     # Webserver
     log.debug('Starting web server')
     WSGIServer((http_host, http_port), app).start()
