@@ -1,3 +1,5 @@
+import json
+from datetime import datetime
 from flask import Flask, render_template, jsonify
 from logbook import Logger
 from functools import wraps
@@ -8,6 +10,17 @@ import maildump.db as db
 
 app = Flask(__name__)
 app._logger = log = Logger(__name__)
+
+
+def _json_default(obj):
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(repr(obj) + ' is not JSON serializable')
+
+
+def jsonify(*args, **kwargs):
+    return app.response_class(json.dumps(dict(*args, **kwargs), default=_json_default, indent=4),
+                              mimetype='application/json')
 
 
 def rest(f):
