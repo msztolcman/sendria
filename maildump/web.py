@@ -3,6 +3,7 @@ from logbook import Logger
 from functools import wraps
 
 import maildump
+import maildump.db as db
 
 
 app = Flask(__name__)
@@ -44,3 +45,9 @@ def home():
 def terminate():
     log.debug('Terminate request received')
     maildump.stop()
+
+
+@app.route('/messages', methods=('DELETE',))
+@rest
+def delete_messages():
+    db.delete_messages()
