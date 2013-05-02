@@ -99,8 +99,14 @@ def _add_message_part(message_id, cid, part):
                         len(body)))
 
 
-def get_message(message_id):
-    row = _conn.execute('SELECT * FROM message WHERE id = ?', (message_id,)).fetchone()
+def _get_message_cols(lightweight):
+    cols = ('sender', 'recipients', 'created_at', 'subject', 'id', 'size') if lightweight else ('*',)
+    return ','.join(cols)
+
+
+def get_message(message_id, lightweight=False):
+    cols = _get_message_cols(lightweight)
+    row = _conn.execute('SELECT {} FROM message WHERE id = ?'.format(cols), (message_id,)).fetchone()
     if not row:
         return None
     row = dict(row)
@@ -111,7 +117,7 @@ def get_message(message_id):
 def get_message_attachments(message_id):
     sql = """
         SELECT
-            cid, type, filename, size
+            message_id, cid, type, filename, size
         FROM
             message_part
         WHERE
@@ -177,8 +183,8 @@ def message_has_plain(message_id):
 
 
 def get_messages(lightweight=False):
-    cols = ('sender', 'recipients', 'created_at', 'subject', 'id', 'size') if lightweight else ('*',)
-    rows = map(dict, _conn.execute('SELECT {} FROM message'.format(','.join(cols))).fetchall())
+    cols = _get_message_cols(lightweight)
+    rows = map(dict, _conn.execute('SELECT {} FROM message'.format(cols)).fetchall())
     for row in rows:
         row['recipients'] = json.loads(row['recipients'])
     return rows
