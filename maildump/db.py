@@ -176,8 +176,9 @@ def message_has_plain(message_id):
     return _message_has_types(message_id, ('text/plain',))
 
 
-def get_messages():
-    rows = map(dict, _conn.execute('SELECT * FROM message').fetchall())
+def get_messages(lightweight=False):
+    cols = ('sender', 'recipients', 'created_at', 'subject', 'id', 'size') if lightweight else ('*',)
+    rows = map(dict, _conn.execute('SELECT {} FROM message'.format(','.join(cols))).fetchall())
     for row in rows:
         row['recipients'] = json.loads(row['recipients'])
     return rows

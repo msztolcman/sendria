@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from logbook import Logger
 from functools import wraps
 
@@ -21,6 +21,10 @@ def _json_default(obj):
 def jsonify(*args, **kwargs):
     return app.response_class(json.dumps(dict(*args, **kwargs), default=_json_default, indent=4),
                               mimetype='application/json')
+
+
+def bool_arg(arg):
+    return arg in ('yes', 'true', '1')
 
 
 def rest(f):
@@ -64,3 +68,12 @@ def terminate():
 @rest
 def delete_messages():
     db.delete_messages()
+
+
+@app.route('/messages', methods=('GET',))
+@rest
+def get_messages():
+    # TODO: SSE/WebSocket support
+    return {
+        'messages': db.get_messages(not bool_arg(request.args.get('full')))
+    }
