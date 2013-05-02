@@ -86,6 +86,15 @@ def get_messages():
     }
 
 
+@app.route('/messages/<int:message_id>', methods=('DELETE',))
+@rest
+def delete_message(message_id):
+    message = db.get_message(message_id, True)
+    if not message:
+        return 404, 'message does not exist'
+    db.delete_message(message_id)
+
+
 def _part_url(part):
     return url_for('get_message_part', message_id=part['message_id'], cid=part['cid'])
 
