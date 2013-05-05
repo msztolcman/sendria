@@ -3,6 +3,9 @@ import json
 import sqlite3
 import uuid
 
+from maildump.web_realtime import broadcast
+
+
 log = Logger(__name__)
 _conn = None
 
@@ -81,7 +84,7 @@ def add_message(sender, recipients, body, message):
     _conn.commit()
     cur.close()
     log.debug('Stored message {} (parts={})'.format(message_id, len(parts)))
-    # TODO: Notify websocket clients
+    broadcast('add_message', message_id)
     return message_id
 
 
@@ -200,7 +203,7 @@ def delete_message(message_id):
     _conn.execute('DELETE FROM message_part WHERE message_id = ?', (message_id,))
     _conn.commit()
     log.debug('Deleted message {}'.format(message_id))
-    # TODO: Notify websocket clients
+    broadcast('delete_message', message_id)
 
 
 def delete_messages():
@@ -208,4 +211,4 @@ def delete_messages():
     _conn.execute('DELETE FROM message_part')
     _conn.commit()
     log.debug('Deleted all messages')
-    # TODO: Notify websocket clients
+    broadcast('delete_messages')

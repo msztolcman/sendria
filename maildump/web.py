@@ -7,6 +7,7 @@ from logbook import Logger
 import maildump
 import maildump.db as db
 from maildump.util import rest, bool_arg
+from maildump.web_realtime import handle_socketio_request
 
 
 RE_CID = re.compile(r'(?P<replace>cid:(?P<cid>.+))')
@@ -14,6 +15,7 @@ RE_CID_URL = re.compile(r'url\(\s*(?P<quote>["\']?)(?P<replace>cid:(?P<cid>[^\\\
 
 app = Flask(__name__)
 app._logger = log = Logger(__name__)
+app.add_url_rule('/socket.io/<path:remaining>', view_func=handle_socketio_request)
 
 
 @app.route('/')
@@ -37,7 +39,6 @@ def delete_messages():
 @app.route('/messages/', methods=('GET',))
 @rest
 def get_messages():
-    # TODO: SSE/WebSocket support
     lightweight = not bool_arg(request.args.get('full'))
     return {
         'messages': db.get_messages(lightweight)
