@@ -14,8 +14,8 @@ import maildump.db as db
 app = Flask(__name__)
 app._logger = log = Logger(__name__)
 
-RE_CID = re.compile(r'cid:(?P<cid>.+)')
-RE_CID_URL = re.compile(r'url\(\s*(?P<quote>["\']?)cid:(?P<cid>[^\\\')]+)(?P=quote)\s*\)')
+RE_CID = re.compile(r'(?P<replace>cid:(?P<cid>.+))')
+RE_CID_URL = re.compile(r'url\(\s*(?P<quote>["\']?)(?P<replace>cid:(?P<cid>[^\\\')]+))(?P=quote)\s*\)')
 
 
 def _json_default(obj):
@@ -139,7 +139,8 @@ def get_message_plain(message_id):
 
 def _fix_cid_links(soup, message_id):
     def _url_from_cid_match(m):
-        return url_for('get_message_part', message_id=message_id, cid=m.group('cid'))
+        return m.group().replace(m.group('replace'),
+                                 url_for('get_message_part', message_id=message_id, cid=m.group('cid')))
     # Iterate over all attributes that do not contain CSS and replace cid references
     for tag in (x for x in soup.descendants if isinstance(x, bs4.Tag)):
         for name, value in tag.attrs.iteritems():
