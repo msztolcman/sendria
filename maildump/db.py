@@ -76,7 +76,6 @@ def add_message(sender, recipients, body, message):
         cid = part.get('Content-Id') or str(uuid.uuid4())
         if cid[0] == '<' and cid[-1] == '>':
             cid = cid[1:-1]
-        print cid
         _add_message_part(message_id, cid, part)
     _conn.commit()
     cur.close()
