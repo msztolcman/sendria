@@ -13,6 +13,7 @@ def connect(db=None):
     log.info('Using database {}'.format(db))
     _conn = sqlite3.connect(db, detect_types=sqlite3.PARSE_DECLTYPES)
     _conn.row_factory = sqlite3.Row
+    _conn.text_factory = str
 
 
 def disconnect():
@@ -92,7 +93,7 @@ def _add_message_part(message_id, cid, part):
             (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     """
 
-    body = part.get_payload()
+    body = part.get_payload(decode=True)
     _conn.execute(sql, (message_id,
                         cid,
                         part.get_content_type(),
