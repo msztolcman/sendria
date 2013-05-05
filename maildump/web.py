@@ -75,13 +75,13 @@ def terminate():
     maildump.stop()
 
 
-@app.route('/messages', methods=('DELETE',))
+@app.route('/messages/', methods=('DELETE',))
 @rest
 def delete_messages():
     db.delete_messages()
 
 
-@app.route('/messages', methods=('GET',))
+@app.route('/messages/', methods=('GET',))
 @rest
 def get_messages():
     # TODO: SSE/WebSocket support
