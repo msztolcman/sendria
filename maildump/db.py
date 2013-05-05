@@ -1,6 +1,7 @@
 from logbook import Logger
 import json
 import sqlite3
+import uuid
 
 log = Logger(__name__)
 _conn = None
@@ -41,7 +42,7 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS message_part (
             id INTEGER PRIMARY KEY ASC,
             message_id INTEGER NOT NULL,
-            cid INTEGER,
+            cid TEXT,
             type TEXT,
             is_attachment INTEGER,
             filename TEXT,
@@ -71,7 +72,11 @@ def add_message(sender, recipients, body, message):
     message_id = cur.lastrowid
     # Store parts (why do we do this for non-multipart at all?!)
     parts = [message] if not message.is_multipart() else message.get_payload()
-    for cid, part in enumerate(parts, 1):
+    for part in parts:
+        cid = part.get('Content-Id') or str(uuid.uuid4())
+        if cid[0] == '<' and cid[-1] == '>':
+            cid = cid[1:-1]
+        print cid
         _add_message_part(message_id, cid, part)
     _conn.commit()
     cur.close()

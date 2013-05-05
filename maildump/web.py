@@ -154,7 +154,7 @@ def get_message_eml(message_id):
     return send_file(io, 'message/rfc822')
 
 
-@app.route('/messages/<int:message_id>/parts/<int:cid>', methods=('GET',))
+@app.route('/messages/<int:message_id>/parts/<cid>', methods=('GET',))
 @rest
 def get_message_part(message_id, cid):
     part = db.get_message_part_cid(message_id, cid)
