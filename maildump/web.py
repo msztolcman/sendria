@@ -1,4 +1,6 @@
+import bs4
 import json
+import re
 from cStringIO import StringIO
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request, url_for, send_file
@@ -11,6 +13,9 @@ import maildump.db as db
 
 app = Flask(__name__)
 app._logger = log = Logger(__name__)
+
+RE_CID = re.compile(r'cid:(?P<cid>.+)')
+RE_CID_URL = re.compile(r'url\(\s*(?P<quote>["\']?)cid:(?P<cid>[^\\\')]+)(?P=quote)\s*\)')
 
 
 def _json_default(obj):
@@ -99,11 +104,11 @@ def _part_url(part):
     return url_for('get_message_part', message_id=part['message_id'], cid=part['cid'])
 
 
-def _part_response(part, body=None):
+def _part_response(part, body=None, charset=None):
     io = StringIO(part['body'] if body is None else body)
     io.seek(0)
     response = send_file(io, part['type'], part['is_attachment'], part['filename'])
-    response.charset = part['charset'] or 'utf-8'
+    response.charset = charset or part['charset'] or 'utf-8'
     return response
 
 
@@ -130,6 +135,33 @@ def get_message_plain(message_id):
     if not part:
         return 404, 'part does not exist'
     return _part_response(part)
+
+
+def _fix_cid_links(soup, message_id):
+    def _url_from_cid_match(m):
+        return url_for('get_message_part', message_id=message_id, cid=m.group('cid'))
+    # Iterate over all attributes that do not contain CSS and replace cid references
+    for tag in (x for x in soup.descendants if isinstance(x, bs4.Tag)):
+        for name, value in tag.attrs.iteritems():
+            if isinstance(value, list):
+                value = ' '.join(value)
+            m = RE_CID.match(value)
+            if m is not None:
+                tag.attrs[name] = _url_from_cid_match(m)
+    # Rewrite cid references within inline stylesheets
+    for tag in soup.find_all('style'):
+        tag.string = RE_CID_URL.sub(_url_from_cid_match, tag.string)
+
+
+@app.route('/messages/<int:message_id>.html', methods=('GET',))
+@rest
+def get_message_html(message_id):
+    part = db.get_message_part_html(message_id)
+    if not part:
+        return 404, 'part does not exist'
+    soup = bs4.BeautifulSoup(part['body'], 'html5lib')
+    _fix_cid_links(soup, message_id)
+    return _part_response(part, str(soup), 'utf-8')
 
 
 @app.route('/messages/<int:message_id>.source', methods=('GET',))
