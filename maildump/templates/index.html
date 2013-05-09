@@ -14,6 +14,85 @@
     {% endassets %}
 </head>
 <body>
-    Nothing here yet, sorry.
+    <header class="top">
+        <h1>
+            <a href="https://github.com/ThiefMaster/maildump">MailDump</a>
+        </h1>
+        <nav class="app">
+            <ul>
+                <li class="search">
+                    <input type="search" name="search" placeholder="Search messages...">
+                </li>
+                <li class="clear">
+                    <a href="#" title="Delete all messages">Clear</a>
+                </li>
+                <li class="quit">
+                    <a href="#" title="Terminate MailDump">Quit</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <nav class="messages">
+        <table>
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Subject</th>
+                    <th>Received</th>
+                </tr>
+            </thead>
+            <tbody id="messages">
+                <tr>
+                    <td>dummy@sender.tld</td>
+                    <td>another.dummy@recipient.tld, bull.shit@domain.tld</td>
+                    <td>This is just some random test entry</td>
+                    <td>Wednesday, 8 May 2013 16:30:25</td>
+                </tr>
+                <tr>
+                    <td>evil@spammer.com</td>
+                    <td>pornsurfer@test.com</td>
+                    <td>Buy some boner pills!</td>
+                    <td>Thursday, 9 May 2013 13:37:00</td>
+                </tr>
+            </tbody>
+        </table>
+    </nav>
+    <div class="resizer" data-sibling="prev"><div class="ruler"></div></div>
+    <article id="message">
+        <header>
+            <dl class="meta">
+                <dt class='created_at'>Received</dt>
+                <dd class='created_at'></dd>
+                <dt class='from'>From</dt>
+                <dd class='from'></dd>
+                <dt class='to'>To</dt>
+                <dd class='to'></dd>
+                <dt class='subject'>Subject</dt>
+                <dd class='subject'></dd>
+                <dt class='attachments'>Attachments</dt>
+                <dd class='attachments'></dd>
+            </dl>
+            <nav class="views">
+                <ul>
+                    <li class='tab selected format plain' data-message-format='plain'>
+                        <a href='#'>Plain Text</a>
+                    </li>
+                    <li class='tab format html' data-message-format='html'>
+                        <a href='#'>HTML</a>
+                    </li>
+                    <li class='tab format source' data-message-format='source'>
+                        <a href='#'>Source</a>
+                    </li>
+                    <li class='action download'>
+                        <a class='button' href='#'>
+                            <span>Download</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+        <iframe class="body" id="message-body"></iframe>
+    </article>
 </body>
 </html>
