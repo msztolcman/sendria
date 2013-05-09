@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from flask import current_app
 from functools import wraps
+from webassets.filter.cssprefixer import CSSPrefixer as _CSSPrefixer
 
 
 def _json_default(obj):
@@ -51,3 +52,7 @@ def rest(f):
         return response
 
     return wrapper
+
+
+class CSSPrefixer(_CSSPrefixer):
+    max_debug_level = None

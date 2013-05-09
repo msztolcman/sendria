@@ -8,7 +8,7 @@ from logbook import Logger
 
 import maildump
 import maildump.db as db
-from maildump.util import rest, bool_arg
+from maildump.util import rest, bool_arg, CSSPrefixer
 from maildump.web_realtime import handle_socketio_request
 
 
@@ -28,7 +28,7 @@ js = Bundle('jquery.js', 'socket.io.js', 'maildump.js',
 scss = Bundle('maildump.scss',
               filters='pyscss', output='assets/maildump.%(version)s.css')
 css = Bundle('normalize.css', scss,
-             filters=('cssrewrite', 'cssmin'), output='assets/bundle.%(version)s.css')
+             filters=('cssrewrite', CSSPrefixer(), 'cssmin'), output='assets/bundle.%(version)s.css')
 assets.register('js_all', js)
 assets.register('css_all', css)
 # Socket.IO
