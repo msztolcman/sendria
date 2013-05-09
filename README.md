@@ -11,8 +11,17 @@ Since the goal of this project is to have the same features as MailCatcher I sug
 
 ## Warning
 
-This is still very much WIP and thus not in a usable state yet. If you install it don't complain that there is no web
-interface (or any other way to access received emails) yet.
+This is still very much WIP and thus not in a usable state yet. If you install it don't complain that there is no
+working web interface yet. Receiving emails and the REST API works though. Oh, and even when omitting the `-f` switch
+the process stays in foreground.
+
+## Credits
+
+The layout of the web interface has been taken from MailCatcher. No Copy&Paste involved - I rewrote the SASS/Compass
+stylesheet from MailCatcher in SCSS as there is a pure-python implementation of SCSS available.
+If whoever reads this feels like creating a new layout that looks as good or even better feel free to send a pull
+request. I'd actually prefer a layout that differs from MailCatcher at least a little bit but I'm somewhat bad at
+creating layouts!
 
 ## License
 
