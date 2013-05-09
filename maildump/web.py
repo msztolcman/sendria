@@ -27,7 +27,7 @@ js = Bundle('jquery.js', 'socket.io.js', 'maildump.js',
             filters='rjsmin', output='assets/bundle.%(version)s.js')
 scss = Bundle('maildump.scss',
               filters='pyscss', output='assets/maildump.%(version)s.css')
-css = Bundle('normalize.css', scss,
+css = Bundle('reset.css', scss,
              filters=('cssrewrite', CSSPrefixer(), 'cssmin'), output='assets/bundle.%(version)s.css')
 assets.register('js_all', js)
 assets.register('css_all', css)
