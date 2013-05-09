@@ -1621,7 +1621,7 @@ var io = ('undefined' === typeof module ? {} : module.exports);
         , options.host + ':' + options.port
         , options.resource
         , io.protocol
-        , io.util.query(this.options.query, 't=' + +new Date)
+        , io.util.query(this.options.query, 't=' + (+new Date))
       ].join('/');
 
     if (this.isXDomain() && !io.util.ua.hasCORS) {
@@ -3194,7 +3194,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
 
   XHR.prototype.request = function (method) {
     var req = io.util.request(this.socket.isXDomain())
-      , query = io.util.query(this.socket.options.query, 't=' + +new Date);
+      , query = io.util.query(this.socket.options.query, 't=' + (+new Date));
 
     req.open(method || 'GET', this.prepareUrl() + query, true);
 
@@ -3327,7 +3327,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
     iframeC.appendChild(this.iframe);
 
     var self = this
-      , query = io.util.query(this.socket.options.query, 't='+ +new Date);
+      , query = io.util.query(this.socket.options.query, 't='+ (+new Date));
 
     this.iframe.src = this.prepareUrl() + query;
 

@@ -3,6 +3,7 @@ from gevent.monkey import patch_all
 patch_all()  # must be done before other stuff is imported
 
 from maildump import app, start
+from maildump.web import assets
 
 
 parser = argparse.ArgumentParser()
@@ -15,5 +16,5 @@ parser.add_argument('-f', '--foreground', help='Run in the foreground', action='
 parser.add_argument('-d', '--debug', help='Run the web app in debug mode', action='store_true')
 args = parser.parse_args()
 
-app.debug = args.debug
+assets.debug = app.debug = args.debug
 start(args.http_ip, args.http_port, args.smtp_ip, args.smtp_port, args.db)

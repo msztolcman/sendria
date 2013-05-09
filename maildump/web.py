@@ -1,7 +1,9 @@
 import bs4
+import os
 import re
 from cStringIO import StringIO
 from flask import Flask, render_template, request, url_for, send_file
+from flask.ext.assets import Environment, Bundle
 from logbook import Logger
 
 import maildump
@@ -13,8 +15,23 @@ from maildump.web_realtime import handle_socketio_request
 RE_CID = re.compile(r'(?P<replace>cid:(?P<cid>.+))')
 RE_CID_URL = re.compile(r'url\(\s*(?P<quote>["\']?)(?P<replace>cid:(?P<cid>[^\\\')]+))(?P=quote)\s*\)')
 
+# Flask app
 app = Flask(__name__)
 app._logger = log = Logger(__name__)
+# Flask-Assets
+assets = Environment(app)
+assets.config['PYSCSS_STATIC_ROOT'] = os.path.join(os.path.dirname(__file__), 'static')
+assets.config['PYSCSS_STATIC_URL'] = '/static'
+assets.config['PYSCSS_DEBUG_INFO'] = False
+js = Bundle('jquery.js', 'socket.io.js', 'maildump.js',
+            filters='rjsmin', output='assets/bundle.%(version)s.js')
+scss = Bundle('maildump.scss',
+              filters='pyscss', output='assets/maildump.%(version)s.css')
+css = Bundle('normalize.css', scss,
+             filters=('cssrewrite', 'cssmin'), output='assets/bundle.%(version)s.css')
+assets.register('js_all', js)
+assets.register('css_all', css)
+# Socket.IO
 app.add_url_rule('/socket.io/<path:remaining>', view_func=handle_socketio_request)
 
 

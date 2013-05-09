@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>MailDump</title>
+    <script>
+        window.WEB_SOCKET_SWF_LOCATION = {{ url_for('static', filename='WebSocketMain.swf')|tojson|safe }};
+    </script>
+    {% assets 'css_all' -%}
+        <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}">
+    {% endassets %}
+    {% assets 'js_all' -%}
+        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
 </head>
 <body>
     Nothing here yet, sorry.

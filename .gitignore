@@ -2,3 +2,5 @@
 *.pyc
 /.idea/
 /env/
+/maildump/static/assets/
+/maildump/static/.webassets-cache/
