@@ -69,7 +69,7 @@ body {
                             color: #333;
                             text-decoration: none;
                         }
-                        &:active, &.active {
+                        &:active {
                             background: linear-gradient(#ddd, #eee), #eee;
                             color: #333;
                             text-decoration: none;
@@ -233,7 +233,7 @@ body {
         color: #333;
         text-decoration: none;
     }
-    &:active, &.active {
+    &:active {
         border-color: #666;
         border-bottom-color: #999;
         background: linear-gradient(#ddd, #eee), #eee;
