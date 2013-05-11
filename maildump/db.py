@@ -192,7 +192,7 @@ def message_has_plain(message_id):
 
 def get_messages(lightweight=False):
     cols = _get_message_cols(lightweight)
-    rows = map(dict, _conn.execute('SELECT {} FROM message'.format(cols)).fetchall())
+    rows = map(dict, _conn.execute('SELECT {} FROM message ORDER BY created_at ASC'.format(cols)).fetchall())
     for row in rows:
         row['recipients'] = json.loads(row['recipients'])
     return rows

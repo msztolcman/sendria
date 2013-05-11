@@ -82,10 +82,11 @@ body {
     }
 
     > nav.messages {
-        height: 10em;
-        min-height: (2 * (1em + .5em)); // 2 rows and padding
+        height: (6 * (1em + .5em)); // header + 5 messages
+        min-height: (2 * (1em + .5em)); // header + 1 message
         overflow: auto;
         border-top: 1px solid #fff;
+        background: #fff;
 
         > table {
             width: 100%;
@@ -241,4 +242,21 @@ body {
         text-decoration: none;
         text-shadow: -1px -1px 0 #eee;
     }
+}
+
+.hidden {
+    display: none;
+}
+
+.no-close .ui-dialog-titlebar-close {
+    display: none;
+}
+
+.ui-widget {
+    font-size: 1em;
+    line-height: 1.1em;
+}
+
+p + p {
+    margin-top: 1em;
 }

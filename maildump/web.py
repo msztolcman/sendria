@@ -23,11 +23,11 @@ assets = Environment(app)
 assets.config['PYSCSS_STATIC_ROOT'] = os.path.join(os.path.dirname(__file__), 'static')
 assets.config['PYSCSS_STATIC_URL'] = '/static'
 assets.config['PYSCSS_DEBUG_INFO'] = False
-js = Bundle('jquery.js', 'socket.io.js', 'maildump.js',
+js = Bundle('jquery.js', 'jquery-ui.js', 'handlebars.js', 'moment.js', 'socket.io.js', 'maildump.js',
             filters='rjsmin', output='assets/bundle.%(version)s.js')
 scss = Bundle('maildump.scss',
               filters='pyscss', output='assets/maildump.%(version)s.css')
-css = Bundle('reset.css', scss,
+css = Bundle('reset.css', 'jquery-ui.css', scss,
              filters=('cssrewrite', CSSPrefixer(), 'cssmin'), output='assets/bundle.%(version)s.css')
 assets.register('js_all', js)
 assets.register('css_all', css)

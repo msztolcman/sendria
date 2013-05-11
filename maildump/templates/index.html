@@ -42,20 +42,7 @@
                     <th>Received</th>
                 </tr>
             </thead>
-            <tbody id="messages">
-                <tr>
-                    <td>dummy@sender.tld</td>
-                    <td>another.dummy@recipient.tld, bull.shit@domain.tld</td>
-                    <td>This is just some random test entry</td>
-                    <td>Wednesday, 8 May 2013 16:30:25</td>
-                </tr>
-                <tr>
-                    <td>evil@spammer.com</td>
-                    <td>pornsurfer@test.com</td>
-                    <td>Buy some boner pills!</td>
-                    <td>Thursday, 9 May 2013 13:37:00</td>
-                </tr>
-            </tbody>
+            <tbody id="messages"></tbody>
         </table>
     </nav>
     <div class="resizer" data-sibling="prev"><div class="ruler"></div></div>
@@ -94,5 +81,28 @@
         </header>
         <iframe class="body" id="message-body"></iframe>
     </article>
+
+    <!-- templates, dialogs, etc. -->
+
+    {% raw %}
+    <script class="template" data-id="message" type="text/x-handlebars-template">
+        <tr data-message-id="{{ id }}">
+            <td>{{ sender }}</td>
+            <td>{{ join recipients }}</td>
+            <td>{{ subject }}</td>
+            <td>{{ date created_at }}</td>
+        </tr>
+    </script>
+    {% endraw %}
+
+    <div class="hidden" id="disconnected-dialog" title="Disconnected">
+        <p>Connection to MailDump lost.</p>
+        <p>Trying to reconnect - be patient!.</p>
+    </div>
+
+    <div class="hidden" id="loading-dialog" title="Loading">
+        <p>The initial message list is being loaded.</p>
+        <p>New messages arriving afterwards will be displayed in realtime as soon as they arrive.</p>
+    </div>
 </body>
 </html>
