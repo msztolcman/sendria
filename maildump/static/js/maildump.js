@@ -65,7 +65,7 @@
             }
             else {
                 msg = Message.get($(this).data('messageId'));
-                if (msg) {
+                if (msg && msg != Message.getSelected()) {
                     msg.select();
                     $('#message').show();
                 }
