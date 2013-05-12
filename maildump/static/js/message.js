@@ -3,6 +3,7 @@
     'use strict';
     var messages = {};
     var cleared = new Aborter();
+    var filterTerm = '';
 
     function addCacheBuster(formats) {
         $.each(formats, function(format, url) {
@@ -58,9 +59,9 @@
             if (this._dom) {
                 if(this._dom.hasClass('selected')) {
                     this.deselect();
-                    var sibling = this._dom.next();
+                    var sibling = this._dom.nextAll(':visible').first();
                     if(!sibling.length) {
-                        sibling = this._dom.prev();
+                        sibling = this._dom.prevAll(':visible').first();
                     }
                     sibling.trigger('click');
                 }
@@ -132,6 +133,7 @@
     Message.load = function(id) {
         cleared.watch(restCall('GET', '/messages/' + id + '.json')).done(function(msg) {
             Message.add(msg, true);
+            Message.applyFilter();
         });
     };
 
@@ -151,8 +153,25 @@
             $.each(data.messages, function(i, msg) {
                 Message.add(new Message(msg));
             });
+            Message.applyFilter();
         }).always(function() {
             $('#loading-dialog').dialog('close');
         });
     };
+
+    Message.applyFilter = function(term) {
+        if(term !== undefined) {
+            filterTerm = term;
+        }
+        var all = $('#messages > tr').show();
+        if (filterTerm) {
+            all.filter(function() {
+                return !~$(this).text().toLowerCase().indexOf(filterTerm);
+            }).hide();
+            var selected = Message.getSelected();
+            if(selected && !selected.dom().is(':visible')) {
+                selected.deselect();
+            }
+        }
+    }
 })(jQuery, window);

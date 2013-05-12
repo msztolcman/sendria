@@ -46,6 +46,11 @@
             restCall('DELETE', '/messages/');
         });
 
+        $('#search').on('keyup', function() {
+            var term = $(this).val().trim().toLowerCase();
+            Message.applyFilter(term);
+        });
+
         // Message navigation
         $('#messages').on('click', '> tr:not(.deleted)', function() {
             var msg = Message.get($(this).data('messageId'));
