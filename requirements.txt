@@ -14,6 +14,8 @@ gevent-websocket==0.3.6
 greenlet==0.4.0
 html5lib==0.95
 ipython==0.13.2
+lockfile==0.9.1
 pyScss==1.1.5
+python-daemon==1.6
 webassets==0.8
 wsgiref==0.1.2

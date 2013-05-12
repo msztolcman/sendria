@@ -11,8 +11,8 @@ Since the goal of this project is to have the same features as MailCatcher I sug
 
 ## Warning
 
-This is still under heavy development. If you install it don't complain if something doesn't work. Oh, and even when
-omitting the `-f` switch the process stays in foreground for now.
+This is still under heavy development. If you install it don't complain if something doesn't work. But please do let
+me know or send a pull request!
 
 ## Credits
 
