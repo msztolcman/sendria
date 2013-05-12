@@ -1,4 +1,5 @@
 (function($) {
+    'use strict';
     var templates = {};
 
     Handlebars.registerHelper('join', function(context, opts) {
