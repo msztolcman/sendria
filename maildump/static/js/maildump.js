@@ -10,7 +10,7 @@
             var $this = $(this);
             var target = $this.data('sibling') == 'prev' ? $this.prev() : $this.next();
             e.preventDefault();
-            $(document).on('mousemove.resizer',function(e) {
+            $(document).on('mousemove.resizer', function(e) {
                 e.preventDefault();
                 target.css('height', e.clientY - target.offset().top);
             }).on('mouseup.resizer', function(e) {
@@ -96,9 +96,9 @@
             }
             $('#loading-dialog').dialog('close');
             $('#disconnected-dialog').dialog('open');
-        }).on('add_message',function(id) {
+        }).on('add_message', function(id) {
             Message.load(id);
-        }).on('delete_message',function(id) {
+        }).on('delete_message', function(id) {
             var msg = Message.get(id);
             if(msg) {
                 msg.del();
