@@ -1,23 +1,5 @@
 (function($) {
     'use strict';
-    var templates = {};
-
-    Handlebars.registerHelper('join', function(context, opts) {
-        return context.join(', ');
-    });
-
-    Handlebars.registerHelper('date', function(context, opts) {
-        return moment(context).format(opts.hash.format || 'YYYY-MM-DD HH:mm:ss');
-    });
-
-    function restCall(method, path) {
-        return $.ajax({
-            url: path,
-            type: method
-        }).fail(function(xhr, status, error) {
-            alert('REST call failed: ' + method + ' ' + path + '\nStatus: ' + status + '\nError: ' + error);
-        });
-    }
 
     function Message(msg) {
         this.sender = msg.sender;
@@ -29,7 +11,7 @@
     }
     Message.prototype = {
         html: function() {
-            return this.dom || (this.dom = $($.parseHTML(templates['message'](this))));
+            return this.dom || (this.dom = renderTemplate('message', this));
         },
         del: function() {
             delete Message.messages[this.id];
@@ -89,11 +71,6 @@
             modal: true,
             resizable: false,
             title: ''
-        });
-
-        $('script.template').each(function() {
-            var $this = $(this);
-            templates[$this.data('id')] = Handlebars.compile($(this).html());
         });
 
         // Top nav actions
