@@ -119,6 +119,9 @@ body {
                     background: Highlight;
                     color: HighlightText;
                 }
+                &.deleted {
+                    text-decoration: line-through;
+                }
 
                 td {
                     padding: 0.25em;

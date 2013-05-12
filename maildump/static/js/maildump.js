@@ -46,6 +46,28 @@
             restCall('DELETE', '/messages/');
         });
 
+        // Message navigation
+        $('#messages').on('click', '> tr:not(.deleted)', function() {
+            var msg = Message.get($(this).data('messageId'));
+            console.log(msg && msg.id || this);
+            if(msg) {
+                msg.select();
+                $('#message').show();
+            }
+        });
+
+        $('.action.delete').on('click', function(e) {
+            e.preventDefault();
+            var msg = Message.get($('#messages > .selected').data('messageId'));
+            if (msg) {
+                msg.dom().addClass('deleted');
+                restCall('DELETE', '/messages/' + msg.id).fail(function() {
+                    msg.dom().removeClass('deleted');
+                });
+            }
+        });
+
+        // Load initial message list
         Message.loadAll();
 
         // Real-time updates

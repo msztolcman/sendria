@@ -13,15 +13,25 @@
     };
 
     Message.prototype = {
-        html: function() {
-            return this.dom || (this.dom = renderTemplate('message', this));
+        dom: function() {
+            return this._dom || (this._dom = renderTemplate('message', this));
         },
         del: function() {
             delete messages[this.id];
-            if (this.dom) {
-                this.dom.remove();
-                delete this.dom;
+            if (this._dom) {
+                if(this._dom.hasClass('selected')) {
+                    this._dom.next().trigger('click');
+                }
+                this._dom.remove();
+                delete this._dom;
             }
+        },
+        select: function() {
+            if (!this._dom) {
+                console.error('Cannot select message that has not been rendered.');
+            }
+            $('#messages > tr.selected').removeClass('selected');
+            this.dom().addClass('selected');
         }
     };
 
@@ -40,7 +50,7 @@
             return;
         }
         messages[msg.id] = new Message(msg);
-        $('#messages').prepend(messages[msg.id].html());
+        $('#messages').prepend(messages[msg.id].dom());
     };
 
     Message.loadAll = function() {
