@@ -51,22 +51,22 @@
             <dl class="meta" id="message-metadata"></dl>
             <nav class="views">
                 <ul>
-                    <li class='tab selected format plain' data-message-format='plain'>
-                        <a href='#'>Plain Text</a>
+                    <li class="tab selected format plain" data-message-format="plain">
+                        <a href="#">Plain Text</a>
                     </li>
-                    <li class='tab format html' data-message-format='html'>
-                        <a href='#'>HTML</a>
+                    <li class="tab format html" data-message-format="html">
+                        <a href="#">HTML</a>
                     </li>
-                    <li class='tab format source' data-message-format='source'>
-                        <a href='#'>Source</a>
+                    <li class="tab format source" data-message-format="source">
+                        <a href="#">Source</a>
                     </li>
-                    <li class='action download'>
-                        <a class='button' href='#'>
+                    <li class="action download">
+                        <a class="button" href="#">
                             <span>Download</span>
                         </a>
                     </li>
-                    <li class='action delete'>
-                        <a class='button' href='#'>
+                    <li class="action delete">
+                        <a class="button" href="#">
                             <span>Delete</span>
                         </a>
                     </li>
@@ -93,17 +93,17 @@
     </script>
 
     <script class="template" data-id="message-metadata" type="text/x-handlebars-template">
-        <dt class='created_at'>Received</dt>
-        <dd class='created_at'>{{ date created_at }}</dd>
-        <dt class='from'>From</dt>
-        <dd class='from'>{{ sender }}</dd>
-        <dt class='to'>To</dt>
-        <dd class='to'>{{ join recipients }}</dd>
-        <dt class='subject'>Subject</dt>
-        <dd class='subject'>{{ subject }}</dd>
+        <dt class="created_at">Received</dt>
+        <dd class="created_at">{{ date created_at }}</dd>
+        <dt class="from">From</dt>
+        <dd class="from">{{ sender }}</dd>
+        <dt class="to">To</dt>
+        <dd class="to">{{ join recipients }}</dd>
+        <dt class="subject">Subject</dt>
+        <dd class="subject">{{ subject }}</dd>
         {{# if attachments.length }}
-        <dt class='attachments'>Attachments</dt>
-        <dd class='attachments'>
+        <dt class="attachments">Attachments</dt>
+        <dd class="attachments">
             <ul>
                 {{# each attachments }}
                 <li>
