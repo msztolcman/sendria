@@ -48,18 +48,7 @@
     <div class="resizer" data-sibling="prev"><div class="ruler"></div></div>
     <article id="message" class="no-message">
         <header>
-            <dl class="meta">
-                <dt class='created_at'>Received</dt>
-                <dd class='created_at'></dd>
-                <dt class='from'>From</dt>
-                <dd class='from'></dd>
-                <dt class='to'>To</dt>
-                <dd class='to'></dd>
-                <dt class='subject'>Subject</dt>
-                <dd class='subject'></dd>
-                <dt class='attachments'>Attachments</dt>
-                <dd class='attachments'></dd>
-            </dl>
+            <dl class="meta" id="message-metadata"></dl>
             <nav class="views">
                 <ul>
                     <li class='tab selected format plain' data-message-format='plain'>
@@ -85,7 +74,10 @@
             </nav>
         </header>
         <iframe class="body" id="message-body"></iframe>
-        <aside class="no-message-mark">NO MESSAGE SELECTED</aside>
+        <aside class="no-message-mark">
+            <span class="no-message">NO MESSAGE SELECTED</span>
+            <span class="loading-message">LOADING MESSAGE...</span>
+        </aside>
     </article>
 
     <!-- templates, dialogs, etc. -->
@@ -98,6 +90,29 @@
             <td>{{ subject }}</td>
             <td>{{ date created_at }}</td>
         </tr>
+    </script>
+
+    <script class="template" data-id="message-metadata" type="text/x-handlebars-template">
+        <dt class='created_at'>Received</dt>
+        <dd class='created_at'>{{ date created_at }}</dd>
+        <dt class='from'>From</dt>
+        <dd class='from'>{{ sender }}</dd>
+        <dt class='to'>To</dt>
+        <dd class='to'>{{ join recipients }}</dd>
+        <dt class='subject'>Subject</dt>
+        <dd class='subject'>{{ subject }}</dd>
+        {{# if attachments.length }}
+        <dt class='attachments'>Attachments</dt>
+        <dd class='attachments'>
+            <ul>
+                {{# each attachments }}
+                <li>
+                    <a href="{{ href }}">{{ filename }}</a>
+                </li>
+                {{/each}}
+            </ul>
+        </dd>
+        {{/if}}
     </script>
     {% endraw %}
 

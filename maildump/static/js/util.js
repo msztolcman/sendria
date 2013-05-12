@@ -50,3 +50,42 @@
         });
     };
 })(jQuery, window);
+
+// Deferred aborter
+(function($, global) {
+    'use strict';
+
+    /*
+    * Usage: Create a new Aborter instance and call its .abort() method whenever
+    * you want to abort all requests started before.
+    * Whenever you start a request that should be abortable pass it to .watch()
+    * which will reject reject it on abort and do not use the deferred passed to
+    * it since it always returns a new deferred (needed in case someone passes) a
+    * promise object instead of a real deferred.
+    * */
+
+    var Aborter = global.Aborter = function Aborter() {
+        this.aborted = $.Deferred();
+    };
+    Aborter.prototype = {
+        abort: function() {
+            this.aborted.reject();
+            this.aborted = $.Deferred();
+        },
+        watch: function(deferred) {
+            // We need to create a new deferred in case someone passed us a promise object
+            var newDeferred = $.Deferred();
+            // Forward original deferred's events
+            deferred.then(function() {
+                newDeferred.resolveWith(this, Array.prototype.slice.call(arguments));
+            }, function() {
+                newDeferred.rejectWith(this, Array.prototype.slice.call(arguments));
+            });
+            // Add out own event to reject in case of abortion
+            this.aborted.fail(function() {
+                newDeferred.rejectWith(this, Array.prototype.slice.call(arguments));
+            });
+            return newDeferred;
+        }
+    };
+})(jQuery, window);

@@ -87,9 +87,7 @@
             $('#loading-dialog').dialog('close');
             $('#disconnected-dialog').dialog('open');
         }).on('add_message',function(id) {
-            restCall('GET', '/messages/' + id + '.json').done(function(msg) {
-                Message.add(msg);
-            });
+            Message.load(id);
         }).on('delete_message',function(id) {
             var msg = Message.get(id);
             if(msg) {

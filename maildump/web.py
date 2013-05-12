@@ -92,6 +92,7 @@ def get_message_info(message_id):
     message = db.get_message(message_id, lightweight)
     if not message:
         return 404, 'message does not exist'
+    message['href'] = url_for('get_message_eml', message_id=message_id)
     message['formats'] = ['source']
     if db.message_has_plain(message_id):
         message['formats'].append('plain')
