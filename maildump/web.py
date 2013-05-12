@@ -93,11 +93,11 @@ def get_message_info(message_id):
     if not message:
         return 404, 'message does not exist'
     message['href'] = url_for('get_message_eml', message_id=message_id)
-    message['formats'] = ['source']
+    message['formats'] = {'source': url_for('get_message_source', message_id=message_id)}
     if db.message_has_plain(message_id):
-        message['formats'].append('plain')
+        message['formats']['plain'] = url_for('get_message_plain', message_id=message_id)
     if db.message_has_html(message_id):
-        message['formats'].append('html')
+        message['formats']['html'] = url_for('get_message_html', message_id=message_id)
     message['attachments'] = [dict(part, href=_part_url(part)) for part in db.get_message_attachments(message_id)]
     return message
 
@@ -147,7 +147,7 @@ def get_message_source(message_id):
         return 404, 'message does not exist'
     io = StringIO(message['source'])
     io.seek(0)
-    return send_file(io, message['type'])
+    return send_file(io, 'text/plain')
 
 
 @app.route('/messages/<int:message_id>.eml', methods=('GET',))

@@ -55,9 +55,19 @@
             }
         });
 
+        $('.tab.format').on('click', function(e) {
+            e.preventDefault();
+            var msg = Message.getSelected();
+            if (msg) {
+                $('.tab.format.selected').removeClass('selected');
+                $(this).addClass('selected');
+                msg.updateFormat();
+            }
+        });
+
         $('.action.delete').on('click', function(e) {
             e.preventDefault();
-            var msg = Message.get($('#messages > .selected').data('messageId'));
+            var msg = Message.getSelected();
             if (msg) {
                 msg.dom().addClass('deleted');
                 restCall('DELETE', '/messages/' + msg.id).fail(function() {

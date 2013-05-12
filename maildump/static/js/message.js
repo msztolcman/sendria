@@ -4,6 +4,13 @@
     var messages = {};
     var cleared = new Aborter();
 
+    function addCacheBuster(formats) {
+        $.each(formats, function(format, url) {
+            formats[format] = url + '?_=' + (new Date().getTime());
+        });
+        return formats;
+    }
+
     var Message = global.Message = function Message(msg, loadedEverything) {
         this.sender = msg.sender;
         this.recipients = msg.recipients;
@@ -14,13 +21,13 @@
         this._loaded = loadedEverything || false;
         if(this._loaded) {
             this.href = msg.href;
-            this.formats = msg.formats;
+            this.formats = addCacheBuster(msg.formats);
             this.attachments = msg.attachments;
         }
         else {
             this.href = '#'; // loaded lazily
             this.attachments = []; // loaded lazily
-            this.formats = []; // loaded lazily
+            this.formats = {}; // loaded lazily
         }
     };
 
@@ -29,8 +36,22 @@
             return this._dom || (this._dom = renderTemplate('message', this));
         },
         display: function() {
+            var self = this;
             $('#message-metadata').html(renderTemplate('message-metadata', this));
             $('.action.download a').attr('href', this.href);
+            $('.views .format').each(function() {
+                var $this = $(this);
+                var format = $this.data('messageFormat');
+                $this.toggle(format in self.formats);
+                $('a', this).attr('href', self.formats[format] || '#');
+            }).removeClass('selected').filter(':visible:first').addClass('selected');
+            this.updateFormat();
+        },
+        updateFormat: function() {
+            var format = $('.views .format.selected').data('messageFormat');
+            if ($('#message-body').attr('src') != this.formats[format]) {
+                $('#message-body').attr('src', this.formats[format]);
+            }
         },
         del: function() {
             delete messages[this.id];
@@ -57,6 +78,7 @@
             $('#message').removeClass('no-message').addClass('loading-message');
             $('#messages > tr.selected').removeClass('selected');
             this.dom().addClass('selected');
+            $('#message-body').attr('src', 'about:blank');
             this.load().done(function() {
                 $('#message').removeClass('loading-message');
                 if (this.selected()) {
@@ -71,6 +93,7 @@
 
             this._dom.removeClass('selected');
             $('#message').addClass('no-message');
+            $('#message-body').attr('src', 'about:blank');
         },
         load: function() {
             var self = this;
@@ -83,7 +106,7 @@
                     self._loaded = true;
                     self.href = data.href;
                     self.attachments = data.attachments;
-                    self.formats = data.formats;
+                    self.formats = addCacheBuster(data.formats);
                     deferred.resolveWith(self);
                 });
             }
@@ -93,6 +116,10 @@
 
     Message.get = function(id) {
         return messages[id];
+    };
+
+    Message.getSelected = function() {
+        return Message.get($('#messages > .selected').data('messageId'));
     };
 
     Message.deleteAll = function() {
