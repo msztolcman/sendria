@@ -38,6 +38,7 @@
     };
 })(jQuery, window);
 
+
 // REST
 (function($, global) {
     'use strict';
@@ -50,6 +51,7 @@
         });
     };
 })(jQuery, window);
+
 
 // Deferred aborter
 (function($, global) {
@@ -87,5 +89,17 @@
             });
             return newDeferred;
         }
+    };
+})(jQuery, window);
+
+
+// Hotkey wrapper
+(function($, global) {
+    'use strict';
+
+    global.registerHotkeys = function registerHotkeys(map) {
+        $.each(map, function(key, fn) {
+            $(document).on('keydown', null, key, fn);
+        });
     };
 })(jQuery, window);

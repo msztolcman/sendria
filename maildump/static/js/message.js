@@ -13,13 +13,14 @@
     }
 
     var Message = global.Message = function Message(msg, loadedEverything) {
+        this._loaded = loadedEverything || false;
+        this._deleted = false;
+        this.id = msg.id;
         this.sender = msg.sender;
         this.recipients = msg.recipients;
         this.created_at = new Date(msg.created_at);
         this.subject = msg.subject;
-        this.id = msg.id;
         this.size = msg.size;
-        this._loaded = loadedEverything || false;
         if(this._loaded) {
             this.href = msg.href;
             this.formats = addCacheBuster(msg.formats);
@@ -69,6 +70,18 @@
                 delete this._dom;
             }
         },
+        delRemote: function() {
+            var self = this;
+            if (this._deleted) {
+                return;
+            }
+            this._deleted = true;
+            this.dom().addClass('deleted');
+            restCall('DELETE', '/messages/' + this.id).fail(function() {
+                this._deleted = false;
+                self.dom().removeClass('deleted');
+            });
+        },
         selected: function() {
             return $('#messages > .selected').data('messageId') == this.id;
         },
@@ -76,9 +89,20 @@
             if (!this._dom) {
                 console.error('Cannot select message that has not been rendered.');
             }
+            var row = this.dom();
             $('#message').removeClass('no-message').addClass('loading-message');
             $('#messages > tr.selected').removeClass('selected');
-            this.dom().addClass('selected');
+            row.addClass('selected');
+            if (row.position().top <= 0 || row.position().top + row.height() > row.offsetParent().height()) {
+                // Scroll to row if necessary
+                if (row.index() == 0) {
+                    // First element? Include header
+                    row.closest('table').find('thead')[0].scrollIntoView();
+                }
+                else {
+                    row[0].scrollIntoView();
+                }
+            }
             $('#message-body').attr('src', 'about:blank');
             this.load().done(function() {
                 $('#message').removeClass('loading-message');

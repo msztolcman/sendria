@@ -86,10 +86,7 @@
             e.preventDefault();
             var msg = Message.getSelected();
             if (msg) {
-                msg.dom().addClass('deleted');
-                restCall('DELETE', '/messages/' + msg.id).fail(function() {
-                    msg.dom().removeClass('deleted');
-                });
+                msg.delRemote();
             }
         });
 
@@ -122,6 +119,50 @@
             }
         }).on('delete_messages', function() {
             Message.deleteAll();
+        });
+
+        // Keyboard shortcuts
+        registerHotkeys({
+            'del': function() {
+                var msg = Message.getSelected();
+                if (msg) {
+                    msg.delRemote();
+                }
+            },
+            'backspace': function(e) {
+                // Backspace causing the iframe to go back even if it's not focused is annoying!
+                e.preventDefault();
+            },
+            'up': function(e) {
+                e.preventDefault();
+                var msg = Message.getSelected();
+                if (!msg) {
+                    $('#messages > tr:last').trigger('click');
+                    return;
+                }
+                msg.dom().prevAll(':visible').first().trigger('click');
+            },
+            'down': function(e) {
+                e.preventDefault();
+                var msg = Message.getSelected();
+                if (!msg) {
+                    $('#messages > tr:first').trigger('click');
+                    return;
+                }
+                msg.dom().nextAll(':visible').first().trigger('click');
+            },
+            'ctrl+up': function(e) {
+                e.preventDefault();
+                $('#messages > tr:first').trigger('click');
+            },
+            'ctrl+down': function(e) {
+                e.preventDefault();
+                $('#messages > tr:last').trigger('click');
+            },
+            '/': function(e) {
+                e.preventDefault();
+                $('#search').focus();
+            }
         });
     });
 })(jQuery);

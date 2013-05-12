@@ -23,8 +23,8 @@ assets = Environment(app)
 assets.config['PYSCSS_STATIC_ROOT'] = os.path.join(os.path.dirname(__file__), 'static')
 assets.config['PYSCSS_STATIC_URL'] = '/static'
 assets.config['PYSCSS_DEBUG_INFO'] = False
-js = Bundle('js/lib/jquery.js', 'js/lib/jquery-ui.js', 'js/lib/handlebars.js', 'js/lib/moment.js',
-            'js/lib/socket.io.js',
+js = Bundle('js/lib/jquery.js', 'js/lib/jquery-ui.js', 'js/lib/jquery.hotkeys.js',
+            'js/lib/handlebars.js', 'js/lib/moment.js', 'js/lib/socket.io.js',
             'js/util.js', 'js/message.js', 'js/maildump.js',
             filters='rjsmin', output='assets/bundle.%(version)s.js')
 scss = Bundle('css/maildump.scss',
