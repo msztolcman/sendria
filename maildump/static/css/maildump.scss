@@ -144,6 +144,29 @@ body {
         box-orient: vertical;
         box-flex: 1;
 
+        > aside.no-message-mark {
+            display: none;
+        }
+
+        &.no-message {
+            > * {
+                display: none !important;
+            }
+
+            > aside.no-message-mark {
+                display: box !important;
+                box-pack: center;
+                box-align: center;
+                box-flex: 1;
+                font-size: 64px;
+                font-weight: bold;
+                user-select: none;
+                cursor: default;
+                color: rgba(#fff, 0.5);
+                text-shadow: rgba(#aaa, 0.5) 1px 1px 1px;
+            }
+        }
+
         > header {
             +clearfix;
             > dl.meta {

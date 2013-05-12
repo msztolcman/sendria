@@ -20,6 +20,7 @@
             delete messages[this.id];
             if (this._dom) {
                 if(this._dom.hasClass('selected')) {
+                    this.deselect();
                     var sibling = this._dom.next();
                     if(!sibling.length) {
                         sibling = this._dom.prev();
@@ -34,8 +35,17 @@
             if (!this._dom) {
                 console.error('Cannot select message that has not been rendered.');
             }
+            $('#message').removeClass('no-message');
             $('#messages > tr.selected').removeClass('selected');
             this.dom().addClass('selected');
+        },
+        deselect: function() {
+            if (!this._dom) {
+                return;
+            }
+
+            this._dom.removeClass('selected');
+            $('#message').addClass('no-message');
         }
     };
 
@@ -45,6 +55,7 @@
 
     Message.deleteAll = function() {
         $('#messages > tr').remove();
+        $('#message').addClass('no-message');
         messages = {};
     };
 
