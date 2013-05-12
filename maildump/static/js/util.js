@@ -20,8 +20,8 @@
         templates = {};
         $('script.template').each(function() {
             var $this = $(this);
-            templates[$this.data('id')] = Handlebars.compile($(this).html());
-        });
+            templates[$this.data('id')] = Handlebars.compile($this.html());
+        }).remove();
         return true;
     }
 
