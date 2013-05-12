@@ -4,6 +4,9 @@
     $(document).ready(function() {
         // Misc stuff and initialization
         $('.resizer').on('mousedown', function(e) {
+            if(e.button != 0) {
+                return;
+            }
             var $this = $(this);
             var target = $this.data('sibling') == 'prev' ? $this.prev() : $this.next();
             e.preventDefault();
