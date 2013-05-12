@@ -52,11 +52,23 @@
         });
 
         // Message navigation
-        $('#messages').on('click', '> tr:not(.deleted)', function() {
-            var msg = Message.get($(this).data('messageId'));
-            if(msg) {
-                msg.select();
-                $('#message').show();
+        $('#messages').on('click', '> tr:not(.deleted)', function(e) {
+            var msg;
+            if (e.ctrlKey) {
+                msg = Message.getSelected();
+                if (msg) {
+                    msg.deselect();
+                }
+                if (window.getSelection) {
+                    window.getSelection().removeAllRanges();
+                }
+            }
+            else {
+                msg = Message.get($(this).data('messageId'));
+                if (msg) {
+                    msg.select();
+                    $('#message').show();
+                }
             }
         });
 
