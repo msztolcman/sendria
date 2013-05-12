@@ -84,7 +84,7 @@
                 if (this.selected()) {
                     this.display();
                 }
-            }).fail(function(){console.log('fail triggered');});
+            });
         },
         deselect: function() {
             if (!this._dom) {
