@@ -11,9 +11,8 @@ Since the goal of this project is to have the same features as MailCatcher I sug
 
 ## Warning
 
-This is still very much WIP and thus not in a usable state yet. If you install it don't complain that there is no
-working web interface yet. Receiving emails and the REST API works though. Oh, and even when omitting the `-f` switch
-the process stays in foreground.
+This is still under heavy development. If you install it don't complain if something doesn't work. Oh, and even when
+omitting the `-f` switch the process stays in foreground for now.
 
 ## Credits
 
