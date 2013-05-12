@@ -20,7 +20,11 @@
             delete messages[this.id];
             if (this._dom) {
                 if(this._dom.hasClass('selected')) {
-                    this._dom.next().trigger('click');
+                    var sibling = this._dom.next();
+                    if(!sibling.length) {
+                        sibling = this._dom.prev();
+                    }
+                    sibling.trigger('click');
                 }
                 this._dom.remove();
                 delete this._dom;
