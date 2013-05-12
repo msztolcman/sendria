@@ -49,7 +49,6 @@
         // Message navigation
         $('#messages').on('click', '> tr:not(.deleted)', function() {
             var msg = Message.get($(this).data('messageId'));
-            console.log(msg && msg.id || this);
             if(msg) {
                 msg.select();
                 $('#message').show();
