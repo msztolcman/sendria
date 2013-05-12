@@ -20,6 +20,7 @@
             delete messages[this.id];
             if (this.dom) {
                 this.dom.remove();
+                delete this.dom;
             }
         }
     };
