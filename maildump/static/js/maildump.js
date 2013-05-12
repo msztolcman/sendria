@@ -94,7 +94,10 @@
         Message.loadAll();
 
         // Real-time updates
-        var socket = io.connect();
+        var socket = io.connect(undefined, {
+            'reconnection limit': 10000,
+            'max reconnection attempts': Infinity
+        });
         var terminating = false;
         window.onbeforeunload = function() {
             terminating = true;
