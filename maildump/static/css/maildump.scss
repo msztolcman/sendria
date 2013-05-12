@@ -165,18 +165,18 @@ body {
                 color: rgba(#fff, 0.5);
                 text-shadow: rgba(#aaa, 0.5) 1px 1px 1px;
 
-                > span {
+                > div {
                     display: none;
                 }
             }
         }
 
-        &.no-message span.no-message {
-            display: inline !important;
+        &.no-message div.no-message {
+            display: block !important;
         }
 
-        &.loading-message span.loading-message {
-            display: inline !important;
+        &.loading-message div.loading-message {
+            display: block !important;
         }
 
         > header {
