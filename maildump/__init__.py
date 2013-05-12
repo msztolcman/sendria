@@ -19,7 +19,8 @@ def start(http_host, http_port, smtp_host, smtp_port, db_path=None):
     global socketio_server
     # Webserver
     log.debug('Starting web server')
-    socketio_server = SocketIOServer((http_host, http_port), app)
+    socketio_server = SocketIOServer((http_host, http_port), app,
+                                     log='default' if app.debug else None)
     socketio_server.start()
     # SMTP server
     log.debug('Starting smtp server')
