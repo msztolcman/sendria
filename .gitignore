@@ -1,5 +1,6 @@
 .*.swp
 *.pyc
+*.pid
 /.idea/
 /env/
 /maildump/static/assets/
