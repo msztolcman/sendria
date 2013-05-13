@@ -58,6 +58,7 @@
         del: function() {
             delete messages[this.id];
             this.selectSibling();
+            this.closeNotification();
             if (this._dom) {
                 this._dom.remove();
                 delete this._dom;
@@ -71,6 +72,7 @@
             this._deleted = true;
             this.dom().addClass('deleted');
             this.selectSibling();
+            this.closeNotification();
             restCall('DELETE', '/messages/' + this.id).fail(function() {
                 self._deleted = false;
                 self.dom().removeClass('deleted');
@@ -141,6 +143,21 @@
                 });
             }
             return deferred.promise();
+        },
+        showNotification: function() {
+            var self = this;
+            var msg = 'From ' + this.sender + '\xa0 to \xa0' + this.recipients.join(', ');
+            this._notification = webkitNotifications.createNotification('', this.subject, msg);
+            this._notification.show();
+            window.setTimeout(function() {
+                self.closeNotification();
+            }, 10000);
+        },
+        closeNotification: function() {
+            if (this._notification) {
+                this._notification.cancel();
+                delete this._notification;
+            }
         }
     };
 
@@ -153,16 +170,26 @@
     };
 
     Message.deleteAll = function() {
+        Message.closeNotifications();
         $('#messages > tr').remove();
         $('#message').addClass('no-message');
         messages = {};
         cleared.abort();
     };
 
-    Message.load = function(id) {
+    Message.closeNotifications = function() {
+        $.each(messages, function(id, message) {
+            message.closeNotification();
+        });
+    };
+
+    Message.load = function(id, notify) {
         cleared.watch(restCall('GET', '/messages/' + id + '.json')).done(function(msg) {
-            Message.add(msg, true);
+            var message = Message.add(msg, true);
             Message.applyFilter();
+            if (notify) {
+                message.showNotification();
+            }
         });
     };
 
@@ -173,6 +200,7 @@
         }
         messages[msg.id] = new Message(msg, loadedEverything);
         $('#messages').prepend(messages[msg.id].dom());
+        return messages[msg.id];
     };
 
     Message.loadAll = function() {

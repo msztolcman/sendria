@@ -46,6 +46,36 @@
             restCall('DELETE', '/messages/');
         });
 
+        if (window.webkitNotifications) {
+            var notificationButton = $('nav.app .notifications a');
+
+            var updateNotificationButton = function updateNotificationButton() {
+                var enabled = $.jStorage.get('webkitNotifications') && webkitNotifications.checkPermission() == 0;
+                notificationButton.text(enabled ? 'Disable notifications' : 'Enable notifications');
+            };
+
+            notificationButton.parent().show();
+            notificationButton.on('click', function(e) {
+                e.preventDefault();
+                switch (webkitNotifications.checkPermission()) {
+                    case 2:
+                        alert('You need to allow notifications via site permissions.');
+                        return;
+                    case 1:
+                        webkitNotifications.requestPermission(function() {
+                            $.jStorage.set('webkitNotifications', webkitNotifications.checkPermission() == 0);
+                            updateNotificationButton();
+                        });
+                        break;
+                    case 0:
+                        $.jStorage.set('webkitNotifications', !$.jStorage.get('webkitNotifications'));
+                        updateNotificationButton();
+                        break;
+                }
+            });
+            updateNotificationButton();
+        }
+
         $('#search').on('keyup', function() {
             var term = $(this).val().trim().toLowerCase();
             Message.applyFilter(term);
@@ -102,6 +132,7 @@
         window.onbeforeunload = function() {
             terminating = true;
             socket.disconnect();
+            Message.closeNotifications()
         };
         socket.on('connect', function() {
             $('#disconnected-dialog').dialog('close');
@@ -114,7 +145,7 @@
             $('#loading-dialog').dialog('close');
             $('#disconnected-dialog').dialog('open');
         }).on('add_message', function(id) {
-            Message.load(id);
+            Message.load(id, $.jStorage.get('webkitNotifications'));
         }).on('delete_message', function(id) {
             var msg = Message.get(id);
             if(msg) {
@@ -135,6 +166,18 @@
             'backspace': function(e) {
                 // Backspace causing the iframe to go back even if it's not focused is annoying!
                 e.preventDefault();
+            },
+            'f5': function() {
+                // Chrome bug: http://stackoverflow.com/q/5971710/298479
+                Message.closeNotifications();
+            },
+            'ctrl+f5': function() {
+                // Chrome bug: http://stackoverflow.com/q/5971710/298479
+                Message.closeNotifications();
+            },
+            'ctrl+r': function() {
+                // Chrome bug: http://stackoverflow.com/q/5971710/298479
+                Message.closeNotifications();
             },
             'up': function(e) {
                 e.preventDefault();
