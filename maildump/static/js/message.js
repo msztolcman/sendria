@@ -57,15 +57,8 @@
         },
         del: function() {
             delete messages[this.id];
+            this.selectSibling();
             if (this._dom) {
-                if(this._dom.hasClass('selected')) {
-                    this.deselect();
-                    var sibling = this._dom.nextAll(':visible').first();
-                    if(!sibling.length) {
-                        sibling = this._dom.prevAll(':visible').first();
-                    }
-                    sibling.trigger('click');
-                }
                 this._dom.remove();
                 delete this._dom;
             }
@@ -77,13 +70,25 @@
             }
             this._deleted = true;
             this.dom().addClass('deleted');
+            this.selectSibling();
             restCall('DELETE', '/messages/' + this.id).fail(function() {
-                this._deleted = false;
+                self._deleted = false;
                 self.dom().removeClass('deleted');
             });
         },
         selected: function() {
             return $('#messages > .selected').data('messageId') == this.id;
+        },
+        selectSibling: function() {
+            if (!this._dom || !this.selected()) {
+                return;
+            }
+            this.deselect();
+            var sibling = this._dom.nextAll(':visible:not(.deleted)').first();
+            if (!sibling.length) {
+                sibling = this._dom.prevAll(':visible:not(.deleted)').first();
+            }
+            sibling.trigger('click');
         },
         select: function() {
             if (!this._dom) {
