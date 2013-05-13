@@ -8,7 +8,9 @@
     });
 
     Handlebars.registerHelper('date', function(context, opts) {
-        return moment(context).format(opts.hash.format || 'YYYY-MM-DD HH:mm:ss');
+        var ts = moment(context);
+        ts.add('minutes', -ts.zone());
+        return ts.format(opts.hash.format || 'YYYY-MM-DD HH:mm:ss');
     });
 
     function loadTemplates() {
