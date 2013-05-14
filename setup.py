@@ -28,7 +28,7 @@ with open('README.rst') as f:
 setup(
     name='maildump',
     version='0.1',
-    description='A SMTP server that makes all received mails via a web interface and REST API.',
+    description='An SMTP server that makes all received mails via a web interface and REST API.',
     long_description=readme,
     url='https://github.com/ThiefMaster/maildump',
     download_url='https://github.com/ThiefMaster/maildump',
