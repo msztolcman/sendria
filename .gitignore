@@ -3,6 +3,7 @@
 *.pid
 /.idea/
 /*.egg-info/
+/dist/
 /env/
 /maildump/static/assets/
 /maildump/static/.webassets-cache/
