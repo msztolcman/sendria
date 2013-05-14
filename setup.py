@@ -19,10 +19,10 @@ setup(
     license='MIT',
     zip_safe=False,
     include_package_data=True,
-    packages=('maildump',),
+    packages=('maildump', 'maildump_runner'),
     entry_points={
         'console_scripts': [
-            'maildump = maildump.__main__',
+            'maildump = maildump_runner.__main__:main',
         ],
     },
     install_requires=requirements
