@@ -13,6 +13,11 @@ class build_py_with_assets(build_py):
         build_py.run(self)
 
     def _build_assets(self):
+        asset_dir = 'maildump/static/assets'
+        # Lame check if we have prebuilt assets. If we do so we are probably installing from a pypi package which
+        # means that webassets might not be installed yet and thus we cannot build the assets now...
+        if os.path.exists(asset_dir) and os.listdir(asset_dir):
+            return
         args = ['webassets', '-m', 'maildump.web', 'build']
         with open(os.devnull, 'w') as devnull:
             subprocess.check_call(args, stderr=devnull)
