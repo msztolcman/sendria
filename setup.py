@@ -21,7 +21,7 @@ class build_py_with_assets(build_py):
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
-with open('README.md') as f:
+with open('README.rst') as f:
     readme = f.read()
 
 
