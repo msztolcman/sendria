@@ -44,5 +44,19 @@ setup(
         ],
     },
     install_requires=requirements,
-    cmdclass={'build_py': build_py_with_assets}
+    cmdclass={'build_py': build_py_with_assets},
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
+        'Environment :: No Input/Output (Daemon)'
+        'Environment :: Web Environment',
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: MIT License',
+        'Topic :: Communications :: Email',
+        'Topic :: Software Development',
+        'Topic :: System :: Networking',
+        'Topic :: Utilities'
+    ]
 )
