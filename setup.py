@@ -49,7 +49,7 @@ setup(
         'Development Status :: 4 - Beta',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
-        'Environment :: No Input/Output (Daemon)'
+        'Environment :: No Input/Output (Daemon)',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
