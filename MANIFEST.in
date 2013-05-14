@@ -1,4 +1,2 @@
 graft maildump/templates
 graft maildump/static
-prune maildump/static/assets
-prune maildump/static/.webassets-cache

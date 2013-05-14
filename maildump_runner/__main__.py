@@ -3,6 +3,7 @@
 import argparse
 import lockfile
 import os
+import pkgutil
 import signal
 import sys
 from daemon.pidfile import TimeoutPIDLockFile
@@ -35,6 +36,8 @@ def main():
     parser.add_argument('--db', help='SQLite database - in-memory if missing')
     parser.add_argument('-f', '--foreground', help='Run in the foreground', action='store_true')
     parser.add_argument('-d', '--debug', help='Run the web app in debug mode', action='store_true')
+    parser.add_argument('-a', '--autobuild-assets', help='Automatically rebuild assets if necessary',
+                        action='store_true')
     parser.add_argument('-p', '--pidfile', help='Create a PID file')
     parser.add_argument('--stop', help='Sends SIGTERM to the running daemon (needs --pidfile)', action='store_true')
     args = parser.parse_args()
@@ -55,6 +58,12 @@ def main():
             print 'Could not send SIGTERM: {}'.format(e)
             sys.exit(1)
         sys.exit(0)
+
+    # Check if the static folder is writable
+    asset_folder = os.path.join(pkgutil.get_loader('maildump').filename, 'static')
+    if args.autobuild_assets and not os.access(asset_folder, os.W_OK):
+        print 'Autobuilding assets requires write access to {}'.format(asset_folder)
+        sys.exit(1)
 
     daemon_kw = {'monkey_greenlet_report': False,
                  'signal_map': {signal.SIGTERM: terminate_server,
@@ -98,6 +107,7 @@ def main():
         from maildump.web import assets
 
         assets.debug = app.debug = args.debug
+        assets.auto_build = args.autobuild_assets
         start(args.http_ip, args.http_port, args.smtp_ip, args.smtp_port, args.db)
 
 

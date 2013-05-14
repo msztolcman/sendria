@@ -19,7 +19,9 @@ RE_CID_URL = re.compile(r'url\(\s*(?P<quote>["\']?)(?P<replace>cid:(?P<cid>[^\\\
 app = Flask(__name__)
 app._logger = log = Logger(__name__)
 # Flask-Assets
-assets = Environment(app)
+assets = environment = Environment(app)  # environment is needed for webassets cli build
+assets.debug = True  # yuck! but the commandline script only supports *disabling* debug
+assets.auto_build = False
 assets.config['PYSCSS_STATIC_ROOT'] = os.path.join(os.path.dirname(__file__), 'static')
 assets.config['PYSCSS_STATIC_URL'] = '/static'
 assets.config['PYSCSS_DEBUG_INFO'] = False
