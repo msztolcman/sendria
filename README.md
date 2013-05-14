@@ -22,6 +22,8 @@ If whoever reads this feels like creating a new layout that looks as good or eve
 request. I'd actually prefer a layout that differs from MailCatcher at least a little bit but I'm somewhat bad at
 creating layouts!
 
+The icon was created by [Tobia Crivellari][icon-designer] and can be downloaded [for free][icon-link].
+
 ## License
 
 Copyright © 2013 Adrian Mönnich (adrian@planetcoding.net). Released under the MIT License, see [LICENSE][license] for details.
@@ -29,3 +31,5 @@ Copyright © 2013 Adrian Mönnich (adrian@planetcoding.net). Released under the 
 
   [mailcatcher]: https://github.com/sj26/mailcatcher/blob/master/README.md
   [license]: https://github.com/ThiefMaster/maildump/blob/master/LICENSE
+  [icon-designer]: http://dribbble.com/TobiaCrivellari
+  [icon-link]: http://dribbble.com/shots/751332-Inbox-Mail-Icon-Free-Icon

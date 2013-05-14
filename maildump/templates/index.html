@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='images/icon_16x16.png') }}">
     <title>MailDump</title>
     <script>
         window.WEB_SOCKET_SWF_LOCATION = {{ url_for('static', filename='WebSocketMain.swf')|tojson|safe }};
