@@ -34,11 +34,12 @@ def main():
     parser.add_argument('--http-ip', default='127.0.0.1')
     parser.add_argument('--http-port', default=1080, type=int)
     parser.add_argument('--db', help='SQLite database - in-memory if missing')
-    parser.add_argument('-f', '--foreground', help='Run in the foreground', action='store_true')
+    parser.add_argument('-f', '--foreground', help='Run in the foreground (default if no pid file is specified)',
+                        action='store_true')
     parser.add_argument('-d', '--debug', help='Run the web app in debug mode', action='store_true')
     parser.add_argument('-a', '--autobuild-assets', help='Automatically rebuild assets if necessary',
                         action='store_true')
-    parser.add_argument('-p', '--pidfile', help='Create a PID file')
+    parser.add_argument('-p', '--pidfile', help='Use a PID file')
     parser.add_argument('--stop', help='Sends SIGTERM to the running daemon (needs --pidfile)', action='store_true')
     args = parser.parse_args()
 
@@ -58,6 +59,11 @@ def main():
             print 'Could not send SIGTERM: {0}'.format(e)
             sys.exit(1)
         sys.exit(0)
+
+    # Default to foreground mode if no pid file is specified
+    if not args.pidfile and not args.foreground:
+        print 'No PID file specified; runnning in foreground'
+        args.foreground = True
 
     # Check if the static folder is writable
     asset_folder = os.path.join(pkgutil.get_loader('maildump').filename, 'static')
