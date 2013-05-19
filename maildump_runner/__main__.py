@@ -50,19 +50,19 @@ def main():
         try:
             pid = read_pidfile(args.pidfile)
         except ValueError, e:
-            print 'Could not read PID file: {}'.format(e)
+            print 'Could not read PID file: {0}'.format(e)
             sys.exit(1)
         try:
             os.kill(pid, signal.SIGTERM)
         except OSError, e:
-            print 'Could not send SIGTERM: {}'.format(e)
+            print 'Could not send SIGTERM: {0}'.format(e)
             sys.exit(1)
         sys.exit(0)
 
     # Check if the static folder is writable
     asset_folder = os.path.join(pkgutil.get_loader('maildump').filename, 'static')
     if args.autobuild_assets and not os.access(asset_folder, os.W_OK):
-        print 'Autobuilding assets requires write access to {}'.format(asset_folder)
+        print 'Autobuilding assets requires write access to {0}'.format(asset_folder)
         sys.exit(1)
 
     daemon_kw = {'monkey_greenlet_report': False,
@@ -94,7 +94,7 @@ def main():
     try:
         context.open()
     except lockfile.LockTimeout:
-        print 'Could not acquire lock on pid file {}'.format(pidfile)
+        print 'Could not acquire lock on pid file {0}'.format(pidfile)
         print 'Check if the daemon is already running.'
         sys.exit(1)
     except KeyboardInterrupt:

@@ -13,7 +13,7 @@ _conn = None
 def connect(db=None):
     global _conn
     db = db or ':memory:'
-    log.info('Using database {}'.format(db))
+    log.info('Using database {0}'.format(db))
     _conn = sqlite3.connect(db, detect_types=sqlite3.PARSE_DECLTYPES)
     _conn.row_factory = sqlite3.Row
     _conn.text_factory = str
@@ -83,7 +83,7 @@ def add_message(sender, recipients, body, message):
         _add_message_part(message_id, cid, part)
     _conn.commit()
     cur.close()
-    log.debug('Stored message {} (parts={})'.format(message_id, len(parts)))
+    log.debug('Stored message {0} (parts={1})'.format(message_id, len(parts)))
     broadcast('add_message', message_id)
     return message_id
 
@@ -114,7 +114,7 @@ def _get_message_cols(lightweight):
 
 def get_message(message_id, lightweight=False):
     cols = _get_message_cols(lightweight)
-    row = _conn.execute('SELECT {} FROM message WHERE id = ?'.format(cols), (message_id,)).fetchone()
+    row = _conn.execute('SELECT {0} FROM message WHERE id = ?'.format(cols), (message_id,)).fetchone()
     if not row:
         return None
     row = dict(row)
@@ -145,7 +145,7 @@ def _get_message_part_types(message_id, types):
             message_part
         WHERE
             message_id = ? AND
-            type IN ({}) AND
+            type IN ({0}) AND
             is_attachment = 0
         LIMIT
             1
@@ -174,7 +174,7 @@ def _message_has_types(message_id, types):
         WHERE
             message_id = ? AND
             is_attachment = 0 AND
-            type IN ({})
+            type IN ({0})
         LIMIT
             1
     """.format(','.join('?' * len(types)))
@@ -192,7 +192,7 @@ def message_has_plain(message_id):
 
 def get_messages(lightweight=False):
     cols = _get_message_cols(lightweight)
-    rows = map(dict, _conn.execute('SELECT {} FROM message ORDER BY created_at ASC'.format(cols)).fetchall())
+    rows = map(dict, _conn.execute('SELECT {0} FROM message ORDER BY created_at ASC'.format(cols)).fetchall())
     for row in rows:
         row['recipients'] = json.loads(row['recipients'])
     return rows
@@ -202,7 +202,7 @@ def delete_message(message_id):
     _conn.execute('DELETE FROM message WHERE id = ?', (message_id,))
     _conn.execute('DELETE FROM message_part WHERE message_id = ?', (message_id,))
     _conn.commit()
-    log.debug('Deleted message {}'.format(message_id))
+    log.debug('Deleted message {0}'.format(message_id))
     broadcast('delete_message', message_id)
 
 

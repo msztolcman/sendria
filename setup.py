@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import sys
 from setuptools import setup
 from setuptools.command.build_py import build_py
 
@@ -29,6 +30,8 @@ with open('requirements.txt') as f:
 with open('README.rst') as f:
     readme = f.read()
 
+if sys.version_info[:2] < (2, 7):
+    requirements.append('argparse')
 
 setup(
     name='maildump',
@@ -53,6 +56,7 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Environment :: No Input/Output (Daemon)',
         'Environment :: Web Environment',
