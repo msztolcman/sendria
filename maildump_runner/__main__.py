@@ -65,6 +65,11 @@ def main():
         print 'No PID file specified; runnning in foreground'
         args.foreground = True
 
+    # Warn about relative db path and absolutize it
+    if args.db and not os.path.isabs(args.db):
+        args.db = os.path.abspath(args.db)
+        print 'Database path is relative, using {0}'.format(args.db)
+
     # Check if the static folder is writable
     asset_folder = os.path.join(pkgutil.get_loader('maildump').filename, 'static')
     if args.autobuild_assets and not os.access(asset_folder, os.W_OK):
