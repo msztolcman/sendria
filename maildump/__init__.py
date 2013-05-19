@@ -18,12 +18,12 @@ socketio_server = None
 def start(http_host, http_port, smtp_host, smtp_port, db_path=None):
     global socketio_server
     # Webserver
-    log.debug('Starting web server')
+    log.info('Starting web server on http://{0}:{1}'.format(http_host, http_port))
     socketio_server = SocketIOServer((http_host, http_port), app,
                                      log='default' if app.debug else None)
     socketio_server.start()
     # SMTP server
-    log.debug('Starting smtp server')
+    log.info('Starting smtp server on {0}:{1}'.format(smtp_host, smtp_port))
     SMTPServer((smtp_host, smtp_port), smtp_handler)
     gevent.spawn(asyncore.loop)
     # Database
