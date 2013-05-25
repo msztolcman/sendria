@@ -145,18 +145,15 @@
             return deferred.promise();
         },
         showNotification: function() {
-            var self = this;
             var msg = 'From ' + this.sender + '\xa0 to \xa0' + this.recipients.join(', ');
-            this._notification = webkitNotifications.createNotification('/static/images/icon_80x80.png', this.subject, msg);
-            this._notification.show();
-            window.setTimeout(function() {
-                self.closeNotification();
+            this._closeNotification = NotificationUtil.show(this.subject, msg, {
+                icon: '/static/images/icon_80x80.png'
             }, 10000);
         },
         closeNotification: function() {
-            if (this._notification) {
-                this._notification.cancel();
-                delete this._notification;
+            if (this._closeNotification) {
+                this._closeNotification();
+                delete this._closeNotification;
             }
         }
     };

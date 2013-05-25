@@ -46,31 +46,32 @@
             restCall('DELETE', '/messages/');
         });
 
-        if (window.webkitNotifications) {
+        if (NotificationUtil.available) {
             var notificationButton = $('nav.app .notifications a');
 
             var updateNotificationButton = function updateNotificationButton() {
-                var enabled = $.jStorage.get('webkitNotifications') && webkitNotifications.checkPermission() == 0;
+                var enabled = $.jStorage.get('notifications') && NotificationUtil.checkPermission();
                 notificationButton.text(enabled ? 'Disable notifications' : 'Enable notifications');
             };
 
             notificationButton.parent().show();
             notificationButton.on('click', function(e) {
                 e.preventDefault();
-                switch (webkitNotifications.checkPermission()) {
-                    case 2:
+                switch (NotificationUtil.checkPermission()) {
+                    case false: // denied
                         alert('You need to allow notifications via site permissions.');
                         return;
-                    case 1:
-                        webkitNotifications.requestPermission(function() {
-                            $.jStorage.set('webkitNotifications', webkitNotifications.checkPermission() == 0);
+                    case true: // allowed
+                        $.jStorage.set('notifications', !$.jStorage.get('notifications'));
+                        updateNotificationButton();
+                        break;
+                    default: // not specified (prompt user)
+                        NotificationUtil.requestPermission(function(perm) {
+                            $.jStorage.set('notifications', !!perm);
                             updateNotificationButton();
                         });
                         break;
-                    case 0:
-                        $.jStorage.set('webkitNotifications', !$.jStorage.get('webkitNotifications'));
-                        updateNotificationButton();
-                        break;
+
                 }
             });
             updateNotificationButton();
@@ -145,7 +146,7 @@
             $('#loading-dialog').dialog('close');
             $('#disconnected-dialog').dialog('open');
         }).on('add_message', function(id) {
-            Message.load(id, $.jStorage.get('webkitNotifications'));
+            Message.load(id, $.jStorage.get('notifications'));
         }).on('delete_message', function(id) {
             var msg = Message.get(id);
             if(msg) {

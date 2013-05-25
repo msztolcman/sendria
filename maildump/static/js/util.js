@@ -105,3 +105,63 @@
         });
     };
 })(jQuery, window);
+
+
+// Notifications
+(function($, global) {
+    'use strict';
+
+    var permissionMap = {
+        // mozilla / standard
+        'granted': true,
+        'default': undefined,
+        'denied': false,
+        // old webkit
+        0: true,
+        1: undefined,
+        2: false
+    };
+
+    function show(title, text, opts, timeout) {
+        opts = $.extend({}, opts || {});
+        opts.body = text;
+        var notification = new Notification(title, opts);
+        if (timeout) {
+            window.setTimeout(function() {
+                notification.close();
+            }, timeout);
+        }
+        return function() {
+            notification.close();
+        };
+    }
+
+    function checkPermission() {
+        var perm = Notification.permission;
+        // yay for webkit not having this option: http://code.google.com/p/chromium/issues/detail?id=244030
+        if (perm === undefined && window.webkitNotifications) {
+            perm = window.webkitNotifications.checkPermission();
+        }
+        return permissionMap[perm];
+    }
+
+    function requestPermission(callback) {
+        Notification.requestPermission(function(response) {
+            callback(permissionMap[response]);
+        });
+    }
+
+    if (window.Notification) {
+        global.NotificationUtil = {
+            available: true,
+            show: show,
+            checkPermission: checkPermission,
+            requestPermission: requestPermission
+        };
+    }
+    else {
+        global.NotificationUtil = {
+            available: false
+        };
+    }
+})(jQuery, window);
