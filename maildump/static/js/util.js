@@ -72,11 +72,11 @@
         this.aborted = $.Deferred();
     };
     Aborter.prototype = {
-        abort: function() {
+        abort: function abort() {
             this.aborted.reject();
             this.aborted = $.Deferred();
         },
-        watch: function(deferred) {
+        watch: function watch(deferred) {
             // We need to create a new deferred in case someone passed us a promise object
             var newDeferred = $.Deferred();
             // Forward original deferred's events
@@ -85,7 +85,7 @@
             }, function() {
                 newDeferred.rejectWith(this, Array.prototype.slice.call(arguments));
             });
-            // Add out own event to reject in case of abortion
+            // Add our own event to reject in case of abortion
             this.aborted.fail(function() {
                 newDeferred.rejectWith(this, Array.prototype.slice.call(arguments));
             });
