@@ -1,13 +1,17 @@
 import json
+import pytz
 from datetime import datetime
 from flask import current_app
 from functools import wraps
 from webassets.filter.cssprefixer import CSSPrefixer as _CSSPrefixer
 
 
+UTC = pytz.timezone('UTC')
+
+
 def _json_default(obj):
     if isinstance(obj, datetime):
-        return obj.isoformat()
+        return UTC.localize(obj).isoformat()
     raise TypeError(repr(obj) + ' is not JSON serializable')
 
 

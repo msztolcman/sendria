@@ -16,5 +16,6 @@ html5lib==0.95
 lockfile==0.9.1
 pyScss==1.1.5
 python-daemon==1.6
+pytz==2013b
 webassets==0.8
 wsgiref==0.1.2
