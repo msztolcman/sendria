@@ -2,12 +2,15 @@
 
 import argparse
 import lockfile
+import logbook
 import os
 import pkgutil
 import signal
 import sys
 from daemon.pidfile import TimeoutPIDLockFile
 from geventdaemon import GeventDaemonContext
+from logbook import NullHandler
+from logbook.more import ColorizedStderrHandler
 
 
 def read_pidfile(path):
@@ -119,7 +122,15 @@ def main():
 
         assets.debug = app.debug = args.debug
         assets.auto_build = args.autobuild_assets
-        start(args.http_ip, args.http_port, args.smtp_ip, args.smtp_port, args.db)
+
+        level = logbook.DEBUG if args.debug else logbook.INFO
+        format_string = (
+            u'[{record.time:%Y-%m-%d %H:%M:%S}]  {record.level_name:<8}  {record.channel}: {record.message}'
+        )
+        stderr_handler = ColorizedStderrHandler(level=level, format_string=format_string)
+        with NullHandler().applicationbound():
+            with stderr_handler.applicationbound():
+                start(args.http_ip, args.http_port, args.smtp_ip, args.smtp_port, args.db)
 
 
 if __name__ == '__main__':

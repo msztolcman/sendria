@@ -52,7 +52,7 @@ def home():
 @app.route('/', methods=('DELETE',))
 @rest
 def terminate():
-    log.debug('Terminate request received')
+    log.info('Terminate request received')
     maildump.stop()
 
 
