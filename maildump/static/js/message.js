@@ -97,6 +97,7 @@
                 console.error('Cannot select message that has not been rendered.');
             }
             var row = this.dom();
+            this.closeNotification();
             $('#message').removeClass('no-message').addClass('loading-message');
             $('#messages > tr.selected').removeClass('selected');
             row.addClass('selected');
