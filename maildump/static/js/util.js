@@ -121,10 +121,13 @@
         2: false
     };
 
-    function show(title, text, opts, timeout) {
+    function show(title, text, opts, timeout, onclick) {
         opts = $.extend({}, opts || {});
         opts.body = text;
         var notification = new Notification(title, opts);
+        if (onclick) {
+            notification.onclick = onclick;
+        }
         if (timeout) {
             window.setTimeout(function() {
                 notification.close();
