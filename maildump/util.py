@@ -1,4 +1,5 @@
 import json
+import pkg_resources
 import pytz
 from datetime import datetime
 from flask import current_app
@@ -56,6 +57,13 @@ def rest(f):
         return response
 
     return wrapper
+
+
+def get_version():
+    try:
+        return 'v' + pkg_resources.get_distribution('maildump').version
+    except pkg_resources.DistributionNotFound:
+        return 'dev'
 
 
 class CSSPrefixer(_CSSPrefixer):

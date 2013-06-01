@@ -1,6 +1,5 @@
 import bs4
 import os
-import pkg_resources
 import re
 from cStringIO import StringIO
 from flask import Flask, render_template, request, url_for, send_file, abort
@@ -9,7 +8,7 @@ from logbook import Logger
 
 import maildump
 import maildump.db as db
-from maildump.util import rest, bool_arg, CSSPrefixer
+from maildump.util import rest, bool_arg, CSSPrefixer, get_version
 from maildump.web_realtime import handle_socketio_request
 
 
@@ -42,11 +41,7 @@ app.add_url_rule('/socket.io/<path:remaining>', view_func=handle_socketio_reques
 
 @app.route('/')
 def home():
-    try:
-        version = pkg_resources.get_distribution('maildump').version
-    except pkg_resources.DistributionNotFound:
-        version = 'dev'
-    return render_template('index.html', version=version)
+    return render_template('index.html', version=get_version())
 
 
 @app.route('/', methods=('DELETE',))

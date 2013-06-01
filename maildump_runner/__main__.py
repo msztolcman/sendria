@@ -37,6 +37,7 @@ def main():
     parser.add_argument('--http-ip', default='127.0.0.1', metavar='IP', help='HTTP ip (default: 127.0.0.1)')
     parser.add_argument('--http-port', default=1080, type=int, metavar='PORT', help='HTTP port (deault: 1080)')
     parser.add_argument('--db', metavar='PATH', help='SQLite database - in-memory if missing')
+    parser.add_argument('-v', '--version', help='Display the version and exit', action='store_true')
     parser.add_argument('-f', '--foreground', help='Run in the foreground (default if no pid file is specified)',
                         action='store_true')
     parser.add_argument('-d', '--debug', help='Run the web app in debug mode', action='store_true')
@@ -47,6 +48,11 @@ def main():
     parser.add_argument('-p', '--pidfile', help='Use a PID file')
     parser.add_argument('--stop', help='Sends SIGTERM to the running daemon (needs --pidfile)', action='store_true')
     args = parser.parse_args()
+
+    if args.version:
+        from maildump.util import get_version
+        print 'MailDump {0}'.format(get_version())
+        sys.exit(0)
 
     # Do we just want to stop a runnign daemon?
     if args.stop:
