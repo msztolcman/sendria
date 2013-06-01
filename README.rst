@@ -13,13 +13,6 @@ Features
 Since the goal of this project is to have the same features as
 MailCatcher I suggest you to read its readme instead.
 
-Warning
--------
-
-This is still under heavy development. If you install it don't complain
-if something doesn't work. But please do let me know or send a pull
-request!
-
 Credits
 -------
 
