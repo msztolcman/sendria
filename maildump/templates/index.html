@@ -30,9 +30,11 @@
                 <li class="clear">
                     <a href="#" title="Delete all messages">Clear</a>
                 </li>
-                <li class="quit">
-                    <a href="#" title="Terminate MailDump">Quit</a>
-                </li>
+                {% if not config.MAILDUMP_NO_QUIT %}
+                    <li class="quit">
+                        <a href="#" title="Terminate MailDump">Quit</a>
+                    </li>
+                {% endif %}
             </ul>
         </nav>
     </header>

@@ -42,6 +42,8 @@ def main():
     parser.add_argument('-d', '--debug', help='Run the web app in debug mode', action='store_true')
     parser.add_argument('-a', '--autobuild-assets', help='Automatically rebuild assets if necessary',
                         action='store_true')
+    parser.add_argument('-n', '--no-quit', help='Do not allow clients to terminate the application',
+                        action='store_true')
     parser.add_argument('-p', '--pidfile', help='Use a PID file')
     parser.add_argument('--stop', help='Sends SIGTERM to the running daemon (needs --pidfile)', action='store_true')
     args = parser.parse_args()
@@ -122,6 +124,7 @@ def main():
 
         assets.debug = app.debug = args.debug
         assets.auto_build = args.autobuild_assets
+        app.config['MAILDUMP_NO_QUIT'] = args.no_quit
 
         level = logbook.DEBUG if args.debug else logbook.INFO
         format_string = (

@@ -3,7 +3,7 @@ import os
 import pkg_resources
 import re
 from cStringIO import StringIO
-from flask import Flask, render_template, request, url_for, send_file
+from flask import Flask, render_template, request, url_for, send_file, abort
 from flask.ext.assets import Environment, Bundle
 from logbook import Logger
 
@@ -52,6 +52,8 @@ def home():
 @app.route('/', methods=('DELETE',))
 @rest
 def terminate():
+    if app.config['MAILDUMP_NO_QUIT']:
+        abort(403)
     log.info('Terminate request received')
     maildump.stop()
 
