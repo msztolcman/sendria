@@ -104,7 +104,7 @@ def main():
         if os.path.exists(pidfile):
             pid = read_pidfile(pidfile)
             if not os.path.exists(os.path.join('/proc', str(pid))):
-                print 'Deleting obsolete PID file (process %d does not exist)'.format(pid)
+                print 'Deleting obsolete PID file (process {0} does not exist)'.format(pid)
                 os.unlink(pidfile)
         daemon_kw['pidfile'] = TimeoutPIDLockFile(pidfile, 5)
 
