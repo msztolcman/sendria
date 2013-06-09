@@ -26,14 +26,12 @@ class GeventDaemonContext(daemon.DaemonContext):
     If the daemon context forks. It calls gevent.reinit().
     """
 
-    def __init__(self, monkey_greenlet_report=True,
-            monkey=True, gevent_hub=None, signal_map=None, **daemon_options):
+    def __init__(self, monkey_greenlet_report=True, monkey=True, gevent_hub=None, signal_map=None, **daemon_options):
         self.gevent_signal_map = signal_map
         self.monkey = monkey
         self.monkey_greenlet_report = monkey_greenlet_report
         self.gevent_hub = gevent_hub
-        super(GeventDaemonContext, self).__init__(
-                signal_map={}, **daemon_options)
+        super(GeventDaemonContext, self).__init__(signal_map={}, **daemon_options)
 
     def open(self):
         super(GeventDaemonContext, self).open()
@@ -60,8 +58,7 @@ class GeventDaemonContext(daemon.DaemonContext):
 
             def print_exception(self, context, type, value, tb):
                 try:
-                    logging.error("Error in greenlet: %s" % str(context),
-                            exc_info=(type, value, tb))
+                    logging.error("Error in greenlet: %s" % str(context), exc_info=(type, value, tb))
                 finally:
                     return original_report(self, context, type, value, tb)
 
@@ -75,14 +72,12 @@ class GeventDaemonContext(daemon.DaemonContext):
 
         for sig, target in self.gevent_signal_map.items():
             if target is None:
-                raise ValueError(
-                        'invalid handler argument for signal %s', str(sig))
+                raise ValueError('invalid handler argument for signal %s', str(sig))
             tocall = target
             args = [sig, None]
             if isinstance(target, list):
                 if not target:
-                    raise ValueError(
-                            'handler list is empty for signal %s', str(sig))
+                    raise ValueError('handler list is empty for signal %s', str(sig))
                 tocall = target[0]
                 args = target[1:]
             elif isinstance(target, basestring):
@@ -90,5 +85,3 @@ class GeventDaemonContext(daemon.DaemonContext):
                 tocall = getattr(self, target)
 
             gevent.signal(sig, tocall, *args)
-
-
