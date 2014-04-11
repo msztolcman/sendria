@@ -11,6 +11,7 @@ from daemon.pidfile import TimeoutPIDLockFile
 from geventdaemon import GeventDaemonContext
 from logbook import NullHandler
 from logbook.more import ColorizedStderrHandler
+from passlib.apache import HtpasswdFile
 
 
 def read_pidfile(path):
@@ -37,6 +38,7 @@ def main():
     parser.add_argument('--http-ip', default='127.0.0.1', metavar='IP', help='HTTP ip (default: 127.0.0.1)')
     parser.add_argument('--http-port', default=1080, type=int, metavar='PORT', help='HTTP port (deault: 1080)')
     parser.add_argument('--db', metavar='PATH', help='SQLite database - in-memory if missing')
+    parser.add_argument('--htpasswd', metavar='HTPASSWD', help='Apache-style htpasswd file')
     parser.add_argument('-v', '--version', help='Display the version and exit', action='store_true')
     parser.add_argument('-f', '--foreground', help='Run in the foreground (default if no pid file is specified)',
                         action='store_true')
@@ -76,10 +78,18 @@ def main():
         print 'No PID file specified; runnning in foreground'
         args.foreground = True
 
-    # Warn about relative db path and absolutize it
+    # Warn about relative paths and absolutize them
     if args.db and not os.path.isabs(args.db):
         args.db = os.path.abspath(args.db)
         print 'Database path is relative, using {0}'.format(args.db)
+    if args.htpasswd and not os.path.isabs(args.htpasswd):
+        args.htpasswd = os.path.abspath(args.htpasswd)
+        print 'Htpasswd path is relative, using {0}'.format(args.htpasswd)
+
+    # Check if the password file is valid
+    if args.htpasswd and not os.path.isfile(args.htpasswd):
+        print 'Htpasswd file does not exist'
+        sys.exit(1)
 
     # Check if the static folder is writable
     asset_folder = os.path.join(pkgutil.get_loader('maildump').filename, 'static')
@@ -130,6 +140,7 @@ def main():
 
         assets.debug = app.debug = args.debug
         assets.auto_build = args.autobuild_assets
+        app.config['MAILDUMP_HTPASSWD'] = HtpasswdFile(args.htpasswd) if args.htpasswd else None
         app.config['MAILDUMP_NO_QUIT'] = args.no_quit
 
         level = logbook.DEBUG if args.debug else logbook.INFO

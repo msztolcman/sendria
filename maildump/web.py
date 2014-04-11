@@ -39,6 +39,21 @@ assets.register('css_all', css)
 app.add_url_rule('/socket.io/<path:remaining>', view_func=handle_socketio_request)
 
 
+@app.before_request
+def check_auth():
+    htpasswd = app.config['MAILDUMP_HTPASSWD']
+    if htpasswd is None:
+        # Authentication disabled
+        return
+    auth = request.authorization
+    if auth and htpasswd.check_password(auth.username, auth.password):
+        log.debug('Request authenticated ({0})'.format(auth.username))
+        return
+    return app.response_class('This MailDump instance is password-protected.', 401, {
+        'WWW-Authenticate': 'Basic realm="MailDump"'
+    })
+
+
 @app.route('/')
 def home():
     return render_template('index.html', version=get_version())

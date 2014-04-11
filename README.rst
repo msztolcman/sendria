@@ -13,6 +13,12 @@ Features
 Since the goal of this project is to have the same features as
 MailCatcher I suggest you to read its readme instead.
 
+However, there is one unique feature in MailDump: Password protection for
+the web interface. If your MailDump instance is listening on a public IP
+you might not want your whole company to have access to it. Instead you can
+use an Apache-style htpasswd file. I have tested it with SHA-encrypted
+passwords but you can use any encryption supported by `passlib.apache`_.
+
 Credits
 -------
 
@@ -34,6 +40,7 @@ Copyright © 2013 Adrian Mönnich (adrian@planetcoding.net). Released
 under the MIT License, see `LICENSE`_ for details.
 
 .. _MailCatcher: https://github.com/sj26/mailcatcher/blob/master/README.md
+.. _passlib.apache: http://pythonhosted.org/passlib/lib/passlib.apache.html
 .. _Tobia Crivellari: http://dribbble.com/TobiaCrivellari
 .. _downloaded for free: http://dribbble.com/shots/751332-Inbox-Mail-Icon-Free-Icon
 .. _LICENSE: https://github.com/ThiefMaster/maildump/blob/master/LICENSE
