@@ -86,8 +86,8 @@ body {
     }
 
     > nav.messages {
-        height: (6 * (1em + .5em)) + 1px; // header + 5 messages
-        min-height: (2 * (1em + .5em)) + 1px; // header + 1 message
+        height: (6 * (1em + .5em)) + (1px * 1em/12px); // header + 5 messages
+        min-height: (2 * (1em + .5em)) + (1px * 1em/12px); // header + 1 message
         position: relative;
         overflow: auto;
         border-top: 1px solid #fff;
