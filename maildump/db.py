@@ -2,6 +2,7 @@ from logbook import Logger
 import json
 import sqlite3
 import uuid
+from maildump.util import decode_header
 
 from maildump.web_realtime import broadcast
 
@@ -67,9 +68,9 @@ def add_message(sender, recipients, body, message):
     """
 
     cur = _conn.cursor()
-    cur.execute(sql, (sender,
-                      json.dumps(recipients),
-                      message['Subject'],
+    cur.execute(sql, (decode_header(sender),
+                      json.dumps(map(decode_header, recipients)),
+                      decode_header(message['Subject']),
                       body,
                       message.get_content_type(),
                       len(body)))

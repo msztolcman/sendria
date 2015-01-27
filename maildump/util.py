@@ -2,6 +2,7 @@ import json
 import pkg_resources
 import pytz
 from datetime import datetime
+from email.header import decode_header as _decode_header
 from flask import current_app
 from functools import wraps
 from webassets.filter.cssprefixer import CSSPrefixer as _CSSPrefixer
@@ -26,6 +27,10 @@ def jsonify(*args, **kwargs):
 
 def bool_arg(arg):
     return arg in ('yes', 'true', '1')
+
+
+def decode_header(value):
+    return ''.join(unicode(decoded, charset or 'utf-8') for decoded, charset in _decode_header(value)).encode('utf-8')
 
 
 def rest(f):
