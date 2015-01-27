@@ -30,8 +30,7 @@ looks as good or even better feel free to send a pull request. I'd
 actually prefer a layout that differs from MailCatcher at least a little
 bit but I'm somewhat bad at creating layouts!
 
-The icon was created by `Tobia Crivellari`_ and can be `downloaded for
-free`_.
+The icon was created by `Tobia Crivellari`_.
 
 License
 -------
@@ -42,5 +41,4 @@ under the MIT License, see `LICENSE`_ for details.
 .. _MailCatcher: https://github.com/sj26/mailcatcher/blob/master/README.md
 .. _passlib.apache: http://pythonhosted.org/passlib/lib/passlib.apache.html
 .. _Tobia Crivellari: http://dribbble.com/TobiaCrivellari
-.. _downloaded for free: http://dribbble.com/shots/751332-Inbox-Mail-Icon-Free-Icon
 .. _LICENSE: https://github.com/ThiefMaster/maildump/blob/master/LICENSE
