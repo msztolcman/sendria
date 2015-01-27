@@ -36,7 +36,7 @@ free`_.
 License
 -------
 
-Copyright © 2013-2014 Adrian Mönnich (adrian@planetcoding.net). Released
+Copyright © 2013-2015 Adrian Mönnich (adrian@planetcoding.net). Released
 under the MIT License, see `LICENSE`_ for details.
 
 .. _MailCatcher: https://github.com/sj26/mailcatcher/blob/master/README.md
