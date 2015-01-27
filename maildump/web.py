@@ -1,13 +1,14 @@
-import bs4
 import os
 import re
 from cStringIO import StringIO
+
+import bs4
 from flask import Flask, render_template, request, url_for, send_file, abort
 from flask.ext.assets import Environment, Bundle
 from logbook import Logger
 
 import maildump
-import maildump.db as db
+from maildump import db
 from maildump.util import rest, bool_arg, CSSPrefixer, get_version
 from maildump.web_realtime import handle_socketio_request
 

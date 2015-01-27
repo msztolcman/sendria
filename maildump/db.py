@@ -1,9 +1,10 @@
-from logbook import Logger
 import json
 import sqlite3
 import uuid
-from maildump.util import decode_header
 
+from logbook import Logger
+
+from maildump.util import decode_header
 from maildump.web_realtime import broadcast
 
 

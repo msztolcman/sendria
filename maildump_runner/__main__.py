@@ -2,11 +2,12 @@
 
 import argparse
 import lockfile
-import logbook
 import os
 import pkgutil
 import signal
 import sys
+
+import logbook
 from daemon.pidfile import TimeoutPIDLockFile
 from geventdaemon import GeventDaemonContext
 from logbook import NullHandler
