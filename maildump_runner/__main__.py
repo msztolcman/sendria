@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import argparse
 import lockfile
 import os
@@ -19,7 +21,7 @@ def read_pidfile(path):
     try:
         with open(path, 'r') as f:
             return int(f.read())
-    except Exception, e:
+    except Exception as e:
         raise ValueError(e.message)
 
 
@@ -28,7 +30,7 @@ def terminate_server(sig, frame):
 
     if sig == signal.SIGINT and os.isatty(sys.stdout.fileno()):
         # Terminate the line containing ^C
-        print
+        print()
     stop()
 
 
@@ -54,48 +56,48 @@ def main():
 
     if args.version:
         from maildump.util import get_version
-        print 'MailDump {0}'.format(get_version())
+        print('MailDump {0}'.format(get_version()))
         sys.exit(0)
 
     # Do we just want to stop a runnign daemon?
     if args.stop:
         if not args.pidfile or not os.path.exists(args.pidfile):
-            print 'PID file not specified or not found'
+            print('PID file not specified or not found')
             sys.exit(1)
         try:
             pid = read_pidfile(args.pidfile)
-        except ValueError, e:
-            print 'Could not read PID file: {0}'.format(e)
+        except ValueError as e:
+            print('Could not read PID file: {0}'.format(e))
             sys.exit(1)
         try:
             os.kill(pid, signal.SIGTERM)
-        except OSError, e:
-            print 'Could not send SIGTERM: {0}'.format(e)
+        except OSError as e:
+            print('Could not send SIGTERM: {0}'.format(e))
             sys.exit(1)
         sys.exit(0)
 
     # Default to foreground mode if no pid file is specified
     if not args.pidfile and not args.foreground:
-        print 'No PID file specified; runnning in foreground'
+        print('No PID file specified; runnning in foreground')
         args.foreground = True
 
     # Warn about relative paths and absolutize them
     if args.db and not os.path.isabs(args.db):
         args.db = os.path.abspath(args.db)
-        print 'Database path is relative, using {0}'.format(args.db)
+        print('Database path is relative, using {0}'.format(args.db))
     if args.htpasswd and not os.path.isabs(args.htpasswd):
         args.htpasswd = os.path.abspath(args.htpasswd)
-        print 'Htpasswd path is relative, using {0}'.format(args.htpasswd)
+        print('Htpasswd path is relative, using {0}'.format(args.htpasswd))
 
     # Check if the password file is valid
     if args.htpasswd and not os.path.isfile(args.htpasswd):
-        print 'Htpasswd file does not exist'
+        print('Htpasswd file does not exist')
         sys.exit(1)
 
     # Check if the static folder is writable
     asset_folder = os.path.join(pkgutil.get_loader('maildump').filename, 'static')
     if args.autobuild_assets and not os.access(asset_folder, os.W_OK):
-        print 'Autobuilding assets requires write access to {0}'.format(asset_folder)
+        print('Autobuilding assets requires write access to {0}'.format(asset_folder))
         sys.exit(1)
 
     daemon_kw = {'monkey_greenlet_report': False,
@@ -115,7 +117,7 @@ def main():
         if os.path.exists(pidfile):
             pid = read_pidfile(pidfile)
             if not os.path.exists(os.path.join('/proc', str(pid))):
-                print 'Deleting obsolete PID file (process {0} does not exist)'.format(pid)
+                print('Deleting obsolete PID file (process {0} does not exist)'.format(pid))
                 os.unlink(pidfile)
         daemon_kw['pidfile'] = TimeoutPIDLockFile(pidfile, 5)
 
@@ -127,11 +129,11 @@ def main():
     try:
         context.open()
     except lockfile.LockTimeout:
-        print 'Could not acquire lock on pid file {0}'.format(pidfile)
-        print 'Check if the daemon is already running.'
+        print('Could not acquire lock on pid file {0}'.format(pidfile))
+        print('Check if the daemon is already running.')
         sys.exit(1)
     except KeyboardInterrupt:
-        print
+        print()
         sys.exit(1)
 
     with context:
