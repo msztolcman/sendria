@@ -99,6 +99,7 @@ def _add_message_part(message_id, cid, part):
     """
 
     body = part.get_payload(decode=True)
+    body_len = len(body) if body else 0
     _conn.execute(sql, (message_id,
                         cid,
                         part.get_content_type(),
@@ -106,7 +107,7 @@ def _add_message_part(message_id, cid, part):
                         part.get_filename(),
                         part.get_content_charset(),
                         body,
-                        len(body)))
+                        body_len))
 
 
 def _get_message_cols(lightweight):
