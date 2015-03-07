@@ -36,7 +36,7 @@ if sys.version_info[:2] < (2, 7):
 
 setup(
     name='maildump',
-    version='0.4',
+    version='0.5',
     description='An SMTP server that makes all received mails accessible via a web interface and REST API.',
     long_description=readme,
     url='https://github.com/ThiefMaster/maildump',
