@@ -2,6 +2,7 @@ import json
 import pkg_resources
 from datetime import datetime
 from email.header import decode_header as _decode_header
+from email.utils import getaddresses
 from functools import wraps
 
 from pytz import utc
@@ -29,6 +30,11 @@ def bool_arg(arg):
 
 def decode_header(value):
     return ''.join(unicode(decoded, charset or 'utf-8') for decoded, charset in _decode_header(value)).encode('utf-8')
+
+
+def split_addresses(value):
+    return [('{0} <{1}>'.format(name, addr) if name else addr)
+            for name, addr in getaddresses([value])]
 
 
 def rest(f):

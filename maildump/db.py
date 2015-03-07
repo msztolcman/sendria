@@ -4,7 +4,7 @@ import uuid
 
 from logbook import Logger
 
-from maildump.util import decode_header
+from maildump.util import decode_header, split_addresses
 from maildump.web_realtime import broadcast
 
 
@@ -68,9 +68,13 @@ def add_message(sender, recipients, body, message):
             (?, ?, ?, ?, ?, ?, datetime('now'))
     """
 
+    all_recipients = {'to': map(decode_header, recipients),
+                      'cc': split_addresses(decode_header(message['CC'])),
+                      'bcc': split_addresses(decode_header(message['BCC']))}
+
     cur = _conn.cursor()
     cur.execute(sql, (decode_header(sender),
-                      json.dumps(map(decode_header, recipients)),
+                      json.dumps(all_recipients),
                       decode_header(message['Subject']),
                       body,
                       message.get_content_type(),
@@ -115,13 +119,22 @@ def _get_message_cols(lightweight):
     return ','.join(cols)
 
 
+def _parse_recipients(recipients):
+    recipients = json.loads(recipients)
+    if isinstance(recipients, list):
+        # legacy data
+        return {'to': recipients, 'cc': [], 'bcc': []}
+    else:
+        return recipients
+
+
 def get_message(message_id, lightweight=False):
     cols = _get_message_cols(lightweight)
     row = _conn.execute('SELECT {0} FROM message WHERE id = ?'.format(cols), (message_id,)).fetchone()
     if not row:
         return None
     row = dict(row)
-    row['recipients'] = json.loads(row['recipients'])
+    row['recipients'] = _parse_recipients(row['recipients'])
     return row
 
 
@@ -197,7 +210,7 @@ def get_messages(lightweight=False):
     cols = _get_message_cols(lightweight)
     rows = map(dict, _conn.execute('SELECT {0} FROM message ORDER BY created_at ASC'.format(cols)).fetchall())
     for row in rows:
-        row['recipients'] = json.loads(row['recipients'])
+        row['recipients'] = _parse_recipients(row['recipients'])
     return rows
 
 

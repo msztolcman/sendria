@@ -147,7 +147,7 @@
         },
         showNotification: function() {
             var self = this;
-            var msg = 'From ' + this.sender + '\xa0 to \xa0' + this.recipients.join(', ');
+            var msg = 'From ' + this.sender + '\xa0 to \xa0' + this.recipients.to.join(', ');
             this._closeNotification = NotificationUtil.show(this.subject, msg, {
                 icon: '/static/images/icon_80x80.png'
             }, 10000, function() {

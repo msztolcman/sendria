@@ -92,7 +92,7 @@
     <script class="template" data-id="message" type="text/x-handlebars-template">
         <tr data-message-id="{{ id }}">
             <td>{{ sender }}</td>
-            <td>{{ join recipients }}</td>
+            <td>{{ join recipients.to }}</td>
             <td>{{ subject }}</td>
             <td>{{ date created_at }}</td>
         </tr>
@@ -104,7 +104,15 @@
         <dt class="from">From</dt>
         <dd class="from">{{ sender }}</dd>
         <dt class="to">To</dt>
-        <dd class="to">{{ join recipients }}</dd>
+        <dd class="to">{{ join recipients.to }}</dd>
+        {{# if recipients.cc.length }}
+        <dt class="cc">CC</dt>
+        <dd class="cc">{{ join recipients.cc }}</dd>
+        {{/if}}
+        {{# if recipients.bcc.length }}
+        <dt class="bcc">BCC</dt>
+        <dd class="bcc">{{ join recipients.bcc }}</dd>
+        {{/if}}
         <dt class="subject">Subject</dt>
         <dd class="subject">{{ subject }}</dd>
         {{# if attachments.length }}
