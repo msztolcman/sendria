@@ -154,7 +154,7 @@ def get_message_html(message_id):
     part = db.get_message_part_html(message_id)
     if not part:
         return 404, 'part does not exist'
-    soup = bs4.BeautifulSoup(part['body'], 'html5lib')
+    soup = bs4.BeautifulSoup(part['body'].decode('utf-8'), 'html5lib')
     _fix_cid_links(soup, message_id)
     return _part_response(part, str(soup), 'utf-8')
 
