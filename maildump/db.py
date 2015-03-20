@@ -69,9 +69,8 @@ def add_message(sender, recipients, body, message):
     """
 
     all_recipients = {'to': map(decode_header, recipients),
-                      'cc': split_addresses(decode_header(message['CC'])),
-                      'bcc': split_addresses(decode_header(message['BCC']))}
-
+                      'cc': split_addresses(decode_header(message['CC'])) if 'CC' in message else [],
+                      'bcc': split_addresses(decode_header(message['BCC'])) if 'BCC' in message else []}
     cur = _conn.cursor()
     cur.execute(sql, (decode_header(sender),
                       json.dumps(all_recipients),
