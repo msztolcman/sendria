@@ -98,10 +98,14 @@ def _part_url(part):
 
 
 def _part_response(part, body=None, charset=None):
+    charset = charset or part['charset'] or 'utf-8'
+    if charset != 'utf-8':
+        part = dict(part)
+        part['body'] = part['body'].decode(charset).encode('utf-8')
     io = StringIO(part['body'] if body is None else body)
     io.seek(0)
     response = send_file(io, part['type'], part['is_attachment'], part['filename'])
-    response.charset = charset or part['charset'] or 'utf-8'
+    response.charset = charset
     return response
 
 
@@ -154,6 +158,10 @@ def get_message_html(message_id):
     part = db.get_message_part_html(message_id)
     if not part:
         return 404, 'part does not exist'
+    charset = part['charset'] or 'utf-8'
+    if charset != 'utf-8':
+        part = dict(part)
+        part['body'] = part['body'].decode(charset).encode('utf-8')
     soup = bs4.BeautifulSoup(part['body'].decode('utf-8'), 'html5lib')
     _fix_cid_links(soup, message_id)
     return _part_response(part, str(soup), 'utf-8')
