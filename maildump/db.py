@@ -60,6 +60,15 @@ def create_tables():
     """)
 
 
+def iter_message_parts(message):
+    if message.is_multipart():
+        for message in message.get_payload():
+            for part in iter_message_parts(message):
+                yield part
+    else:
+        yield message
+
+
 def add_message(sender, recipients, body, message):
     sql = """
         INSERT INTO message
@@ -80,15 +89,16 @@ def add_message(sender, recipients, body, message):
                       len(body)))
     message_id = cur.lastrowid
     # Store parts (why do we do this for non-multipart at all?!)
-    parts = [message] if not message.is_multipart() else message.get_payload()
-    for part in parts:
+    parts = 0
+    for part in iter_message_parts(message):
         cid = part.get('Content-Id') or str(uuid.uuid4())
         if cid[0] == '<' and cid[-1] == '>':
             cid = cid[1:-1]
         _add_message_part(message_id, cid, part)
+        parts += 1
     _conn.commit()
     cur.close()
-    log.debug('Stored message {0} (parts={1})'.format(message_id, len(parts)))
+    log.debug('Stored message {0} (parts={1})'.format(message_id, parts))
     broadcast('add_message', message_id)
     return message_id
 
