@@ -32,6 +32,10 @@ class GeventDaemonContext(daemon.DaemonContext):
         self.monkey_greenlet_report = monkey_greenlet_report
         self.gevent_hub = gevent_hub
         super(GeventDaemonContext, self).__init__(signal_map={}, **daemon_options)
+        # python-daemon>=2.1 has initgroups=True by default but it requires root privs
+        # older versions don't have the kwarg so we set it manually instead of using
+        # the constructor argument
+        self.initgroups = False
 
     def open(self):
         super(GeventDaemonContext, self).open()
