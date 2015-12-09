@@ -19,6 +19,15 @@ you might not want your whole company to have access to it. Instead you can
 use an Apache-style htpasswd file. I have tested it with SHA-encrypted
 passwords but you can use any encryption supported by `passlib.apache`_.
 
+Usage
+-----
+
+After installing maildump, run ``maildump --help`` for a list of available
+command line arguments.  By default maildump runs its webserver on port
+1080 and its SMTP server on port 1025 (both only available via localhost).
+Unless you specify a database file, received mails are lost when maildump
+terminates.
+
 Credits
 -------
 
