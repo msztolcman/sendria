@@ -5,7 +5,7 @@ beautifulsoup4
 cssmin
 cssprefixer
 cssutils
-gevent
+gevent<1.1
 gevent-socketio
 gevent-websocket
 html5lib
