@@ -4,7 +4,7 @@ from cStringIO import StringIO
 
 import bs4
 from flask import Flask, render_template, request, url_for, send_file, abort
-from flask.ext.assets import Environment, Bundle
+from flask_assets import Environment, Bundle
 from logbook import Logger
 
 import maildump
