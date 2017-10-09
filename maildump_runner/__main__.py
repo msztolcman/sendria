@@ -59,7 +59,7 @@ def main():
         print('MailDump {0}'.format(get_version()))
         sys.exit(0)
 
-    # Do we just want to stop a runnign daemon?
+    # Do we just want to stop a running daemon?
     if args.stop:
         if not args.pidfile or not os.path.exists(args.pidfile):
             print('PID file not specified or not found')
