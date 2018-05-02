@@ -4,6 +4,7 @@
 /.idea/
 /*.egg-info/
 /dist/
+/build/
 /env/
 /env-*/
 /maildump/static/assets/
