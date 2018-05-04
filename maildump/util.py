@@ -50,8 +50,7 @@ def rest(f):
     def wrapper(*args, **kwargs):
         ret = f(*args, **kwargs)
         if ret is None:
-            response = jsonify()
-            response.status_code = 204  # no content
+            response = '', 204
         elif isinstance(ret, current_app.response_class):
             response = ret
         elif isinstance(ret, tuple):
