@@ -8,7 +8,6 @@ from socketio.server import SocketIOServer
 from maildump.db import connect, disconnect, create_tables
 from maildump.smtp import smtp_handler, SMTPServer
 from maildump.web import app
-from maildump.web_realtime import broadcast
 
 
 log = Logger(__name__)
@@ -34,7 +33,7 @@ def start(http_host, http_port, smtp_host, smtp_port, db_path=None):
     try:
         stopper.wait()
     except KeyboardInterrupt:
-        print
+        print()
     else:
         log.debug('Received stop signal')
     # Clean up

@@ -29,7 +29,7 @@ def bool_arg(arg):
 
 
 def decode_header(value):
-    return ''.join(unicode(decoded, charset or 'utf-8') for decoded, charset in _decode_header(value)).encode('utf-8')
+    return ''.join(decoded.encode(charset or 'utf-8') for decoded, charset in _decode_header(value)).encode('utf-8')
 
 
 def split_addresses(value):
