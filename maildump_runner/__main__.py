@@ -37,7 +37,10 @@ def terminate_server(sig, frame):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--smtp-ip', default='127.0.0.1', metavar='IP', help='SMTP ip (default: 127.0.0.1)')
-    parser.add_argument('--smtp-port', default=1025, type=int, metavar='PORT', help='SMTP port (deault: 1025)')
+    parser.add_argument('--smtp-port', default=1025, type=int, metavar='PORT', help='SMTP port (default: 1025)')
+    parser.add_argument('--smtp-auth', action='store_true', help='Enable SMTP authorization')
+    parser.add_argument('--smtp-username', default='maildump', help='SMTP username (default: maildump)')
+    parser.add_argument('--smtp-password', default='maildump', help='SMTP password (deault: maildump)')
     parser.add_argument('--http-ip', default='127.0.0.1', metavar='IP', help='HTTP ip (default: 127.0.0.1)')
     parser.add_argument('--http-port', default=1080, type=int, metavar='PORT', help='HTTP port (deault: 1080)')
     parser.add_argument('--db', metavar='PATH', help='SQLite database - in-memory if missing')
@@ -153,7 +156,7 @@ def main():
         stderr_handler = ColorizedStderrHandler(level=level, format_string=format_string)
         with NullHandler().applicationbound():
             with stderr_handler.applicationbound():
-                start(args.http_ip, args.http_port, args.smtp_ip, args.smtp_port, args.db)
+                start(args.http_ip, args.http_port, args.smtp_ip, args.smtp_port, args.smtp_auth, args.smtp_username, args.smtp_password, args.db)
 
 
 if __name__ == '__main__':
