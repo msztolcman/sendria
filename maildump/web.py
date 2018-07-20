@@ -1,6 +1,6 @@
 import os
 import re
-from cStringIO import StringIO
+from io import StringIO
 
 import bs4
 from flask import Flask, render_template, request, url_for, send_file, abort
@@ -26,19 +26,24 @@ assets.auto_build = False
 assets.config['PYSCSS_STATIC_ROOT'] = os.path.join(os.path.dirname(__file__), 'static')
 assets.config['PYSCSS_STATIC_URL'] = '/static'
 assets.config['PYSCSS_DEBUG_INFO'] = False
+# js = Bundle('js/maildump.js')
+# scss = Bundle('css/maildump.scss')
+# css = Bundle('css/style.css')
+
 js = Bundle('js/lib/jquery.js', 'js/lib/jquery-ui.js', 'js/lib/jquery.hotkeys.js',
             'js/lib/handlebars.js', 'js/lib/moment.js', 'js/lib/socket.io.js', 'js/lib/jstorage.js',
             'js/util.js', 'js/message.js', 'js/maildump.js',
-            filters='rjsmin', output='assets/bundle.%(version)s.js')
+            filters='rjsmin', output='assets/bundle.%(version)s.js', version='1.1.1')
 scss = Bundle('css/maildump.scss',
-              filters='pyscss', output='assets/maildump.%(version)s.css')
+              filters='pyscss', output='assets/maildump.%(version)s.css', version='1.1.1')
 css = Bundle('css/reset.css', 'css/jquery-ui.css', scss,
-             filters=('cssrewrite', CSSPrefixer(), 'cssmin'), output='assets/bundle.%(version)s.css')
+             filters=('cssrewrite', 'cssmin'), output='assets/bundle.%(version)s.css', version='1.1.1')
 assets.register('js_all', js)
 assets.register('css_all', css)
 # Socket.IO
 app.add_url_rule('/socket.io/<path:remaining>', view_func=handle_socketio_request)
-
+print(assets.config['PYSCSS_STATIC_ROOT'])
+print(assets.config['PYSCSS_STATIC_URL'])
 
 @app.before_request
 def check_auth():

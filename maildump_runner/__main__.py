@@ -11,7 +11,7 @@ import sys
 
 import logbook
 from daemon.pidfile import TimeoutPIDLockFile
-from geventdaemon import GeventDaemonContext
+from .geventdaemon import GeventDaemonContext
 from logbook import NullHandler
 from logbook.more import ColorizedStderrHandler
 from passlib.apache import HtpasswdFile
@@ -98,7 +98,10 @@ def main():
         sys.exit(1)
 
     # Check if the static folder is writable
-    asset_folder = os.path.join(pkgutil.get_loader('maildump').filename, 'static')
+    asset_folder = os.path.join(
+        os.path.dirname(pkgutil.get_loader('maildump').get_filename()),
+        'static'
+    )
     if args.autobuild_assets and not os.access(asset_folder, os.W_OK):
         print('Autobuilding assets requires write access to {0}'.format(asset_folder))
         sys.exit(1)

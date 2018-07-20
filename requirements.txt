@@ -5,8 +5,8 @@ beautifulsoup4
 cssmin
 cssprefixer
 cssutils
-gevent<1.1
-gevent-socketio
+gevent
+gevent-socketio-hartwork
 gevent-websocket
 html5lib
 lockfile
