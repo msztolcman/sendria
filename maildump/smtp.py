@@ -54,7 +54,7 @@ class SMTPChannel(smtpd.SMTPChannel, object):
             return
 
         if not arg:
-            self.push('501 Syntax: AUTH TYPE base64(username:password)')
+            self.push('501 Syntax: AUTH TYPE base64(username\\x00username\\x00password)')
             return
 
         if not arg.lower().startswith('plain '):
