@@ -91,11 +91,7 @@ class SMTPServer(smtpd.SMTPServer, object):
 
 
 def smtp_handler(sender, recipients, body):
-    body = str(body)
-    sender = str(sender)
-    recipients = list(map(str, recipients))
-
+    body = body.decode()
     message = Parser().parsestr(body)
-    print(message)
     log.info("Received message from '{0}' ({1} bytes)".format(message['from'] or sender, len(body)))
     add_message(sender, recipients, body, message)
