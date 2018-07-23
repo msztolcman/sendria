@@ -1,6 +1,6 @@
 import os
 import re
-from io import StringIO
+from io import BytesIO
 
 import bs4
 from flask import Flask, render_template, request, url_for, send_file, abort
@@ -42,8 +42,6 @@ assets.register('js_all', js)
 assets.register('css_all', css)
 # Socket.IO
 app.add_url_rule('/socket.io/<path:remaining>', view_func=handle_socketio_request)
-print(assets.config['PYSCSS_STATIC_ROOT'])
-print(assets.config['PYSCSS_STATIC_URL'])
 
 @app.before_request
 def check_auth():
@@ -108,7 +106,9 @@ def _part_response(part, body=None, charset=None):
         body = part['body']
     if charset != 'utf-8':
         body = body.decode(charset).encode('utf-8')
-    io = StringIO(body)
+    if isinstance(body, str):
+        body = body.encode()
+    io = BytesIO(body)
     io.seek(0)
     response = send_file(io, part['type'], part['is_attachment'], part['filename'])
     response.charset = charset
@@ -147,7 +147,7 @@ def _fix_cid_links(soup, message_id):
                                  url_for('get_message_part', message_id=message_id, cid=m.group('cid')))
     # Iterate over all attributes that do not contain CSS and replace cid references
     for tag in (x for x in soup.descendants if isinstance(x, bs4.Tag)):
-        for name, value in tag.attrs.iteritems():
+        for name, value in tag.attrs.items():
             if isinstance(value, list):
                 value = ' '.join(value)
             m = RE_CID.match(value)
@@ -176,7 +176,7 @@ def get_message_source(message_id):
     message = db.get_message(message_id)
     if not message:
         return 404, 'message does not exist'
-    io = StringIO(message['source'])
+    io = BytesIO(message['source'].encode())
     io.seek(0)
     return send_file(io, 'text/plain')
 
@@ -187,7 +187,7 @@ def get_message_eml(message_id):
     message = db.get_message(message_id)
     if not message:
         return 404, 'message does not exist'
-    io = StringIO(message['source'])
+    io = BytesIO(message['source'].encode())
     io.seek(0)
     return send_file(io, 'message/rfc822')
 
