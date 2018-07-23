@@ -128,6 +128,11 @@ def main():
     if 'threading' in sys.modules:
         del sys.modules['threading']
 
+    asset_dir = 'maildump/static/assets'
+    if not args.autobuild_assets and (not os.path.exists(asset_dir) or not os.listdir(asset_dir)):
+        print('Assets not found. Generate assets using webassets -m maildump.web build')
+        sys.exit(0)
+
     context = GeventDaemonContext(**daemon_kw)
     try:
         context.open()
