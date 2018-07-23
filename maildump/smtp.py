@@ -18,6 +18,7 @@ class SMTPChannel(smtpd.SMTPChannel, object):
         self._smtp_auth = server.smtp_auth
         self._smtp_username = server.smtp_username
         self._smtp_password = server.smtp_password
+        self._authorized = False
 
     def smtp_EHLO(self, arg):
         if not arg:
@@ -71,9 +72,35 @@ class SMTPChannel(smtpd.SMTPChannel, object):
         if len(auth_data) == 3 and auth_data[0] == auth_data[1] and \
                 auth_data[1] == self._smtp_username and auth_data[2] == self._smtp_password:
             self.push('235 Authentication successful')
+            self._authorized = True
             return
 
+        self._authorized = False
         self.push('535 5.7.8 Authentication credentials invalid')
+
+    def smtp_VRFY(self, arg):
+        if not self._authorized:
+            self.push('530 5.7.0  Authentication required')
+            return
+        super().smtp_VRFY(arg)
+
+    def smtp_MAIL(self, arg):
+        if not self._authorized:
+            self.push('530 5.7.0  Authentication required')
+            return
+        super().smtp_MAIL(arg)
+
+    def smtp_RCPT(self, arg):
+        if not self._authorized:
+            self.push('530 5.7.0  Authentication required')
+            return
+        super().smtp_RCPT(arg)
+
+    def smtp_DATA(self, arg):
+        if not self._authorized:
+            self.push('530 5.7.0  Authentication required')
+            return
+        super().smtp_DATA(arg)
 
 
 class SMTPServer(smtpd.SMTPServer, object):
