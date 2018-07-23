@@ -21,22 +21,11 @@ class SMTPChannel(smtpd.SMTPChannel, object):
         if not arg:
             self.push('501 Syntax: EHLO hostname')
             return
-        # See issue #21783 for a discussion of this behavior.
-        if self.seen_greeting:
+        if self.__greeting:
             self.push('503 Duplicate HELO/EHLO')
             return
-        self._set_rset_state()
-        self.seen_greeting = arg
-        self.extended_smtp = True
-        self.push('250-%s' % self.fqdn)
-        if self.data_size_limit:
-            self.push('250-SIZE %s' % self.data_size_limit)
-            self.command_size_limits['MAIL'] += 26
-        if not self._decode_data:
-            self.push('250-8BITMIME')
-        if self.enable_SMTPUTF8:
-            self.push('250-SMTPUTF8')
-            self.command_size_limits['MAIL'] += 10
+        self.__greeting = arg
+        self.push('250-%s' % self.__fqdn)
         if self._smtp_auth:
             self.push('250-AUTH PLAIN')
         self.push('250 HELP')
