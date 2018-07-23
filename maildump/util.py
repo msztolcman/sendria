@@ -7,7 +7,6 @@ from functools import wraps
 
 from pytz import utc
 from flask import current_app
-from webassets.filter.cssprefixer import CSSPrefixer as _CSSPrefixer
 
 
 def _json_default(obj):
@@ -75,7 +74,3 @@ def get_version():
         return 'v' + pkg_resources.get_distribution('maildump').version
     except pkg_resources.DistributionNotFound:
         return 'dev'
-
-
-class CSSPrefixer(_CSSPrefixer):
-    max_debug_level = None

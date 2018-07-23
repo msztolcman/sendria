@@ -9,7 +9,7 @@ from logbook import Logger
 
 import maildump
 from maildump import db
-from maildump.util import rest, bool_arg, CSSPrefixer, get_version
+from maildump.util import rest, bool_arg, get_version
 from maildump.web_realtime import handle_socketio_request
 
 
@@ -26,9 +26,6 @@ assets.auto_build = False
 assets.config['PYSCSS_STATIC_ROOT'] = os.path.join(os.path.dirname(__file__), 'static')
 assets.config['PYSCSS_STATIC_URL'] = '/static'
 assets.config['PYSCSS_DEBUG_INFO'] = False
-# js = Bundle('js/maildump.js')
-# scss = Bundle('css/maildump.scss')
-# css = Bundle('css/style.css')
 
 js = Bundle('js/lib/jquery.js', 'js/lib/jquery-ui.js', 'js/lib/jquery.hotkeys.js',
             'js/lib/handlebars.js', 'js/lib/moment.js', 'js/lib/socket.io.js', 'js/lib/jstorage.js',
