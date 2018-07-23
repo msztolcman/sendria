@@ -10,10 +10,10 @@ from maildump.db import add_message
 log = Logger(__name__)
 
 
-class SMTPChannel(smtpd.SMTPChannel, object):
+class SMTPChannel(smtpd.SMTPChannel):
     def __init__(self, server, conn, addr, data_size_limit=smtpd.DATA_SIZE_DEFAULT,
                  map=None, enable_SMTPUTF8=False, decode_data=False):
-        super(SMTPChannel, self).__init__(server, conn, addr, data_size_limit, map, enable_SMTPUTF8, decode_data)
+        super().__init__(server, conn, addr, data_size_limit, map, enable_SMTPUTF8, decode_data)
 
         self._smtp_auth = server.smtp_auth
         self._smtp_username = server.smtp_username
@@ -103,7 +103,7 @@ class SMTPChannel(smtpd.SMTPChannel, object):
         super().smtp_DATA(arg)
 
 
-class SMTPServer(smtpd.SMTPServer, object):
+class SMTPServer(smtpd.SMTPServer):
     channel_class = SMTPChannel
 
     def __init__(self, listener, handler, smtp_auth, smtp_username, smtp_password):
