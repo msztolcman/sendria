@@ -31,7 +31,7 @@ class SMTPChannel(smtpd.SMTPChannel, object):
         self.push('250 HELP')
 
     def smtp_AUTH(self, arg):
-        print >> DEBUGSTREAM, '===> AUTH', arg
+        print >> smtpd.DEBUGSTREAM, '===> AUTH', arg
         if not self._smtp_auth:
             self.push('501 Syntax: AUTH not enabled')
             return
