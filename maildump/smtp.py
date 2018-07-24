@@ -53,8 +53,8 @@ class SMTPChannel(smtpd.SMTPChannel, object):
             return
 
         auth_data = auth_data.split('\x00')
-        if len(auth_data) == 3 and auth_data[0] == auth_data[1] and \
-                auth_data[1] == self._smtp_username and auth_data[2] == self._smtp_password:
+        if (len(auth_data) == 3 and auth_data[0] == auth_data[1] and
+                auth_data[1] == self._smtp_username and auth_data[2] == self._smtp_password):
             self.push('235 Authentication successful')
             self._authorized = True
             return
