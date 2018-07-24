@@ -166,7 +166,7 @@ def main():
         stderr_handler = ColorizedStderrHandler(level=level, format_string=format_string)
         with NullHandler().applicationbound():
             with stderr_handler.applicationbound():
-                start(args.http_ip, args.http_port, args.smtp_ip, args.smtp_port, smtp_auth, args.db)
+                start(args.http_ip, args.http_port, args.smtp_ip, args.smtp_port, smtp_auth, args.db, args.debug)
 
 
 if __name__ == '__main__':
