@@ -3,6 +3,7 @@ import smtpd
 from email.parser import Parser
 
 from logbook import Logger
+from passlib.apache import HtpasswdFile
 
 from maildump.db import add_message
 
@@ -11,11 +12,9 @@ log = Logger(__name__)
 
 
 class SMTPChannel(smtpd.SMTPChannel, object):
-    def __init__(self, server, conn, addr, smtp_auth, smtp_username, smtp_password):
+    def __init__(self, server, conn, addr, smtp_auth):
         super(SMTPChannel, self).__init__(server, conn, addr)
         self._smtp_auth = smtp_auth
-        self._smtp_username = smtp_username
-        self._smtp_password = smtp_password
         self._authorized = False
 
     def smtp_EHLO(self, arg):
@@ -54,7 +53,7 @@ class SMTPChannel(smtpd.SMTPChannel, object):
 
         auth_data = auth_data.split('\x00')
         if (len(auth_data) == 3 and auth_data[0] == auth_data[1] and
-                auth_data[1] == self._smtp_username and auth_data[2] == self._smtp_password):
+                self._smtp_auth.check_password(auth_data[1], auth_data[2])):
             self.push('235 Authentication successful')
             self._authorized = True
             return
@@ -82,19 +81,17 @@ class SMTPChannel(smtpd.SMTPChannel, object):
 
 
 class SMTPServer(smtpd.SMTPServer, object):
-    def __init__(self, listener, handler, smtp_auth, smtp_username, smtp_password):
+    def __init__(self, listener, handler, smtp_auth):
         super(SMTPServer, self).__init__(listener, None)
         self._handler = handler
         self._smtp_auth = smtp_auth
-        self._smtp_username = smtp_username
-        self._smtp_password = smtp_password
 
     def handle_accept(self):
         pair = self.accept()
         if pair is not None:
             conn, addr = pair
             print >> smtpd.DEBUGSTREAM, 'Incoming connection from %s' % repr(addr)
-            channel = SMTPChannel(self, conn, addr, self._smtp_auth, self._smtp_username, self._smtp_password)
+            channel = SMTPChannel(self, conn, addr, self._smtp_auth)
 
     def process_message(self, peer, mailfrom, rcpttos, data):
         return self._handler(sender=mailfrom, recipients=rcpttos, body=data)

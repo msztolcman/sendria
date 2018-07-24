@@ -8,7 +8,6 @@ from socketio.server import SocketIOServer
 from maildump.db import connect, disconnect, create_tables
 from maildump.smtp import smtp_handler, SMTPServer
 from maildump.web import app
-from maildump.web_realtime import broadcast
 
 
 log = Logger(__name__)
@@ -16,7 +15,7 @@ stopper = Event()
 socketio_server = None
 
 
-def start(http_host, http_port, smtp_host, smtp_port, smtp_auth, smtp_username, smtp_password, db_path=None):
+def start(http_host, http_port, smtp_host, smtp_port, smtp_auth, db_path=None):
     global socketio_server
     # Webserver
     log.notice('Starting web server on http://{0}:{1}'.format(http_host, http_port))
@@ -26,8 +25,8 @@ def start(http_host, http_port, smtp_host, smtp_port, smtp_auth, smtp_username, 
     # SMTP server
     log.notice('Starting smtp server on {0}:{1}'.format(smtp_host, smtp_port))
     if smtp_auth:
-        log.notice('Enabled SMTP authorization for user {0}'.format(smtp_username))
-    SMTPServer((smtp_host, smtp_port), smtp_handler, smtp_auth, smtp_username, smtp_password)
+        log.notice('Enabled SMTP authorization with htpasswd file {0}'.format(smtp_auth))
+    SMTPServer((smtp_host, smtp_port), smtp_handler, smtp_auth)
     gevent.spawn(asyncore.loop)
     # Database
     connect(db_path)
