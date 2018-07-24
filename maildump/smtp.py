@@ -3,6 +3,7 @@ import smtpd
 from email.parser import Parser
 
 from logbook import Logger
+from passlib.apache import HtpasswdFile
 
 from maildump.db import add_message
 
@@ -16,9 +17,17 @@ class SMTPChannel(smtpd.SMTPChannel):
         super().__init__(server, conn, addr, data_size_limit, map, enable_SMTPUTF8, decode_data)
 
         self._smtp_auth = server.smtp_auth
-        self._smtp_username = server.smtp_username
-        self._smtp_password = server.smtp_password
         self._authorized = False
+
+    def is_valid_user(self, auth_data):
+        auth_data_splitted = auth_data.split('\x00')
+        if len(auth_data_splitted) != 3:
+            return False
+
+        if not auth_data.startswith('\x00') and auth_data_splitted[0] != auth_data_splitted[1]:
+            return False
+
+        return self._smtp_auth.check_password(auth_data_splitted[1], auth_data_splitted[2])
 
     def smtp_EHLO(self, arg):
         if not arg:
@@ -68,9 +77,7 @@ class SMTPChannel(smtpd.SMTPChannel):
             self.push('535 5.7.8 Authentication credentials invalid')
             return
 
-        auth_data = auth_data.split('\x00')
-        if len(auth_data) == 3 and auth_data[0] == auth_data[1] and \
-                auth_data[1] == self._smtp_username and auth_data[2] == self._smtp_password:
+        if self.is_valid_user(auth_data):
             self.push('235 Authentication successful')
             self._authorized = True
             return
@@ -106,12 +113,10 @@ class SMTPChannel(smtpd.SMTPChannel):
 class SMTPServer(smtpd.SMTPServer):
     channel_class = SMTPChannel
 
-    def __init__(self, listener, handler, smtp_auth, smtp_username, smtp_password):
+    def __init__(self, listener, handler, smtp_auth):
         super(SMTPServer, self).__init__(listener, None)
         self._handler = handler
         self.smtp_auth = smtp_auth
-        self.smtp_username = smtp_username
-        self.smtp_password = smtp_password
 
     def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         return self._handler(sender=mailfrom, recipients=rcpttos, body=data)
