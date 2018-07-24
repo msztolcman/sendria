@@ -17,6 +17,16 @@ class SMTPChannel(smtpd.SMTPChannel, object):
         self._smtp_auth = smtp_auth
         self._authorized = False
 
+    def is_valid_user(self, auth_data):
+        auth_data_splitted = auth_data.split('\x00')
+        if len(auth_data_splitted) != 3:
+            return False
+
+        if not auth_data.startswith('\x00') and auth_data_splitted[0] != auth_data_splitted[1]:
+            return False
+
+        return self._smtp_auth.check_password(auth_data_splitted[1], auth_data_splitted[2])
+
     def smtp_EHLO(self, arg):
         if not arg:
             self.push('501 Syntax: EHLO hostname')
@@ -51,9 +61,7 @@ class SMTPChannel(smtpd.SMTPChannel, object):
             self.push('535 5.7.8 Authentication credentials invalid')
             return
 
-        auth_data = auth_data.split('\x00')
-        if (len(auth_data) == 3 and auth_data[0] == auth_data[1] and
-                self._smtp_auth.check_password(auth_data[1], auth_data[2])):
+        if self.is_valid_user(auth_data):
             self.push('235 Authentication successful')
             self._authorized = True
             return
