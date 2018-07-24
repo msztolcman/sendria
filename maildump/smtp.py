@@ -3,7 +3,6 @@ import smtpd
 from email.parser import Parser
 
 from logbook import Logger
-from passlib.apache import HtpasswdFile
 
 from maildump.db import add_message
 

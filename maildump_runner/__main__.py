@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import argparse
+
 import lockfile
 import os
 import pkgutil
@@ -12,7 +13,7 @@ import sys
 import logbook
 from daemon.pidfile import TimeoutPIDLockFile
 from .geventdaemon import GeventDaemonContext
-from logbook import NullHandler
+from logbook import NullHandler, NestedSetup
 from logbook.more import ColorizedStderrHandler
 from passlib.apache import HtpasswdFile
 
@@ -164,9 +165,9 @@ def main():
             u'[{record.time:%Y-%m-%d %H:%M:%S}]  {record.level_name:<8}  {record.channel}: {record.message}'
         )
         stderr_handler = ColorizedStderrHandler(level=level, format_string=format_string)
-        with NullHandler().applicationbound():
-            with stderr_handler.applicationbound():
-                start(args.http_ip, args.http_port, args.smtp_ip, args.smtp_port, smtp_auth, args.db, args.debug)
+
+        with NestedSetup([NullHandler(), stderr_handler]).applicationbound():
+            start(args.http_ip, args.http_port, args.smtp_ip, args.smtp_port, smtp_auth, args.db, args.debug)
 
 
 if __name__ == '__main__':
