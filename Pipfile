@@ -1,9 +1,12 @@
 [[source]]
+
 url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+
 [packages]
+
 "beautifulsoup4" = "*"
 cssmin = "*"
 cssprefixer = "*"
@@ -15,13 +18,17 @@ lockfile = "*"
 passlib = "*"
 python-daemon = "*"
 pytz = "*"
-Flask = "*"
-Flask-Assets = "*"
-Logbook = "*"
-pyScss = "*"
+flask = "*"
+flask-assets = "*"
+logbook = "*"
+pyscss = "*"
 gevent-socketio-hartwork = "*"
+
 
 [dev-packages]
 
+
+
 [requires]
+
 python_version = "3.6"
