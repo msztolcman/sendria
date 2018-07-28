@@ -23,16 +23,16 @@ class SMTPChannel(smtpd.SMTPChannel):
         log.debug(message, *params)
 
     def is_valid_user(self, auth_data):
-        auth_data_splitted = auth_data.split('\x00')
-        if len(auth_data_splitted) != 3:
+        auth_data_parts = auth_data.split('\x00')
+        if len(auth_data_parts) != 3:
             return False
 
-        self._username = auth_data_splitted[1]
+        self._username = auth_data_parts[1]
 
-        if not auth_data.startswith('\x00') and auth_data_splitted[0] != auth_data_splitted[1]:
+        if not auth_data.startswith('\x00') and auth_data_parts[0] != auth_data_parts[1]:
             return False
 
-        return self._smtp_auth.check_password(auth_data_splitted[1], auth_data_splitted[2])
+        return self._smtp_auth.check_password(auth_data_parts[1], auth_data_parts[2])
 
     def smtp_EHLO(self, arg):
         if not arg:
