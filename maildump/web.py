@@ -155,6 +155,12 @@ def _fix_cid_links(soup, message_id):
         tag.string = RE_CID_URL.sub(_url_from_cid_match, tag.string)
 
 
+def _links_target_blank(soup):
+    for tag in (x for x in soup.descendants if isinstance(x, bs4.Tag)):
+        if tag.name == 'a':
+            tag.attrs['target'] = 'blank'
+
+
 @app.route('/messages/<int:message_id>.html', methods=('GET',))
 @rest
 def get_message_html(message_id):
@@ -164,6 +170,7 @@ def get_message_html(message_id):
     charset = part['charset'] or 'utf-8'
     soup = bs4.BeautifulSoup(part['body'].decode(charset), 'html5lib')
     _fix_cid_links(soup, message_id)
+    _links_target_blank(soup)
     return _part_response(part, str(soup), 'utf-8')
 
 
