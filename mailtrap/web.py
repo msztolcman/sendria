@@ -143,7 +143,10 @@ def _fix_cid_links(soup, message_id):
         return m.group().replace(m.group('replace'),
                                  url_for('get_message_part', message_id=message_id, cid=m.group('cid')))
     # Iterate over all attributes that do not contain CSS and replace cid references
-    for tag in (x for x in soup.descendants if isinstance(x, bs4.Tag)):
+    # for tag in (x for x in soup.descendants if isinstance(x, bs4.Tag)):
+    for tag in soup.descendants:
+        if not isinstance(tag, bs4.Tag):
+            continue
         for name, value in tag.attrs.items():
             if isinstance(value, list):
                 value = ' '.join(value)
@@ -156,8 +159,8 @@ def _fix_cid_links(soup, message_id):
 
 
 def _links_target_blank(soup):
-    for tag in (x for x in soup.descendants if isinstance(x, bs4.Tag)):
-        if tag.name == 'a':
+    for tag in soup.descendants:
+        if isinstance(tag, bs4.Tag) and tag.name == 'a':
             tag.attrs['target'] = 'blank'
 
 
