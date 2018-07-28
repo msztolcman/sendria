@@ -101,6 +101,9 @@ def main():
     if args.htpasswd and not os.path.isfile(args.htpasswd):
         print('Htpasswd file does not exist')
         sys.exit(1)
+    if args.smtp_auth and not os.path.isfile(args.smtp_auth):
+        print('SMTP auth htpasswd file does not exist')
+        sys.exit(1)
 
     # Check if the static folder is writable
     asset_folder = os.path.join(
