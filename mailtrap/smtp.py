@@ -4,7 +4,7 @@ from email.parser import Parser
 
 from logbook import Logger
 
-from maildump.db import add_message
+from mailtrap.db import add_message
 
 
 log = Logger(__name__)

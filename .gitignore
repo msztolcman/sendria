@@ -7,5 +7,5 @@
 /build/
 /env/
 /env-*/
-/maildump/static/assets/
-/maildump/static/.webassets-cache/
+/mailtrap/static/assets/
+/mailtrap/static/.webassets-cache/

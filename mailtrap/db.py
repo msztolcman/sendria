@@ -4,8 +4,8 @@ import uuid
 
 from logbook import Logger
 
-from maildump.util import decode_header, split_addresses
-from maildump.web_realtime import broadcast
+from mailtrap.util import decode_header, split_addresses
+from mailtrap.web_realtime import broadcast
 
 
 log = Logger(__name__)

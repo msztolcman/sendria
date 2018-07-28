@@ -7,10 +7,10 @@ from flask import Flask, render_template, request, url_for, send_file, abort
 from flask_assets import Environment, Bundle
 from logbook import Logger
 
-import maildump
-from maildump import db
-from maildump.util import rest, bool_arg, get_version
-from maildump.web_realtime import handle_socketio_request
+import mailtrap
+from mailtrap import db
+from mailtrap.util import rest, bool_arg, get_version
+from mailtrap.web_realtime import handle_socketio_request
 
 
 RE_CID = re.compile(r'(?P<replace>cid:(?P<cid>.+))')
@@ -29,10 +29,10 @@ assets.config['PYSCSS_DEBUG_INFO'] = False
 
 js = Bundle('js/lib/jquery.js', 'js/lib/jquery-ui.js', 'js/lib/jquery.hotkeys.js',
             'js/lib/handlebars.js', 'js/lib/moment.js', 'js/lib/socket.io.js', 'js/lib/jstorage.js',
-            'js/util.js', 'js/message.js', 'js/maildump.js',
+            'js/util.js', 'js/message.js', 'js/mailtrap.js',
             filters='rjsmin', output='assets/bundle.%(version)s.js')
-scss = Bundle('css/maildump.scss',
-              filters='pyscss', output='assets/maildump.%(version)s.css')
+scss = Bundle('css/mailtrap.scss',
+              filters='pyscss', output='assets/mailtrap.%(version)s.css')
 css = Bundle('css/reset.css', 'css/jquery-ui.css', scss,
              filters=('cssrewrite', 'cssmin'), output='assets/bundle.%(version)s.css')
 assets.register('js_all', js)
@@ -42,7 +42,7 @@ app.add_url_rule('/socket.io/<path:remaining>', view_func=handle_socketio_reques
 
 @app.before_request
 def check_auth():
-    htpasswd = app.config['MAILDUMP_HTPASSWD']
+    htpasswd = app.config['MAILTRAP_HTPASSWD']
     if htpasswd is None:
         # Authentication disabled
         return
@@ -50,8 +50,8 @@ def check_auth():
     if auth and htpasswd.check_password(auth.username, auth.password):
         log.debug('Request authenticated ({0})'.format(auth.username))
         return
-    return app.response_class('This MailDump instance is password-protected.', 401, {
-        'WWW-Authenticate': 'Basic realm="MailDump"'
+    return app.response_class('This MailTrap instance is password-protected.', 401, {
+        'WWW-Authenticate': 'Basic realm="MailTrap"'
     })
 
 
@@ -63,10 +63,10 @@ def home():
 @app.route('/', methods=('DELETE',))
 @rest
 def terminate():
-    if app.config['MAILDUMP_NO_QUIT']:
+    if app.config['MAILTRAP_NO_QUIT']:
         abort(403)
     log.info('Terminate request received')
-    maildump.stop()
+    mailtrap.stop()
 
 
 @app.route('/messages/', methods=('DELETE',))

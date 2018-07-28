@@ -4,7 +4,7 @@ from socketio.namespace import BaseNamespace
 
 
 def broadcast(event, *args):
-    from maildump import socketio_server  # avoid circular import
+    from mailtrap import socketio_server  # avoid circular import
     pkt = dict(type='event', name=event, args=args, endpoint='')
     for sessid, socket in socketio_server.sockets.items():
         socket.send_packet(pkt)

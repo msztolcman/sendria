@@ -5,9 +5,9 @@ from gevent.event import Event
 from logbook import Logger
 from socketio.server import SocketIOServer
 
-from maildump.db import connect, disconnect, create_tables
-from maildump.smtp import smtp_handler, SMTPServer
-from maildump.web import app
+from mailtrap.db import connect, disconnect, create_tables
+from mailtrap.smtp import smtp_handler, SMTPServer
+from mailtrap.web import app
 
 
 log = Logger(__name__)

@@ -15,12 +15,12 @@ class build_py_with_assets(build_py):
         build_py.run(self)
 
     def _build_assets(self):
-        asset_dir = 'maildump/static/assets'
+        asset_dir = 'mailtrap/static/assets'
         # Lame check if we have prebuilt assets. If we do so we are probably installing from a pypi package which
         # means that webassets might not be installed yet and thus we cannot build the assets now...
         if os.path.exists(asset_dir) and os.listdir(asset_dir):
             return
-        args = ['webassets', '-m', 'maildump.web', 'build']
+        args = ['webassets', '-m', 'mailtrap.web', 'build']
         with open(os.devnull, 'w') as devnull:
             subprocess.check_call(args, stderr=devnull)
             subprocess.check_call(args + ['--production'], stderr=devnull)
@@ -35,21 +35,21 @@ if sys.version_info[:2] < (2, 7):
     requirements.append('argparse')
 
 setup(
-    name='maildump',
-    version='0.5.6',
+    name='mailtrap',
+    version='0.1.0',
     description='An SMTP server that makes all received mails accessible via a web interface and REST API.',
     long_description=readme,
-    url='https://github.com/ThiefMaster/maildump',
-    download_url='https://github.com/ThiefMaster/maildump',
+    url='https://github.com/msztolcman/mailtrap',
+    download_url='https://github.com/msztolcman/mailtrap',
     author=u'Adrian Mönnich',
     author_email='adrian@planetcoding.net',
     license='MIT',
     zip_safe=False,
     include_package_data=True,
-    packages=('maildump', 'maildump_runner'),
+    packages=('mailtrap', 'mailtrap_runner'),
     entry_points={
         'console_scripts': [
-            'maildump = maildump_runner.__main__:main',
+            'mailtrap = mailtrap_runner.__main__:main',
         ],
     },
     install_requires=requirements,
@@ -57,8 +57,8 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Environment :: No Input/Output (Daemon)',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',

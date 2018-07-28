@@ -71,6 +71,6 @@ def rest(f):
 
 def get_version():
     try:
-        return 'v' + pkg_resources.get_distribution('maildump').version
+        return 'v' + pkg_resources.get_distribution('mailtrap').version
     except pkg_resources.DistributionNotFound:
         return 'dev'

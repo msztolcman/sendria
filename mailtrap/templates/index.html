@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='images/icon_16x16.png') }}">
-    <title>MailDump</title>
+    <title>MailTrap</title>
     <script>
         window.WEB_SOCKET_SWF_LOCATION = {{ url_for('static', filename='WebSocketMain.swf')|tojson|safe }};
     </script>
@@ -17,7 +17,7 @@
 <body>
     <header class="top">
         <h1>
-            <a href="https://github.com/ThiefMaster/maildump" title="MailDump ({{ version }})">MailDump</a>
+            <a href="https://github.com/msztolcman/mailtrap" title="MailTrap ({{ version }})">MailTrap</a>
         </h1>
         <nav class="app">
             <ul>
@@ -30,9 +30,9 @@
                 <li class="clear">
                     <a href="#" title="Delete all messages">Clear</a>
                 </li>
-                {% if not config.MAILDUMP_NO_QUIT %}
+                {% if not config.MAILTRAP_NO_QUIT %}
                     <li class="quit">
-                        <a href="#" title="Terminate MailDump">Quit</a>
+                        <a href="#" title="Terminate MailTrap">Quit</a>
                     </li>
                 {% endif %}
             </ul>
@@ -131,7 +131,7 @@
     {% endraw %}
 
     <div class="hidden" id="disconnected-dialog" title="Disconnected">
-        <p>Connection to MailDump lost.</p>
+        <p>Connection to MailTrap lost.</p>
         <p>Trying to reconnect - be patient!</p>
     </div>
 

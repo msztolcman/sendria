@@ -32,7 +32,7 @@
         // Top nav actions
         $('nav.app .quit a').on('click', function(e) {
             e.preventDefault();
-            if(!confirm('Do you really want to terminate the MailDump application?')) {
+            if(!confirm('Do you really want to terminate the MailTrap application?')) {
                 return;
             }
             restCall('DELETE', '/');

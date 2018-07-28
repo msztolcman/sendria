@@ -27,7 +27,7 @@ def read_pidfile(path):
 
 
 def terminate_server(sig, frame):
-    from maildump import stop
+    from mailtrap import stop
 
     if sig == signal.SIGINT and os.isatty(sys.stdout.fileno()):
         # Terminate the line containing ^C
@@ -42,7 +42,7 @@ def main():
     parser.add_argument('--smtp-auth', metavar='HTPASSWD', help='Apache-style htpasswd file for SMTP authorization. '
                                                                 'WARNING: do not rely only on this as a security '
                                                                 'mechanism, use also additional methods for securing '
-                                                                'MailDump instance, ie. IP restrictions.')
+                                                                'MailTrap instance, ie. IP restrictions.')
     parser.add_argument('--http-ip', default='127.0.0.1', metavar='IP', help='HTTP ip (default: 127.0.0.1)')
     parser.add_argument('--http-port', default=1080, type=int, metavar='PORT', help='HTTP port (deault: 1080)')
     parser.add_argument('--db', metavar='PATH', help='SQLite database - in-memory if missing')
@@ -60,8 +60,8 @@ def main():
     args = parser.parse_args()
 
     if args.version:
-        from maildump.util import get_version
-        print('MailDump {0}'.format(get_version()))
+        from mailtrap.util import get_version
+        print('MailTrap {0}'.format(get_version()))
         sys.exit(0)
 
     # Do we just want to stop a running daemon?
@@ -104,7 +104,7 @@ def main():
 
     # Check if the static folder is writable
     asset_folder = os.path.join(
-        os.path.dirname(pkgutil.get_loader('maildump').get_filename()),
+        os.path.dirname(pkgutil.get_loader('mailtrap').get_filename()),
         'static'
     )
     if args.autobuild_assets and not os.access(asset_folder, os.W_OK):
@@ -136,9 +136,9 @@ def main():
     if 'threading' in sys.modules:
         del sys.modules['threading']
 
-    asset_dir = 'maildump/static/assets'
+    asset_dir = 'mailtrap/static/assets'
     if not args.autobuild_assets and (not os.path.exists(asset_dir) or not os.listdir(asset_dir)):
-        print('Assets not found. Generate assets using webassets -m maildump.web build')
+        print('Assets not found. Generate assets using webassets -m mailtrap.web build')
         sys.exit(0)
 
     context = GeventDaemonContext(**daemon_kw)
@@ -154,13 +154,13 @@ def main():
 
     with context:
         # Imports are here to avoid importing anything before monkeypatching
-        from maildump import app, start
-        from maildump.web import assets
+        from mailtrap import app, start
+        from mailtrap.web import assets
 
         assets.debug = app.debug = args.debug
         assets.auto_build = args.autobuild_assets
-        app.config['MAILDUMP_HTPASSWD'] = HtpasswdFile(args.htpasswd) if args.htpasswd else None
-        app.config['MAILDUMP_NO_QUIT'] = args.no_quit
+        app.config['MAILTRAP_HTPASSWD'] = HtpasswdFile(args.htpasswd) if args.htpasswd else None
+        app.config['MAILTRAP_NO_QUIT'] = args.no_quit
         smtp_auth = HtpasswdFile(args.smtp_auth) if args.smtp_auth else None
 
         level = logbook.DEBUG if args.debug else logbook.INFO
