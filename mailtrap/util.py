@@ -57,7 +57,7 @@ def rest(f):
             response = ret
         elif isinstance(ret, tuple):
             # code, result_dict|msg_string
-            if isinstance(ret[1], basestring):
+            if isinstance(ret[1], str):
                 response = jsonify(msg=ret[1])
             else:
                 response = jsonify(**ret[1])
