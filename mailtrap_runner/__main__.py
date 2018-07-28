@@ -4,8 +4,10 @@ from __future__ import print_function
 
 import argparse
 
+import errno
 import lockfile
 import os
+import pathlib
 import pkgutil
 import signal
 import sys
@@ -18,10 +20,39 @@ from logbook.more import ColorizedStderrHandler
 from passlib.apache import HtpasswdFile
 
 
+def pid_exists(pid):
+    """Check whether pid exists in the current process table.
+    UNIX only.
+    Source: https://stackoverflow.com/a/6940314/116153
+    """
+    if pid < 0:
+        return False
+    if pid == 0:
+        # According to "man 2 kill" PID 0 refers to every process
+        # in the process group of the calling process.
+        # On certain systems 0 is a valid PID but we have no way
+        # to know that in a portable fashion.
+        raise ValueError('invalid PID 0')
+    try:
+        os.kill(pid, 0)
+    except OSError as err:
+        if err.errno == errno.ESRCH:
+            # ESRCH == No such process
+            return False
+        elif err.errno == errno.EPERM:
+            # EPERM clearly means there's a process to deny access to
+            return True
+        else:
+            # According to "man 2 kill" possible error values are
+            # (EINVAL, EPERM, ESRCH)
+            raise
+    else:
+        return True
+
+
 def read_pidfile(path):
     try:
-        with open(path, 'r') as f:
-            return int(f.read())
+        return int(path.read_text())
     except Exception as e:
         raise ValueError(e.message)
 
@@ -64,9 +95,12 @@ def main():
         print('MailTrap {0}'.format(get_version()))
         sys.exit(0)
 
+    if args.pidfile:
+        args.pidfile = pathlib.Path(args.pidfile).resolve()
+
     # Do we just want to stop a running daemon?
     if args.stop:
-        if not args.pidfile or not os.path.exists(args.pidfile):
+        if not args.pidfile or not args.pidfile.exists():
             print('PID file not specified or not found')
             sys.exit(1)
         try:
@@ -125,15 +159,13 @@ def main():
                           'stdout': sys.stdout,
                           'stderr': sys.stderr})
 
-    pidfile = None
     if args.pidfile:
-        pidfile = os.path.abspath(args.pidfile) if not os.path.isabs(args.pidfile) else args.pidfile
-        if os.path.exists(pidfile):
-            pid = read_pidfile(pidfile)
-            if not os.path.exists(os.path.join('/proc', str(pid))):
+        if args.pidfile.exists():
+            pid = read_pidfile(args.pidfile)
+            if not pid_exists(pid):
                 print('Deleting obsolete PID file (process {0} does not exist)'.format(pid))
-                os.unlink(pidfile)
-        daemon_kw['pidfile'] = TimeoutPIDLockFile(pidfile, 5)
+                args.pidfile.unlink()
+        daemon_kw['pidfile'] = TimeoutPIDLockFile(str(args.pidfile), 5)
 
     # Unload threading module to avoid error on exit (it's loaded by lockfile)
     if 'threading' in sys.modules:
@@ -148,7 +180,7 @@ def main():
     try:
         context.open()
     except lockfile.LockTimeout:
-        print('Could not acquire lock on pid file {0}'.format(pidfile))
+        print('Could not acquire lock on pid file {0}'.format(args.pidfile))
         print('Check if the daemon is already running.')
         sys.exit(1)
     except KeyboardInterrupt:
