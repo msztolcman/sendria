@@ -93,6 +93,9 @@ def main():
     if args.htpasswd and not os.path.isabs(args.htpasswd):
         args.htpasswd = os.path.abspath(args.htpasswd)
         print('Htpasswd path is relative, using {0}'.format(args.htpasswd))
+    if args.smtp_auth and not os.path.isabs(args.smtp_auth):
+        args.smtp_auth = os.path.abspath(args.smtp_auth)
+        print('SMTP auth htpasswd path is relative, using {0}'.format(args.smtp_auth))
 
     # Check if the password file is valid
     if args.htpasswd and not os.path.isfile(args.htpasswd):
