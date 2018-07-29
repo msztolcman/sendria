@@ -151,6 +151,11 @@ def main():
         print('Autobuilding assets requires write access to %s' %  statics_dir)
         sys.exit(1)
 
+    asset_dir = statics_dir / 'assets'
+    if not args.autobuild_assets and (not asset_dir.exists() or not list(asset_dir.glob('*'))):
+        print('Assets not found. Generate assets using: webassets -m mailtrap.web build')
+        sys.exit(0)
+
     daemon_kw = {'monkey_greenlet_report': False,
                  'signal_map': {signal.SIGTERM: terminate_server,
                                 signal.SIGINT: terminate_server}}
@@ -173,11 +178,6 @@ def main():
     # Unload threading module to avoid error on exit (it's loaded by lockfile)
     if 'threading' in sys.modules:
         del sys.modules['threading']
-
-    asset_dir = statics_dir / 'assets'
-    if not args.autobuild_assets and (not asset_dir.exists() or not list(asset_dir.glob('*'))):
-        print('Assets not found. Generate assets using: webassets -m mailtrap.web build')
-        sys.exit(0)
 
     context = GeventDaemonContext(**daemon_kw)
     try:
