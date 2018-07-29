@@ -140,12 +140,12 @@ def main():
         sys.exit(1)
 
     # Check if the static folder is writable
-    asset_folder = os.path.join(
+    statics_dir = os.path.join(
         os.path.dirname(pkgutil.get_loader('mailtrap').get_filename()),
         'static'
     )
-    if args.autobuild_assets and not os.access(asset_folder, os.W_OK):
-        print('Autobuilding assets requires write access to {0}'.format(asset_folder))
+    if args.autobuild_assets and not os.access(statics_dir, os.W_OK):
+        print('Autobuilding assets requires write access to {0}'.format(statics_dir))
         sys.exit(1)
 
     daemon_kw = {'monkey_greenlet_report': False,
@@ -171,7 +171,7 @@ def main():
     if 'threading' in sys.modules:
         del sys.modules['threading']
 
-    asset_dir = 'mailtrap/static/assets'
+    asset_dir = os.path.join(statics_dir, 'assets')
     if not args.autobuild_assets and (not os.path.exists(asset_dir) or not os.listdir(asset_dir)):
         print('Assets not found. Generate assets using webassets -m mailtrap.web build')
         sys.exit(0)
