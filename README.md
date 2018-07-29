@@ -18,7 +18,7 @@ If you like this tool, just [say thanks](https://saythanks.io/to/msztolcman).
 Current stable version
 ----------------------
 
-0.1.0
+0.1.1
 
 Features
 --------
