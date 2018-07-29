@@ -18,14 +18,14 @@ socketio_server = None
 def start(http_host, http_port, smtp_host, smtp_port, smtp_auth, db_path=None, debug=False):
     global socketio_server
     # Webserver
-    log.notice('Starting web server on http://{0}:{1}'.format(http_host, http_port))
+    log.notice('Starting web server on http://%s:%s' % (http_host, http_port))
     socketio_server = SocketIOServer((http_host, http_port), app,
                                      log='default' if app.debug else None)
     socketio_server.start()
     # SMTP server
-    log.notice('Starting smtp server on {0}:{1}'.format(smtp_host, smtp_port))
+    log.notice('Starting smtp server on %s:%s' % (smtp_host, smtp_port))
     if smtp_auth:
-        log.notice('Enabled SMTP authorization with htpasswd file {0}'.format(smtp_auth.path))
+        log.notice('Enabled SMTP authorization with htpasswd file %s' % smtp_auth.path)
     SMTPServer((smtp_host, smtp_port), smtp_handler, smtp_auth, debug)
     gevent.spawn(asyncore.loop)
     # Database
