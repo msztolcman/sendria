@@ -66,7 +66,7 @@ def terminate_server(sig, frame):
     stop()
 
 
-def main():
+def parse_argv(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('--smtp-ip', default='127.0.0.1', metavar='IP', help='SMTP ip (default: 127.0.0.1)')
     parser.add_argument('--smtp-port', default=1025, type=int, metavar='PORT', help='SMTP port (default: 1025)')
@@ -88,7 +88,7 @@ def main():
                         action='store_true')
     parser.add_argument('-p', '--pidfile', help='Use a PID file')
     parser.add_argument('--stop', help='Sends SIGTERM to the running daemon (needs --pidfile)', action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if args.version:
         from mailtrap.util import get_version
@@ -97,23 +97,6 @@ def main():
 
     if args.pidfile:
         args.pidfile = pathlib.Path(args.pidfile).resolve()
-
-    # Do we just want to stop a running daemon?
-    if args.stop:
-        if not args.pidfile or not args.pidfile.exists():
-            print('PID file not specified or not found')
-            sys.exit(1)
-        try:
-            pid = read_pidfile(args.pidfile)
-        except ValueError as e:
-            print('Could not read PID file: {0}'.format(e))
-            sys.exit(1)
-        try:
-            os.kill(pid, signal.SIGTERM)
-        except OSError as e:
-            print('Could not send SIGTERM: {0}'.format(e))
-            sys.exit(1)
-        sys.exit(0)
 
     # Default to foreground mode if no pid file is specified
     if not args.pidfile and not args.foreground:
@@ -138,6 +121,29 @@ def main():
     if args.smtp_auth and not os.path.isfile(args.smtp_auth):
         print('SMTP auth htpasswd file does not exist')
         sys.exit(1)
+
+    return args
+
+
+def main():
+    args = parse_argv(sys.argv[1:])
+
+    # Do we just want to stop a running daemon?
+    if args.stop:
+        if not args.pidfile or not args.pidfile.exists():
+            print('PID file not specified or not found')
+            sys.exit(1)
+        try:
+            pid = read_pidfile(args.pidfile)
+        except ValueError as e:
+            print('Could not read PID file: %s' % e)
+            sys.exit(1)
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except OSError as e:
+            print('Could not send SIGTERM: %s' % e)
+            sys.exit(1)
+        sys.exit(0)
 
     # Check if the static folder is writable
     statics_dir = os.path.join(
