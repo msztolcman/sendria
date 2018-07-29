@@ -1,30 +1,34 @@
 [[source]]
+
 url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+
 [packages]
 
+flask = "*"
+flask-assets = "*"
+logbook = "*"
 "beautifulsoup4" = "*"
 cssmin = "*"
 cssprefixer = "*"
 cssutils = "*"
 gevent = "*"
+gevent-socketio-hartwork = "*"
 gevent-websocket = "*"
 "html5lib" = "*"
 lockfile = "*"
 passlib = "*"
+pyscss = "*"
 python-daemon = "*"
 pytz = "*"
-flask = "*"
-flask-assets = "*"
-logbook = "*"
-pyscss = "*"
-gevent-socketio-hartwork = "*"
 
 
 [dev-packages]
 
+twine = "*"
+wheel = "*"
 
 
 [requires]
