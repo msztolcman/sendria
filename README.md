@@ -70,14 +70,14 @@ Voila!
 Authors
 -------
 
-* Marcin Sztolcman <marcin@urzenia.net>
+* Marcin Sztolcman ([marcin@urzenia.net](mailto:marcin@urzenia.net))
 * Adrian Mönnich ([MailDump](https://github.com/ThiefMaster/maildump))
 
 Contact
 -------
 
 If you like or dislike this software, please do not hesitate to tell me about
-this me via email (marcin@urzenia.net).
+this me via email ([marcin@urzenia.net](mailto:marcin@urzenia.net)).
 
 If you find bug or have an idea to enhance this tool, please use GitHub's
 [issues](https://github.com/msztolcman/mailtrap/issues).
@@ -87,8 +87,8 @@ License
 
 The MIT License (MIT)
 
-Copyright (c) 2018 Marcin Sztolcman
-Copyright (c) 2013 Adrian Mönnich ([MailDump](https://github.com/ThiefMaster/maildump))
+* Copyright (c) 2018 Marcin Sztolcman
+* Copyright (c) 2013 Adrian Mönnich ([MailDump](https://github.com/ThiefMaster/maildump))
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
