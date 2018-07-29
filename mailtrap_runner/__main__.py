@@ -92,7 +92,7 @@ def parse_argv(argv):
 
     if args.version:
         from mailtrap.util import get_version
-        print('MailTrap {0}'.format(get_version()))
+        print('MailTrap %s' % get_version())
         sys.exit(0)
 
     if args.pidfile:
@@ -106,13 +106,13 @@ def parse_argv(argv):
     # Warn about relative paths and absolutize them
     if args.db and not os.path.isabs(args.db):
         args.db = os.path.abspath(args.db)
-        print('Database path is relative, using {0}'.format(args.db))
+        print('Database path is relative, using %s' % args.db)
     if args.htpasswd and not os.path.isabs(args.htpasswd):
         args.htpasswd = os.path.abspath(args.htpasswd)
-        print('Htpasswd path is relative, using {0}'.format(args.htpasswd))
+        print('Htpasswd path is relative, using %s' % args.htpasswd)
     if args.smtp_auth and not os.path.isabs(args.smtp_auth):
         args.smtp_auth = os.path.abspath(args.smtp_auth)
-        print('SMTP auth htpasswd path is relative, using {0}'.format(args.smtp_auth))
+        print('SMTP auth htpasswd path is relative, using %s' % args.smtp_auth)
 
     # Check if the password file is valid
     if args.htpasswd and not os.path.isfile(args.htpasswd):
@@ -148,7 +148,7 @@ def main():
     # Check if the static folder is writable
     statics_dir = pathlib.Path(pkgutil.get_loader('mailtrap').get_filename()).parent / 'static'
     if args.autobuild_assets and not os.access(statics_dir, os.W_OK):
-        print('Autobuilding assets requires write access to {0}'.format(statics_dir))
+        print('Autobuilding assets requires write access to %s' %  statics_dir)
         sys.exit(1)
 
     daemon_kw = {'monkey_greenlet_report': False,
@@ -166,7 +166,7 @@ def main():
         if args.pidfile.exists():
             pid = read_pidfile(args.pidfile)
             if not pid_exists(pid):
-                print('Deleting obsolete PID file (process {0} does not exist)'.format(pid))
+                print('Deleting obsolete PID file (process %s does not exist)' % pid)
                 args.pidfile.unlink()
         daemon_kw['pidfile'] = TimeoutPIDLockFile(str(args.pidfile), 5)
 
@@ -183,7 +183,7 @@ def main():
     try:
         context.open()
     except lockfile.LockTimeout:
-        print('Could not acquire lock on pid file {0}'.format(args.pidfile))
+        print('Could not acquire lock on pid file %s' % args.pidfile)
         print('Check if the daemon is already running.')
         sys.exit(1)
     except KeyboardInterrupt:
