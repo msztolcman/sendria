@@ -1,8 +1,5 @@
-# coding=utf-8
-
 import os
 import subprocess
-import sys
 
 from setuptools import setup
 from setuptools.command.build_py import build_py
@@ -28,21 +25,19 @@ class build_py_with_assets(build_py):
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
-with open('README.rst') as f:
+with open('README.md') as f:
     readme = f.read()
-
-if sys.version_info[:2] < (2, 7):
-    requirements.append('argparse')
 
 setup(
     name='mailtrap',
     version='0.1.0',
     description='An SMTP server that makes all received mails accessible via a web interface and REST API.',
     long_description=readme,
+    long_description_content_type='text/markdown',
     url='https://github.com/msztolcman/mailtrap',
     download_url='https://github.com/msztolcman/mailtrap',
-    author=u'Adrian Mönnich',
-    author_email='adrian@planetcoding.net',
+    author='Marcin Sztolcman',
+    author_email='marcin@urzenia.net',
     license='MIT',
     zip_safe=False,
     include_package_data=True,
