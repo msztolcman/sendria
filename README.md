@@ -38,7 +38,8 @@ Features
 How to use
 ----------
 
-After installing `MailTrap`, just run command:
+
+[After installing](#installation) `MailTrap`, just run command:
 
     mailtrap
 
@@ -50,16 +51,55 @@ If you want more details, run:
     
 for more info, ie. how to protect access to gui.
 
+Rails
+-----
+
+For your rails application just set in your `environments/development.rb`:
+
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = { :address => '127.0.0.1', :port => 1025 }
+    config.action_mailer.raise_delivery_errors = false
+
+Django
+------
+
+To configure Django to work with `MailTrap`, add the following to your projects' settings.py:
+
+    if DEBUG:
+        EMAIL_HOST = '127.0.0.1'
+        EMAIL_HOST_USER = ''
+        EMAIL_HOST_PASSWORD = ''
+        EMAIL_PORT = 1025
+        EMAIL_USE_TLS = False
+
+API
+---
+
+`MailTrap` offers RESTful API you can use to fetch list of messages or particular message, ie. for testing purposes. You can use endpoints like:
+
+* `GET /messages/` - fetch list of emails
+* `DELETE /messages/` - delete all emails
+* `GET /messages/<int:message_id>.json` - fetch email metadata
+* `GET /messages/<int:message_id>.plain` - fetch plain part of email
+* `GET /messages/<int:message_id>.html` - fetch HTML part of email
+* `GET /messages/<int:message_id>.source` - fetch source of email
+* `GET /messages/<int:message_id>.eml` - download whole email as an EML file
+* `GET /messages/<int:message_id>/parts/<cid>` - download particular attachment
+* `DELETE /messages/<int:message_id>` - delete single email
+
+
 Python version
 --------------
 
 `MailTrap` is tested against Python 3.6+. Older Python versions may work, or may not.
 
+If you want to run this software on Python 2.6+, just use [MailDump](https://github.com/ThiefMaster/maildump)
+
 Installation
 ------------
 
 `MailTrap` should work on any POSIX platform where [Python](http://python.org)
-is available, it means Linux, MacOS X etc. 
+is available, it means Linux, MacOS/OSX etc.
 
 Simplest way is to use Python's built-in package system:
 
@@ -71,7 +111,7 @@ Authors
 -------
 
 * Marcin Sztolcman ([marcin@urzenia.net](mailto:marcin@urzenia.net))
-* Adrian Mönnich ([MailDump](https://github.com/ThiefMaster/maildump))
+* Adrian Mönnich (author of [MailDump](https://github.com/ThiefMaster/maildump), base of `MailTrap`)
 
 Contact
 -------
