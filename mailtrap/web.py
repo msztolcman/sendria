@@ -171,7 +171,7 @@ def get_message_html(message_id):
     if not part:
         return 404, 'part does not exist'
     charset = part['charset'] or 'utf-8'
-    soup = bs4.BeautifulSoup(part['body'].decode(charset), 'html5lib')
+    soup = bs4.BeautifulSoup(part['body'].decode(charset, 'ignore'), 'html5lib')
     _fix_cid_links(soup, message_id)
     _links_target_blank(soup)
     return _part_response(part, str(soup), 'utf-8')
@@ -183,7 +183,7 @@ def get_message_source(message_id):
     message = db.get_message(message_id)
     if not message:
         return 404, 'message does not exist'
-    io = BytesIO(message['source'].encode())
+    io = BytesIO(message['source'].encode('utf-8', 'ignore'))
     io.seek(0)
     return send_file(io, 'text/plain')
 
@@ -194,7 +194,7 @@ def get_message_eml(message_id):
     message = db.get_message(message_id)
     if not message:
         return 404, 'message does not exist'
-    io = BytesIO(message['source'].encode())
+    io = BytesIO(message['source'].encode('utf-8', 'ignore'))
     io.seek(0)
     return send_file(io, 'message/rfc822')
 

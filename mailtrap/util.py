@@ -30,7 +30,12 @@ def bool_arg(arg):
 def decode_header(value):
     if not value:
         return ''
-    headers = [decoded.encode(charset or 'utf-8') for decoded, charset in _decode_header(value)]
+    headers = []
+    for decoded, charset in _decode_header(value):
+        if isinstance(decoded, str):
+            headers.append(decoded.encode(charset or 'utf-8'))
+        else:
+            headers.append(decoded)
     return (b''.join(headers)).decode()
 
 
