@@ -18,7 +18,7 @@ If you like this tool, just [say thanks](https://saythanks.io/to/msztolcman).
 Current stable version
 ----------------------
 
-0.1.1
+0.1.2
 
 Features
 --------
@@ -48,7 +48,7 @@ Now send emails through `smtp://127.0.0.1:1025` and look at them on `http://127.
 If you want more details, run:
 
     mailtrap --help
-    
+
 for more info, ie. how to protect access to gui.
 
 Rails
@@ -149,6 +149,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ChangeLog
 ---------
+
+### v0.1.2
+
+* fixed encoding issues
 
 ### v0.1.0
 
