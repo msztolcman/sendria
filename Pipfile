@@ -7,7 +7,7 @@ name = "pypi"
 
 [packages]
 
-flask = "*"
+flask = ">=1.1.0"
 flask-assets = "*"
 logbook = "*"
 "beautifulsoup4" = "*"
@@ -23,6 +23,7 @@ passlib = "*"
 pyscss = "*"
 python-daemon = "*"
 pytz = "*"
+werkzeug = ">=0.15.3"
 
 
 [dev-packages]
@@ -32,5 +33,4 @@ wheel = "*"
 
 
 [requires]
-
-python_version = "3.6"
+python_version = "3.7"

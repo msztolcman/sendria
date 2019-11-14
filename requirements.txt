@@ -1,5 +1,6 @@
-Flask
+Flask>=1.1.0
 Flask-Assets
+werkzeug>=0.15.3
 Logbook
 beautifulsoup4
 cssmin
