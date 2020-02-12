@@ -18,7 +18,7 @@ If you like this tool, just [say thanks](https://saythanks.io/to/msztolcman).
 Current stable version
 ----------------------
 
-0.1.2
+0.1.3
 
 Features
 --------
@@ -149,6 +149,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ChangeLog
 ---------
+
+### v0.1.3
+
+* fixed layout issues ([radoslawhryciow](https://github.com/radoslawhryciow))
 
 ### v0.1.2
 

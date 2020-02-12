@@ -30,7 +30,7 @@ with open('README.md') as f:
 
 setup(
     name='mailtrap',
-    version='0.1.2',
+    version='0.1.3',
     description='An SMTP server that makes all received mails accessible via a web interface and REST API.',
     long_description=readme,
     long_description_content_type='text/markdown',
