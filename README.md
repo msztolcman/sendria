@@ -18,7 +18,7 @@ If you like this tool, just [say thanks](https://saythanks.io/to/msztolcman).
 Current stable version
 ----------------------
 
-0.1.3
+0.1.4
 
 Features
 --------
@@ -149,6 +149,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ChangeLog
 ---------
+
+### v0.1.4
+
+* bumped dependencies - security issues ([dependabot](https://github.com/dependabot))
 
 ### v0.1.3
 
