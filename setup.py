@@ -5,6 +5,27 @@ from setuptools import setup
 from setuptools.command.build_py import build_py
 
 
+requirements = [
+    'flask>=1.1.0',
+    'flask-assets',
+    'logbook',
+    'beautifulsoup4',
+    'cssmin',
+    'cssprefixer',
+    'cssutils',
+    'gevent',
+    'gevent-socketio-hartwork',
+    'gevent-websocket',
+    'html5lib',
+    'lockfile',
+    'passlib',
+    'pyscss',
+    'python-daemon',
+    'pytz',
+    'werkzeug>=0.15.3',
+]
+
+
 class build_py_with_assets(build_py):
     def run(self):
         if not self.dry_run:
@@ -23,8 +44,6 @@ class build_py_with_assets(build_py):
             subprocess.check_call(args + ['--production'], stderr=devnull)
 
 
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
 with open('README.md') as f:
     readme = f.read()
 
