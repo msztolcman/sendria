@@ -18,7 +18,7 @@ If you like this tool, just [say thanks](https://saythanks.io/to/msztolcman).
 Current stable version
 ----------------------
 
-0.1.5
+0.1.6
 
 Features
 --------
@@ -149,6 +149,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ChangeLog
 ---------
+
+### v0.1.6
+
+* fixed issue with old call do `gevent.signal`
+* minimum gevent version set to 1.5.0
 
 ### v0.1.4
 
