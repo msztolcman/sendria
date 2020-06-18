@@ -13,7 +13,7 @@ requirements = [
     'cssmin',
     'cssprefixer',
     'cssutils',
-    'gevent',
+    'gevent>=1.5.0',
     'gevent-socketio-hartwork',
     'gevent-websocket',
     'html5lib',

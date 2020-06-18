@@ -21,7 +21,7 @@ python-daemon = "*"
 pytz = "*"
 werkzeug = ">=0.15.3"
 mailtrap = {path = ".",editable = true}
-gevent = "*"
+gevent = ">=1.5.0"
 
 [dev-packages]
 twine = "*"
