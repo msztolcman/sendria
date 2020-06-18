@@ -71,7 +71,7 @@ class GeventDaemonContext(daemon.DaemonContext):
     def _setup_gevent_signals(self):
         import gevent
         if self.gevent_signal_map is None:
-            gevent.signal(signal.SIGTERM, self.terminate, signal.SIGTERM, None)
+            gevent.signal_handler(signal.SIGTERM, self.terminate, signal.SIGTERM, None)
             return
 
         for sig, target in self.gevent_signal_map.items():
@@ -88,4 +88,4 @@ class GeventDaemonContext(daemon.DaemonContext):
                 assert not target.startswith('_')
                 tocall = getattr(self, target)
 
-            gevent.signal(sig, tocall, *args)
+            gevent.signal_handler(sig, tocall, *args)

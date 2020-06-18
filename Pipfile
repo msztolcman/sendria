@@ -1,12 +1,9 @@
 [[source]]
-
 url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
 flask = ">=1.1.0"
 flask-assets = "*"
 logbook = "*"
@@ -14,7 +11,6 @@ logbook = "*"
 cssmin = "*"
 cssprefixer = "*"
 cssutils = "*"
-gevent = "*"
 gevent-socketio-hartwork = "*"
 gevent-websocket = "*"
 "html5lib" = "*"
@@ -24,13 +20,12 @@ pyscss = "*"
 python-daemon = "*"
 pytz = "*"
 werkzeug = ">=0.15.3"
-
+mailtrap = {path = ".",editable = true}
+gevent = "*"
 
 [dev-packages]
-
 twine = "*"
 wheel = "*"
-
 
 [requires]
 python_version = "3.7"
