@@ -11,3 +11,4 @@
 /mailtrap/static/.webassets-cache/
 /*.sqlite
 /*.htpasswd
+/.venv
