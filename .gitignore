@@ -9,3 +9,5 @@
 /env-*/
 /mailtrap/static/assets/
 /mailtrap/static/.webassets-cache/
+/*.sqlite
+/*.htpasswd

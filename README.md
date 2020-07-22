@@ -4,46 +4,58 @@ MailTrap
 [![mailtrap version](https://img.shields.io/pypi/v/mailtrap.svg)](https://pypi.python.org/pypi/mailtrap)
 [![mailtrap license](https://img.shields.io/pypi/l/mailtrap.svg)](https://pypi.python.org/pypi/mailtrap)
 [![mailtrap python compatibility](https://img.shields.io/pypi/pyversions/mailtrap.svg)](https://pypi.python.org/pypi/mailtrap)
-[![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/msztolcman)
+[![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
-MailTrap is a SMTP server designed to run in your dev/test environment, that is designed to catch any email you or your application is sending, and display it in a web interface instead if sending to real world. It help you prevents sending any dev/test emails to real people, no matter what address you provide.
-Just point your app/email client to smtp://127.0.0.1:1025 and look at your emails on http://127.0.0.1/1080.
+MailTrap is a SMTP server designed to run in your dev/test environment, that is designed to catch any email you
+or your application is sending, and display it in a web interface instead if sending to real world.
+It help you prevents sending any dev/test emails to real people, no matter what address you provide.
+Just point your app/email client to `smtp://127.0.0.1:1025` and look at your emails on `http://127.0.0.1:1080`.
 
 MailTrap is built on shoulders of:
 * [MailCatcher](https://mailcatcher.me/) - original idea comes of this tool by Samuel Cochran.
-* [MailDump](https://github.com/ThiefMaster/maildump) - base source code of `MailTrap`, by Adrian Mönnich.
+* [MailDump](https://github.com/ThiefMaster/maildump) - base source code of `MailTrap` (version pre 1.0.0), by Adrian Mönnich.
 
-If you like this tool, just [say thanks](https://saythanks.io/to/msztolcman).
+If you like this tool, just [say thanks](https://saythanks.io/to/marcin%40urzenia.net).
 
 Current stable version
 ----------------------
 
-0.1.6
+1.0.0
 
 Features
 --------
 
-* Catches all mail and stores it for display.
-* Shows HTML, Plain Text and Source version of messages, as applicable.
-* Rewrites HTML enabling display of embedded, inline images/etc and opens links in a new window.
+* Catch all emails and store it for display.
+* Full support for multipart messages.
+* View HTML and plain text parts of messages (if given part exists).
+* View source of email.
 * Lists attachments and allows separate downloading of parts.
 * Download original email to view in your native mail client(s).
-* Command line options to override the default SMTP/HTTP IP and port settings.
-* Mail appears instantly if your browser supports [WebSockets][websockets], otherwise updates every thirty seconds.
+* Mail appears instantly if your browser supports [WebSockets][websockets].
 * Runs as a daemon in the background, optionally in foreground.
-* Keyboard navigation between messages
-* Optionally password protected access to webinterface
-* Optionally password protected access to SMTP (SMTP AUTH)
+* Keyboard navigation between messages.
+* Optionally password protected access to web interface.
+* Optionally password protected access to SMTP (SMTP AUTH).
 
 How to use
 ----------
 
-
 [After installing](#installation) `MailTrap`, just run command:
 
-    mailtrap
+    mailtrap --db mails.sqlite
 
-Now send emails through `smtp://127.0.0.1:1025` and look at them on `http://127.0.0.1:1080`.
+Now send emails through `smtp://127.0.0.1:1025`, ie.:
+
+```shell
+echo 'From: MailTrap <mailtrap@example.com>\n'\
+'To: You <you@exampl.com>\n'\
+'Subject: Welcome!\n\n'\
+'Welcome to MailTrap!' | \
+  curl smtp://localhost:1025 --mail-from mailtrap@example.com \
+    --mail-rcpt you@example.com --upload-file -
+```
+
+And finally look at `MailTrap` GUI on [127.0.0.1:1080](http://127.0.0.1:1080).
 
 If you want more details, run:
 
@@ -51,8 +63,8 @@ If you want more details, run:
 
 for more info, ie. how to protect access to gui.
 
-Rails
------
+Configure Rails
+---------------
 
 For your rails application just set in your `environments/development.rb`:
 
@@ -60,10 +72,10 @@ For your rails application just set in your `environments/development.rb`:
     config.action_mailer.smtp_settings = { :address => '127.0.0.1', :port => 1025 }
     config.action_mailer.raise_delivery_errors = false
 
-Django
-------
+Configure Django
+----------------
 
-To configure Django to work with `MailTrap`, add the following to your projects' settings.py:
+To configure Django to work with `MailTrap`, add the following to your projects' `settings.py`:
 
     if DEBUG:
         EMAIL_HOST = '127.0.0.1'
@@ -75,23 +87,61 @@ To configure Django to work with `MailTrap`, add the following to your projects'
 API
 ---
 
-`MailTrap` offers RESTful API you can use to fetch list of messages or particular message, ie. for testing purposes. You can use endpoints like:
+`MailTrap` offers RESTful API you can use to fetch list of messages or particular message, ie. for testing purposes.
 
-* `GET /messages/` - fetch list of emails
-* `DELETE /messages/` - delete all emails
-* `GET /messages/<int:message_id>.json` - fetch email metadata
-* `GET /messages/<int:message_id>.plain` - fetch plain part of email
-* `GET /messages/<int:message_id>.html` - fetch HTML part of email
-* `GET /messages/<int:message_id>.source` - fetch source of email
-* `GET /messages/<int:message_id>.eml` - download whole email as an EML file
-* `GET /messages/<int:message_id>/parts/<cid>` - download particular attachment
-* `DELETE /messages/<int:message_id>` - delete single email
+You can use excellent [httpie](https://httpie.org/) tool:
+
+```shell
+% http localhost:1080/api/messages/
+HTTP/1.1 200 OK
+Content-Length: 620
+Content-Type: application/json; charset=utf-8
+Date: Wed, 22 Jul 2020 20:04:46 GMT
+Server: Python/3.7 aiohttp/3.6.2
+
+{
+    "code": "OK",
+    "data": [
+        {
+            "created_at": "2020-07-22T20:04:41",
+            "id": 1,
+            "peer": "127.0.0.1:59872",
+            "recipients_envelope": [
+                "you@example.com"
+            ],
+            "recipients_message_bcc": [],
+            "recipients_message_cc": [],
+            "recipients_message_to": [
+                "You <you@exampl.com>"
+            ],
+            "sender_envelope": "mailtrap@example.com",
+            "sender_message": "MailTrap <mailtrap@example.com>",
+            "size": 191,
+            "source": "From: MailTrap <mailtrap@example.com>\nTo: You <you@exampl.com>\nSubject: Welcome!\nX-Peer: ('127.0.0.1', 59872)\nX-MailFrom: mailtrap@example.com\nX-RcptTo: you@example.com\n\nWelcome to MailTrap!\n",
+            "subject": "Welcome!",
+            "type": "text/plain"
+        }
+    ]
+}
+```
+
+There are available endpoints:
+
+* `GET /api/messages/` - fetch list of all emails
+* `DELETE /api/messages/` - delete all emails
+* `GET /api/messages/{message_id}.json` - fetch email metadata
+* `GET /api/messages/{message_id}.plain` - fetch plain part of email
+* `GET /api/messages/{message_id}.html` - fetch HTML part of email
+* `GET /api/messages/{message_id}.source` - fetch source of email
+* `GET /api/messages/{message_id}.eml` - download whole email as an EML file
+* `GET /api/messages/{message_id}/parts/{cid}` - download particular attachment
+* `DELETE /api/messages/{message_id}` - delete single email
 
 
 Python version
 --------------
 
-`MailTrap` is tested against Python 3.6+. Older Python versions may work, or may not.
+`MailTrap` is tested against Python 3.7+. Older Python versions may work, or may not.
 
 If you want to run this software on Python 2.6+, just use [MailDump](https://github.com/ThiefMaster/maildump)
 
@@ -122,33 +172,25 @@ this me via email ([marcin@urzenia.net](mailto:marcin@urzenia.net)).
 If you find bug or have an idea to enhance this tool, please use GitHub's
 [issues](https://github.com/msztolcman/mailtrap/issues).
 
-License
--------
-
-The MIT License (MIT)
-
-* Copyright (c) 2018 Marcin Sztolcman
-* Copyright (c) 2013 Adrian Mönnich ([MailDump](https://github.com/ThiefMaster/maildump))
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 ChangeLog
 ---------
+
+### v1.0.0
+
+* complete rewrite of backend part. MailTrap is using [asyncio](https://docs.python.org/3/library/asyncio.html) and
+  [aio-libs](https://github.com/aio-libs/)
+  * switch to [aiohttp](https://docs.aiohttp.org/) from Flask
+  * switch to [aiosmtpd](https://aiosmtpd.readthedocs.io) from [smtpd](https://docs.python.org/3/library/smtpd.html)
+  * switch to [aiosqlite](https://github.com/omnilib/aiosqlite) from [sqlite3](https://docs.python.org/3/library/sqlite3.html)
+  * replace logger to [structlog](https://www.structlog.org/)
+* using asynchronous version of libraries drastically improved performance
+* show in GUI information about envelope sender and recipients
+* all API requests has their own namespace now: `/api`
+* allow to replace name of application or url in template
+* block truncating all messages from GUI on demand
+* fixed issues with WebSockets, should refresh mails list and autoconnect
+* fixed issues with autobuilding assets
+* many cleanups and reformatting code
 
 ### v0.1.6
 
@@ -171,7 +213,7 @@ ChangeLog
 
 * better support for macOS/OSX
 * links now opens in new tab/window (added 'target="blank"')
-* show message if there is no assets generated and info hoto to generate them
+* show message if there is no assets generated and info how to to generate them
 * added debugs for SMTP when in debug mode
 * added support for [Pipenv](https://docs.pipenv.org/)
 * HTML tab is default now when looking at particular message

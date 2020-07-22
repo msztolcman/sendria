@@ -16,8 +16,12 @@
         this._loaded = loadedEverything || false;
         this._deleted = false;
         this.id = msg.id;
-        this.sender = msg.sender;
-        this.recipients = msg.recipients;
+        this.sender_envelope = msg.sender_envelope;
+        this.sender_message = msg.sender_message;
+        this.recipients_envelope = msg.recipients_envelope;
+        this.recipients_message_to = msg.recipients_message_to;
+        this.recipients_message_cc = msg.recipients_message_cc;
+        this.recipients_message_bcc = msg.recipients_message_bcc;
         this.created_at = new Date(msg.created_at);
         this.subject = msg.subject;
         this.size = msg.size;
@@ -73,7 +77,7 @@
             this.dom().addClass('deleted');
             this.selectSibling();
             this.closeNotification();
-            restCall('DELETE', '/messages/' + this.id).fail(function() {
+            restCall('DELETE', '/api/messages/' + this.id).fail(function() {
                 self._deleted = false;
                 self.dom().removeClass('deleted');
             });
@@ -135,7 +139,8 @@
                 deferred.resolveWith(this);
             }
             else {
-                cleared.watch(restCall('GET', '/messages/' + this.id + '.json')).done(function(data) {
+                cleared.watch(restCall('GET', '/api/messages/' + this.id + '.json')).done(function(data) {
+                    data = data.data;
                     self._loaded = true;
                     self.href = data.href;
                     self.attachments = data.attachments;
@@ -147,7 +152,7 @@
         },
         showNotification: function() {
             var self = this;
-            var msg = 'From ' + this.sender + '\xa0 to \xa0' + this.recipients.to.join(', ');
+            var msg = 'From ' + this.sender_envelope + '\xa0 to \xa0' + this.recipients_envelope.join(', ');
             this._closeNotification = NotificationUtil.show(this.subject, msg, {
                 icon: '/static/images/icon_80x80.png'
             }, 10000, function() {
@@ -185,8 +190,8 @@
     };
 
     Message.load = function(id, notify) {
-        cleared.watch(restCall('GET', '/messages/' + id + '.json')).done(function(msg) {
-            var message = Message.add(msg, true);
+        cleared.watch(restCall('GET', '/api/messages/' + id + '.json')).done(function(msg) {
+            var message = Message.add(msg.data, true);
             Message.applyFilter();
             if (notify) {
                 message.showNotification();
@@ -207,8 +212,9 @@
     Message.loadAll = function() {
         Message.deleteAll();
         $('#loading-dialog').dialog('open');
-        restCall('GET', '/messages/').done(function(data) {
-            $.each(data.messages, function(i, msg) {
+        restCall('GET', '/api/messages/').done(function(data) {
+            data = data.data || [];
+            $.each(data, function(i, msg) {
                 Message.add(new Message(msg));
             });
             Message.applyFilter();

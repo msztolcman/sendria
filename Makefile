@@ -10,8 +10,7 @@ clean: ## cleanup all distro
 	-rm -fr mailtrap/static/.webassets-cache/ mailtrap/static/assets/bundle.*
 
 build: ## build distro
-	webassets -m mailtrap.web 'build'
-	webassets -m mailtrap.web 'build' --production
+	webassets -m mailtrap.build_assets build
 	python3 setup.py sdist bdist_wheel
 	-rm -rf mailtrap/static/.webassets-cache/ mailtrap/static/assets/bundle.*
 

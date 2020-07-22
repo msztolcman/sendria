@@ -35,7 +35,7 @@
             if(!confirm('Do you really want to terminate the MailTrap application?')) {
                 return;
             }
-            restCall('DELETE', '/');
+            restCall('DELETE', '/api');
         });
 
         $('nav.app .clear a').on('click', function(e) {
@@ -43,7 +43,7 @@
             if (!confirm('Do you really want to delete all messages?')) {
                 return;
             }
-            restCall('DELETE', '/messages/');
+            restCall('DELETE', '/api/messages/');
         });
 
         if (NotificationUtil.available) {
@@ -125,36 +125,51 @@
         Message.loadAll();
 
         // Real-time updates
-        var socket = io.connect(undefined, {
-            'reconnection limit': 10000,
-            'max reconnection attempts': Infinity
-        });
-        var terminating = false;
-        window.onbeforeunload = function() {
-            terminating = true;
-            socket.disconnect();
-            Message.closeNotifications()
-        };
-        socket.on('connect', function() {
-            $('#disconnected-dialog').dialog('close');
-        }).on('reconnect', function() {
-            Message.loadAll();
-        }).on('disconnect', function() {
-            if(terminating) {
-                return;
+        function wsConnect() {
+            try {
+                var socket = new WebSocket('ws://' + window.location.host + '/ws');
+            } catch (err) {
+                var socket = new WebSocket('wss://' + window.location.host + '/ws');
             }
-            $('#loading-dialog').dialog('close');
-            $('#disconnected-dialog').dialog('open');
-        }).on('add_message', function(id) {
-            Message.load(id, $.jStorage.get('notifications'));
-        }).on('delete_message', function(id) {
-            var msg = Message.get(id);
-            if(msg) {
-                msg.del();
+            var terminating = false;
+            window.onbeforeunload = function () {
+                terminating = true;
+                socket.close();
+                Message.closeNotifications()
+            };
+            socket.onopen = function () {
+                $('#disconnected-dialog').dialog('close');
+                Message.loadAll();
+            };
+            socket.onclose = function () {
+                if (terminating) {
+                    return;
+                }
+                $('#loading-dialog').dialog('close');
+                $('#disconnected-dialog').dialog('open');
+
+                setTimeout(
+                    function() { wsConnect(); },
+                    3000
+                );
+            };
+            socket.onmessage = function (ev) {
+                var split = ev.data.split(',')
+                if (split[0] === 'add_message') {
+                    Message.load(split[1], $.jStorage.get('notifications'));
+                } else if (split[0] === 'delete_message') {
+                    var msg = Message.get(split[1]);
+                    if (msg) {
+                        msg.del();
+                    }
+                } else if (split[0] === 'delete_messages') {
+                    Message.deleteAll();
+                } else {
+                    console.log('Unknown websocket event:', ev.data)
+                }
             }
-        }).on('delete_messages', function() {
-            Message.deleteAll();
-        });
+        }
+        wsConnect();
 
         // Keyboard shortcuts
         registerHotkeys({

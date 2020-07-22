@@ -4,28 +4,29 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-flask = ">=1.1.0"
-flask-assets = "*"
-logbook = "*"
+aiodns = "*"
+aiohttp = "*"
+aiohttp-basicauth = "*"
+aiohttp-jinja2 = "*"
+aiosmtpd = "*"
+aiosqlite = "*"
 "beautifulsoup4" = "*"
-cssmin = "*"
-cssprefixer = "*"
-cssutils = "*"
-gevent-socketio-hartwork = "*"
-gevent-websocket = "*"
-"html5lib" = "*"
 lockfile = "*"
 passlib = "*"
-pyscss = "*"
 python-daemon = "*"
 pytz = "*"
-werkzeug = ">=0.15.3"
-mailtrap = {path = ".",editable = true}
-gevent = ">=1.5.0"
+structlog = "*"
+webassets = "*"
+cssmin = "*"
+pyscss = "*"
+html5lib = "*"
 
 [dev-packages]
+versionner = "*"
 twine = "*"
 wheel = "*"
+colorama = "*"
+mailtrap = {editable = true,path = "."}
 
 [requires]
 python_version = "3.7"

@@ -2,22 +2,23 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='images/icon_16x16.png') }}">
-    <title>MailTrap</title>
-    <script>
-        window.WEB_SOCKET_SWF_LOCATION = {{ url_for('static', filename='WebSocketMain.swf')|tojson|safe }};
-    </script>
-    {% assets 'css_all' -%}
-        <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}">
-    {% endassets %}
-    {% assets 'js_all' -%}
-        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {% endassets %}
+    <link rel="shortcut icon" type="image/png" href="{{ static('images/icon_16x16.png') }}">
+    {%  if not header_name %}
+        <title>MailTrap:{{ version }}</title>
+    {% else %}
+        <title>{{ header_name }} :: MailTrap:{{ version }}</title>
+    {% endif %}
+    {% for asset_url in css_all %}
+        <link rel="stylesheet" type="text/css" href="{{ asset_url }}">
+    {%  endfor %}
+    {% for asset_url in js_all %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {%  endfor %}
 </head>
 <body>
     <header class="top">
         <h1>
-            <a href="https://github.com/msztolcman/mailtrap" title="MailTrap ({{ version }})">MailTrap</a>
+            <a href="{{ header_url or 'https://github.com/msztolcman/mailtrap' }}" title="MailTrap {{ version }}">{{ header_name or 'MailTrap' }}</a>
         </h1>
         <nav class="app">
             <ul>
@@ -27,10 +28,12 @@
                 <li class="notifications">
                     <a href="#" title="Toggle WebKit desktop notifications">Enable notifications</a>
                 </li>
-                <li class="clear">
-                    <a href="#" title="Delete all messages">Clear</a>
-                </li>
-                {% if not config.MAILTRAP_NO_QUIT %}
+                {% if not mailtrap_no_clear %}
+                    <li class="clear">
+                        <a href="#" title="Delete all messages">Clear</a>
+                    </li>
+                {% endif %}
+                {% if not mailtrap_no_quit %}
                     <li class="quit">
                         <a href="#" title="Terminate MailTrap">Quit</a>
                     </li>
@@ -42,8 +45,9 @@
         <table>
             <thead>
                 <tr>
-                    <th>From</th>
                     <th>To</th>
+                    <th>Env From</th>
+                    <th>From</th>
                     <th>Subject</th>
                     <th>Received</th>
                 </tr>
@@ -91,8 +95,9 @@
     {% raw %}
     <script class="template" data-id="message" type="text/x-handlebars-template">
         <tr data-message-id="{{ id }}">
-            <td>{{ sender }}</td>
-            <td>{{ join recipients.to }}</td>
+            <td>{{ join recipients_envelope }}</td>
+            <td>{{ sender_envelope }}</td>
+            <td>{{ sender_message }}</td>
             <td>{{ subject }}</td>
             <td>{{ date created_at }}</td>
         </tr>
@@ -101,17 +106,29 @@
     <script class="template" data-id="message-metadata" type="text/x-handlebars-template">
         <dt class="created_at">Received</dt>
         <dd class="created_at">{{ date created_at }}</dd>
+        <dt class="from">Env From</dt>
+        <dd class="from">{{ sender_envelope }}</dd>
         <dt class="from">From</dt>
-        <dd class="from">{{ sender }}</dd>
-        <dt class="to">To</dt>
-        <dd class="to">{{ join recipients.to }}</dd>
-        {{# if recipients.cc.length }}
-        <dt class="cc">CC</dt>
-        <dd class="cc">{{ join recipients.cc }}</dd>
+        {{#if sender_message.length }}
+        <dd class="from">{{ sender_message }}</dd>
+        {{else}}
+        <dd class="from">-</dd>
         {{/if}}
-        {{# if recipients.bcc.length }}
-        <dt class="bcc">BCC</dt>
-        <dd class="bcc">{{ join recipients.bcc }}</dd>
+        <dt class="to">Env To</dt>
+        <dd class="to">{{ join recipients_envelope }}</dd>
+        <dt class="to">To</dt>
+        {{#if recipients_message_to.length }}
+        <dd class="to">{{ join recipients_message_to }}</dd>
+        {{else}}
+        <dd class="to">-</dd>
+        {{/if}}
+        {{#if recipients_message_cc.length }}
+        <dt class="to">CC</dt>
+        <dd class="cc">{{ join recipients_message_cc }}</dd>
+        {{/if}}
+        {{#if recipients_message_bcc.length }}
+        <dt class="to">BCC</dt>
+        <dd class="bcc">{{ join recipients_message_bcc }}</dd>
         {{/if}}
         <dt class="subject">Subject</dt>
         <dd class="subject">{{ subject }}</dd>
