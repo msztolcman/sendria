@@ -1,6 +1,6 @@
 .*.swp
 *.pyc
-*.pid
+/*.pid
 /.idea/
 /*.egg-info/
 /dist/
