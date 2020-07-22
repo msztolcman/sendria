@@ -7,7 +7,7 @@ MailTrap
 [![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
 MailTrap is a SMTP server designed to run in your dev/test environment, that is designed to catch any email you
-or your application is sending, and display it in a web interface instead if sending to real world.
+or your application is sending, and display it in a web interface instead of sending to real world.
 It help you prevents sending any dev/test emails to real people, no matter what address you provide.
 Just point your app/email client to `smtp://127.0.0.1:1025` and look at your emails on `http://127.0.0.1:1080`.
 
@@ -62,6 +62,16 @@ If you want more details, run:
     mailtrap --help
 
 for more info, ie. how to protect access to gui.
+
+Docker
+------
+
+There is also available [Docker image of MailTrap](https://hub.docker.com/layers/msztolcman/mailtrap/).
+If you want to try, just run:
+
+```shell
+docker run -p 1025:1025 -p 1080:1080 msztolcman/mailtrap
+```
 
 Configure Rails
 ---------------
