@@ -202,6 +202,9 @@ def stop(pidfile):
 def main():
     args = parse_argv(sys.argv[1:])
 
+    if args.debug:
+        logger.get().msg('INIT: debug mode enabled')
+
     # Do we just want to stop a running daemon?
     if args.stop:
         stop(args.pidfile)
