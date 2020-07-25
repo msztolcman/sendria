@@ -53,6 +53,13 @@ async def response_from_dict(rq, handler):
     return json_response(rsp)
 
 
+@aiohttp.web.middleware
+async def set_default_headers(rq, handler) -> aiohttp.web.StreamResponse:
+    rsp = await handler(rq)
+    rsp.headers['Server'] = f'MailTrap/{__version__} (https://github.com/msztolcman/mailtrap)'
+    return rsp
+
+
 class BasicAuth(BasicAuthMiddleware):
     def __init__(self, htpasswd, *args, **kwargs):
         self._htpasswd = htpasswd

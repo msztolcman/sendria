@@ -236,6 +236,7 @@ def configure_assets(debug: bool, autobuild: bool) -> webassets.Environment:
 
 def setup(args, http_auth):
     app = aiohttp.web.Application(debug=args.debug)
+    app.middlewares.append(middlewares.set_default_headers)
     app.middlewares.append(middlewares.error_handler)
     app.middlewares.append(middlewares.response_from_dict)
 
