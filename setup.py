@@ -12,6 +12,7 @@ requirements = [
     'aiosqlite',
     'beautifulsoup4',
     'cssmin',
+    'html5lib',
     'lockfile',
     'passlib',
     'python-daemon',
@@ -19,7 +20,6 @@ requirements = [
     'pyscss',
     'structlog',
     'webassets',
-    'html5lib',
 ]
 
 
@@ -51,6 +51,10 @@ setup(
     long_description=readme,
     long_description_content_type='text/markdown',
     url='https://github.com/msztolcman/mailtrap',
+    project_urls={
+        'GitHub: issues': 'https://github.com/msztolcman/mailtrap/issues',
+        'GitHub: repo': 'https://github.com/msztolcman/mailtrap',
+    },
     download_url='https://github.com/msztolcman/mailtrap',
     author='Marcin Sztolcman',
     author_email='marcin@urzenia.net',
@@ -58,6 +62,7 @@ setup(
     zip_safe=False,
     include_package_data=True,
     packages=('mailtrap', ),
+    python_requires='>=3.7',
     entry_points={
         'console_scripts': [
             'mailtrap = mailtrap.cli:main',
@@ -68,15 +73,20 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Environment :: No Input/Output (Daemon)',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
+        'Operating System :: POSIX',
+        'Operating System :: MacOS :: MacOS X',
         'Topic :: Communications :: Email',
         'Topic :: Software Development',
         'Topic :: System :: Networking',
-        'Topic :: Utilities'
+        'Topic :: Utilities',
+        'Framework :: AsyncIO',
     ]
 )
