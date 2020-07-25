@@ -19,3 +19,10 @@ replace = \nCurrent stable version
 
     %(version)s\n
 encoding = utf-8
+
+[file:Dockerfile]
+enabled = true
+match = line
+search = \bpip install mailtrap==\d+\.\d+\.\d+\b
+replace = pip install mailtrap==%(version)s
+encoding = utf-8

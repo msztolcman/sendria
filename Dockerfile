@@ -3,7 +3,7 @@ MAINTAINER Marcin Sztolcman <marcin@urzenia.net>
 
 WORKDIR /opt
 
-RUN python3 -m pip install mailtrap==0.1.6
+RUN python3 -m pip install mailtrap==1.0.0
 
 EXPOSE 1025 1080
 
