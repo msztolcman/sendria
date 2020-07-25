@@ -101,7 +101,7 @@ HTTP/1.1 200 OK
 Content-Length: 620
 Content-Type: application/json; charset=utf-8
 Date: Wed, 22 Jul 2020 20:04:46 GMT
-Server: Python/3.7 aiohttp/3.6.2
+Server: MailTrap/1.0.0 (https://github.com/msztolcman/mailtrap)
 
 {
     "code": "OK",
