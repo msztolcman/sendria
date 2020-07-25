@@ -205,7 +205,7 @@ ChangeLog
 ### v1.0.0
 
 * complete rewrite of backend part. MailTrap is using [asyncio](https://docs.python.org/3/library/asyncio.html) and
-  [aio-libs](https://github.com/aio-libs/)
+  [aio-libs](https://github.com/aio-libs/) now:
   * switch to [aiohttp](https://docs.aiohttp.org/) from Flask
   * switch to [aiosmtpd](https://aiosmtpd.readthedocs.io) from [smtpd](https://docs.python.org/3/library/smtpd.html)
   * switch to [aiosqlite](https://github.com/omnilib/aiosqlite) from [sqlite3](https://docs.python.org/3/library/sqlite3.html)
