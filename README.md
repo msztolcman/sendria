@@ -37,6 +37,30 @@ Features
 * Optionally password protected access to web interface.
 * Optionally password protected access to SMTP (SMTP AUTH).
 
+Installation
+------------
+
+`MailTrap` should work on any POSIX platform where [Python](http://python.org)
+is available, it means Linux, MacOS/OSX etc.
+
+Simplest way is to use Python's built-in package system:
+
+    python3 -m pip install mailtrap
+
+You can also use [pipx](https://pipxproject.github.io/pipx/) if you don't want to
+mess with system packages and install `MailTrap` in virtual environment:
+
+    pipx install mailtrap
+
+Voila!
+
+Python version
+--------------
+
+`MailTrap` is tested against Python 3.7+. Older Python versions may work, or may not.
+
+If you want to run this software on Python 2.6+, just use [MailDump](https://github.com/ThiefMaster/maildump).
+
 How to use
 ----------
 
@@ -63,36 +87,6 @@ If you want more details, run:
 
 for more info, ie. how to protect access to gui.
 
-Docker
-------
-
-There is also available [Docker image of MailTrap](https://hub.docker.com/layers/msztolcman/mailtrap/).
-If you want to try, just run:
-
-```shell
-docker run -p 1025:1025 -p 1080:1080 msztolcman/mailtrap
-```
-
-Configure Rails
----------------
-
-For your rails application just set in your `environments/development.rb`:
-
-    config.action_mailer.delivery_method = :smtp
-    config.action_mailer.smtp_settings = { :address => '127.0.0.1', :port => 1025 }
-    config.action_mailer.raise_delivery_errors = false
-
-Configure Django
-----------------
-
-To configure Django to work with `MailTrap`, add the following to your projects' `settings.py`:
-
-    if DEBUG:
-        EMAIL_HOST = '127.0.0.1'
-        EMAIL_HOST_USER = ''
-        EMAIL_HOST_PASSWORD = ''
-        EMAIL_PORT = 1025
-        EMAIL_USE_TLS = False
 
 API
 ---
@@ -147,25 +141,48 @@ There are available endpoints:
 * `GET /api/messages/{message_id}/parts/{cid}` - download particular attachment
 * `DELETE /api/messages/{message_id}` - delete single email
 
+Docker
+------
 
-Python version
---------------
+There is also available [Docker image of MailTrap](https://hub.docker.com/layers/msztolcman/mailtrap/).
+If you want to try, just run:
 
-`MailTrap` is tested against Python 3.7+. Older Python versions may work, or may not.
+```shell
+docker run -p 1025:1025 -p 1080:1080 msztolcman/mailtrap
+```
 
-If you want to run this software on Python 2.6+, just use [MailDump](https://github.com/ThiefMaster/maildump)
+Configure Rails
+---------------
 
-Installation
+For your rails application just set in your `environments/development.rb`:
+
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = { :address => '127.0.0.1', :port => 1025 }
+    config.action_mailer.raise_delivery_errors = false
+
+Configure Django
+----------------
+
+To configure Django to work with `MailTrap`, add the following to your projects' `settings.py`:
+
+    if DEBUG:
+        EMAIL_HOST = '127.0.0.1'
+        EMAIL_HOST_USER = ''
+        EMAIL_HOST_PASSWORD = ''
+        EMAIL_PORT = 1025
+        EMAIL_USE_TLS = False
+
+Behind nginx
 ------------
 
-`MailTrap` should work on any POSIX platform where [Python](http://python.org)
-is available, it means Linux, MacOS/OSX etc.
+If you want to hide `MailTrap` behind nginx (ie. to terminate ssl) then you can [use example
+config (see in addons)](https://github.com/msztolcman/mailtrap/tree/master/addons/nginx.conf).
 
-Simplest way is to use Python's built-in package system:
+Supervisord
+-----------
 
-    pip3 install mailtrap
-
-Voila!
+To start `Mailtrap` automatically with [Supervisor](https://supervisord.org/) there is in
+[addons example config file for this purpose](https://github.com/msztolcman/mailtrap/tree/master/addons/supervisor.conf).
 
 Authors
 -------
@@ -201,6 +218,8 @@ ChangeLog
 * fixed issues with WebSockets, should refresh mails list and autoconnect
 * fixed issues with autobuilding assets
 * many cleanups and reformatting code
+* addons for [nginx](https://github.com/msztolcman/mailtrap/tree/master/addons/nginx.conf)
+and [supervisor](https://github.com/msztolcman/mailtrap/tree/master/addons/supervisor.conf)
 
 ### v0.1.6
 
