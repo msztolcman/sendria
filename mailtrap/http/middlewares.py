@@ -10,7 +10,7 @@ from .json_encoder import json_response
 
 
 @aiohttp.web.middleware
-async def error_handler(rq: aiohttp.web.Request, handler):
+async def error_handler(rq: aiohttp.web.Request, handler) -> aiohttp.web.StreamResponse:
     try:
         rsp = await handler(rq)
     except errors.MailtrapException as exp:
@@ -34,7 +34,7 @@ async def error_handler(rq: aiohttp.web.Request, handler):
 
 
 @aiohttp.web.middleware
-async def response_from_dict(rq, handler):
+async def response_from_dict(rq, handler) -> aiohttp.web.StreamResponse:
     rsp = await handler(rq)
 
     if isinstance(rsp, aiohttp.web.StreamResponse):
