@@ -10,7 +10,7 @@ import webassets
 from .. import STATIC_DIR, STATIC_URL, TEMPLATES_DIR
 from .. import db
 from .. import logger
-from ..util import get_version
+from .. import __version__
 from . import middlewares
 from . import websocket
 
@@ -22,7 +22,7 @@ RE_CID_URL = re.compile(r'url\(\s*(?P<quote>["\']?)(?P<replace>cid:(?P<cid>[^\\\
 async def home(rq):
     assets = rq.app['assets']
     return {
-        'version': get_version(),
+        'version': __version__,
         'mailtrap_no_quit': rq.app['MAILTRAP_NO_QUIT'],
         'mailtrap_no_clear': rq.app['MAILTRAP_NO_CLEAR'],
         'js_all': assets['js_all'].urls(),

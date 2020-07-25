@@ -5,6 +5,7 @@ from aiohttp_basicauth import BasicAuthMiddleware
 
 from .. import errors
 from .. import logger
+from .. import __version__
 from .json_encoder import json_response
 
 

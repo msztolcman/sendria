@@ -26,3 +26,10 @@ match = line
 search = \bpip install mailtrap==\d+\.\d+\.\d+\b
 replace = pip install mailtrap==%(version)s
 encoding = utf-8
+
+[file:mailtrap/__init__.py]
+enabled = true
+match = line
+search = \__version__ = '[\w.-]+'
+replace = __version__ = '%(version)s'
+encoding = utf-8

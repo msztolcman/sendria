@@ -16,6 +16,7 @@ from . import logger
 from . import smtp
 from . import http
 from . import db
+from . import __version__
 
 shutdown = []
 
@@ -55,8 +56,7 @@ def parse_argv(argv):
     args = parser.parse_args(argv)
 
     if args.version:
-        from mailtrap.util import get_version
-        print('MailTrap %s' % get_version())
+        print('MailTrap %s' % __version__)
         sys.exit(0)
 
     if args.pidfile:
