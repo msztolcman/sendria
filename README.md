@@ -209,13 +209,13 @@ ChangeLog
   * switch to [aiohttp](https://docs.aiohttp.org/) from Flask
   * switch to [aiosmtpd](https://aiosmtpd.readthedocs.io) from [smtpd](https://docs.python.org/3/library/smtpd.html)
   * switch to [aiosqlite](https://github.com/omnilib/aiosqlite) from [sqlite3](https://docs.python.org/3/library/sqlite3.html)
-  * replace logger to [structlog](https://www.structlog.org/)
+  * changed logger to [structlog](https://www.structlog.org/)
 * using asynchronous version of libraries drastically improved performance
 * show in GUI information about envelope sender and recipients
 * all API requests has their own namespace now: `/api`
 * allow to replace name of application or url in template
-* block truncating all messages from GUI on demand
-* fixed issues with WebSockets, should refresh mails list and autoconnect
+* block truncating all messages from GUI (on demand)
+* fixed issues with WebSockets, should refresh mails list and reconnect if disconnected
 * fixed issues with autobuilding assets
 * many cleanups and reformatting code
 * addons for [nginx](https://github.com/msztolcman/mailtrap/tree/master/addons/nginx.conf)
