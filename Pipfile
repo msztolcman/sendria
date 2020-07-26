@@ -4,21 +4,21 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+"beautifulsoup4" = "*"
 aiohttp = "*"
 aiohttp-basicauth = "*"
 aiohttp-jinja2 = "*"
 aiosmtpd = "*"
 aiosqlite = "*"
-"beautifulsoup4" = "*"
+cssmin = "*"
+html5lib = "*"
 lockfile = "*"
 passlib = "*"
+pyscss = "*"
 python-daemon = "*"
 pytz = "*"
 structlog = "*"
 webassets = "*"
-cssmin = "*"
-pyscss = "*"
-html5lib = "*"
 
 [dev-packages]
 versionner = "*"

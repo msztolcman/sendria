@@ -16,6 +16,7 @@ from . import logger
 from . import smtp
 from . import http
 from . import db
+from . import webhook
 from . import __version__
 
 shutdown = []
@@ -53,6 +54,14 @@ def parse_argv(argv):
         action='store_true')
     parser.add_argument('-p', '--pidfile', help='Use a PID file')
     parser.add_argument('--stop', help='Sends SIGTERM to the running daemon (needs --pidfile)', action='store_true')
+    parser.add_argument('--webhook-http-url',
+        help='URL where webhook shoud be sent. If empty (default) then no webhook is sent.')
+    parser.add_argument('--webhook-http-method', default='POST',
+        help='HTTP method for webhook')
+    parser.add_argument('--webhook-http-auth',
+        help='Optional credentials ("login:password") for webhook (only Basic Auth supported). If empty, then no '
+            'authorization header is sent')
+
     args = parser.parse_args(argv)
 
     if args.version:
@@ -155,11 +164,6 @@ def run_smtp_server(loop, args, smtp_auth):
     controller = smtp.get_server(args.smtp_ip, args.smtp_port, smtp_auth, args.debug)
     controller.start()
 
-    async def _stop():
-        # print('run_smtp_server _stop')
-        controller.stop()
-    shutdown.append(_stop())
-
 
 def run_http_server(loop, args, http_auth):
     app = http.setup(args, http_auth)
@@ -245,6 +249,7 @@ def main():
     with context:
         loop = asyncio.get_event_loop()
 
+        webhook.setup(args)
         setup_db(loop, args)
         logger.get().msg('INIT: DB configured', db=args.db)
 

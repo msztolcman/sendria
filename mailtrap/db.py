@@ -8,6 +8,7 @@ from email.header import decode_header as _decode_header
 from email.utils import getaddresses
 
 from . import logger
+from . import webhook
 from .http import websocket
 
 _db: str = None
@@ -109,23 +110,35 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
 
     body = message.as_string()
     cur = await conn.cursor()
+    msg_info = {
+        'sender_envelope': decode_header(sender),
+        'sender_message': decode_header(message['FROM']),
+        'recipients_envelope': recipients_envelope,
+        'recipients_message_to': json.dumps(split_addresses(decode_header(message['TO'])) if 'TO' in message else []),
+        'recipients_message_cc': json.dumps(split_addresses(decode_header(message['CC'])) if 'CC' in message else []),
+        'recipients_message_bcc': json.dumps(split_addresses(decode_header(message['BCC'])) if 'BCC' in message else []),
+        'subject': decode_header(message['Subject']),
+        'source': body,
+        'type': message.get_content_type(),
+        'peer': ':'.join([i.strip(" '()")for i in peer.split(',')])
+    }
     await cur.execute(
         sql,
         (
-            decode_header(sender),
-            decode_header(message['FROM']),
-            json.dumps(recipients_envelope),
-            json.dumps(split_addresses(decode_header(message['TO'])) if 'TO' in message else []),
-            json.dumps(split_addresses(decode_header(message['CC'])) if 'CC' in message else []),
-            json.dumps(split_addresses(decode_header(message['BCC'])) if 'BCC' in message else []),
-            decode_header(message['Subject']),
-            body,
-            message.get_content_type(),
+            msg_info['sender_envelope'],
+            msg_info['sender_message'],
+            msg_info['recipients_envelope'],
+            msg_info['recipients_message_to'],
+            msg_info['recipients_message_cc'],
+            msg_info['recipients_message_bcc'],
+            msg_info['subject'],
+            msg_info['source'],
+            msg_info['type'],
             len(body),
-            ':'.join([i.strip(" '()")for i in peer.split(',')])
+            msg_info['peer'],
         )
     )
-    message_id = cur.lastrowid
+    message_id = msg_info['message_id'] = cur.lastrowid
     # Store parts (why do we do this for non-multipart at all?!)
     parts = 0
     for part in iter_message_parts(message):
@@ -138,6 +151,7 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
     await cur.close()
     logger.get().msg('DB: stored message', message_id=message_id, parts=parts)
     await websocket.broadcast('add_message', message_id)
+    await webhook.execute(msg_info)
     return message_id
 
 
