@@ -13,6 +13,7 @@ from passlib.apache import HtpasswdFile
 
 from . import STATIC_DIR, ASSETS_DIR
 from . import logger
+from . import notifier
 from . import smtp
 from . import http
 from . import db
@@ -72,22 +73,20 @@ def parse_argv(argv):
         args.pidfile = pathlib.Path(args.pidfile)
         if not args.pidfile.is_absolute():
             args.pidfile = args.pidfile.resolve()
-            logger.get().msg('INIT: HTTP auth htpasswd path is relative, using %s' % args.pidfile)
 
     if args.stop:
         return args
 
     if not args.db:
-        exit_err('INIT: Missing database path. Please use --db path/to/db.sqlite')
+        exit_err('Missing database path. Please use --db path/to/db.sqlite')
 
     args.db = pathlib.Path(args.db)
     if not args.db.is_absolute():
         args.db = args.db.resolve()
-        logger.get().msg('INIT: database path is relative, using %s' % args.db)
 
     # Default to foreground mode if no pid file is specified
     if not args.pidfile and not args.foreground:
-        logger.get().msg('INIT: no PID file specified; runnning in foreground')
+        logger.get().msg('no PID file specified; runnning in foreground')
         args.foreground = True
 
     # Warn about relative paths and absolutize them
@@ -95,16 +94,19 @@ def parse_argv(argv):
         args.htpasswd = pathlib.Path(args.htpasswd)
         if not args.htpasswd.is_absolute():
             args.htpasswd = args.htpasswd.resolve()
-            logger.get().msg('INIT: HTTP auth htpasswd path is relative, using %s' % args.htpasswd)
         if not args.htpasswd.is_file():
-            exit_err('INIT: HTTP auth htpasswd file does not exist')
+            exit_err('HTTP auth htpasswd file does not exist')
+
+        args.htpasswd = HtpasswdFile(args.htpasswd)
+
     if args.smtp_auth:
         args.smtp_auth = pathlib.Path(args.smtp_auth)
         if not args.smtp_auth.is_absolute():
             args.smtp_auth = args.smtp_auth.resolve()
-            logger.get().msg('INIT: SMTP auth htpasswd path is relative, using %s' % args.smtp_auth)
         if not args.smtp_auth.is_file():
-            exit_err('INIT: SMTP auth htpasswd file does not exist')
+            exit_err('SMTP auth htpasswd file does not exist')
+
+        args.smtp_auth = HtpasswdFile(args.smtp_auth)
 
     return args
 
@@ -142,8 +144,8 @@ def pid_exists(pid: int):
 def read_pidfile(path: pathlib.Path):
     try:
         return int(path.read_text())
-    except Exception as e:
-        raise ValueError(e.message)
+    except Exception as exc:
+        raise ValueError(exc.message)
 
 
 async def terminate_server(sig, loop):
@@ -160,13 +162,13 @@ async def terminate_server(sig, loop):
     loop.stop()
 
 
-def run_smtp_server(loop, args, smtp_auth):
-    controller = smtp.get_server(args.smtp_ip, args.smtp_port, smtp_auth, args.debug)
-    controller.start()
+def initialize_aiohttp_services(loop, args):
+    app = http.setup(args, args.htpasswd)
 
-
-def run_http_server(loop, args, http_auth):
-    app = http.setup(args, http_auth)
+    notifier.setup(app['websockets'], app['debug'])
+    loop.create_task(notifier.ping())
+    loop.create_task(notifier.send_messages())
+    logger.get().msg('notifier initialized')
 
     runner = aiohttp.web.AppRunner(app)
     loop.run_until_complete(runner.setup())
@@ -174,24 +176,18 @@ def run_http_server(loop, args, http_auth):
     site = aiohttp.web.TCPSite(runner, host=args.http_ip, port=args.http_port)
     server = site.start()
     loop.run_until_complete(server)
-    loop.create_task(http.websocket.ping())
-    loop.create_task(http.websocket.send_messages())
+    logger.get().msg('http server started', host=args.http_ip, port=args.http_port,
+        url=f'http://{args.http_ip}:{args.http_port}', auth='enabled' if args.htpasswd else 'disabled',
+        password_file=str(args.htpasswd.path) if args.htpasswd else None,
+    )
 
     async def _stop():
-        # print('run_http_server _stop')
+        # print('initialize_aiohttp_services _stop')
         for ws in set(app['websockets']):
             await ws.close(code=aiohttp.WSCloseCode.GOING_AWAY, message='Server shutdown')
         await app.shutdown()
 
     shutdown.append(_stop())
-
-
-def run_webhook_runner(loop, args):
-    loop.create_task(webhook.send_messages())
-
-
-def setup_db(loop, args):
-    loop.run_until_complete(db.set_db(args.db))
 
 
 def stop(pidfile):
@@ -212,8 +208,12 @@ def stop(pidfile):
 def main():
     args = parse_argv(sys.argv[1:])
 
-    if args.debug:
-        logger.get().msg('INIT: debug mode enabled')
+    logger.get().msg('MailTrap starting',
+        debug='enabled' if args.debug else 'disabled',
+        pidfile=str(args.pidfile) if args.pidfile else None,
+        db=str(args.db),
+        foreground='true' if args.foreground else 'false',
+    )
 
     # Do we just want to stop a running daemon?
     if args.stop:
@@ -222,25 +222,27 @@ def main():
 
     # Check if the static folder is writable
     if args.autobuild_assets and not os.access(STATIC_DIR, os.W_OK):
-        exit_err('INIT: autobuilding assets requires write access to %s' % STATIC_DIR)
+        exit_err('autobuilding assets requires write access to %s' % STATIC_DIR)
 
     if not args.autobuild_assets and (not ASSETS_DIR.exists() or not list(ASSETS_DIR.glob('*'))):
-        exit_err('INIT: assets not found. Generate assets using: webassets -m mailtrap.build_assets build', 0)
+        exit_err('assets not found. Generate assets using: webassets -m mailtrap.build_assets build', 0)
 
     daemon_kw = {}
 
     if args.foreground:
         # Do not detach and keep std streams open
-        daemon_kw.update({'detach_process': False,
-                          'stdin': sys.stdin,
-                          'stdout': sys.stdout,
-                          'stderr': sys.stderr})
+        daemon_kw.update({
+            'detach_process': False,
+            'stdin': sys.stdin,
+            'stdout': sys.stdout,
+            'stderr': sys.stderr,
+        })
 
     if args.pidfile:
         if args.pidfile.exists():
             pid = read_pidfile(args.pidfile)
             if not pid_exists(pid):
-                logger.get().msg('INIT: deleting obsolete PID file (process %s does not exist)' % pid, pid=pid)
+                logger.get().msg('deleting obsolete PID file (process %s does not exist)' % pid, pid=pid)
                 args.pidfile.unlink()
         daemon_kw['pidfile'] = TimeoutPIDLockFile(str(args.pidfile), 5)
 
@@ -248,36 +250,33 @@ def main():
     if 'threading' in sys.modules:
         del sys.modules['threading']
 
-    smtp_auth = HtpasswdFile(args.smtp_auth) if args.smtp_auth else None
-    http_auth = HtpasswdFile(args.htpasswd) if args.htpasswd else None
-
     context = daemon.DaemonContext(**daemon_kw)
     with context:
         loop = asyncio.get_event_loop()
 
-        webhook.setup(args)
-        run_webhook_runner(loop, args)
-        setup_db(loop, args)
-        logger.get().msg('INIT: DB configured', db=args.db)
+        loop.run_until_complete(db.setup(args.db))
 
-        run_smtp_server(loop, args, smtp_auth)
-        logger.get().msg('INIT: smtp server started', smtp_host=args.smtp_ip, smtp_port=args.smtp_port)
-        if smtp_auth:
-            logger.get().msg('INIT: smtp authorization enabled', password_file=smtp_auth.path)
+        # initialize webhooks
+        webhooks_enabled = webhook.setup(args)
+        if webhooks_enabled:
+            loop.create_task(webhook.send_messages())
 
-        run_http_server(loop, args, http_auth)
-        logger.get().msg('INIT: http server started', http_host=args.http_ip, http_port=args.http_port,
-                url=f'http://{args.http_ip}:{args.http_port}')
-        if http_auth:
-            logger.get().msg('INIT: http authorization enabled', password_file=http_auth.path)
+        smtp.run(args.smtp_ip, args.smtp_port, args.smtp_auth, args.debug)
+        logger.get().msg('smtp server started', host=args.smtp_ip, port=args.smtp_port,
+            auth='enabled' if args.smtp_auth else 'disabled',
+            password_file=str(args.smtp_auth.path) if args.smtp_auth else None,
+            url=f'smtp://{args.smtp_ip}:{args.smtp_port}'
+        )
+
+        initialize_aiohttp_services(loop, args)
 
         signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
         for s in signals:
             loop.add_signal_handler(s, lambda s=s: asyncio.create_task(terminate_server(s, loop)))
         loop.run_forever()
 
-    logger.get().msg('INIT: stop signal received')
+    logger.get().msg('stop signal received')
     loop.close()
 
-    logger.get().msg('INIT: terminating')
+    logger.get().msg('terminating')
     sys.exit(0)

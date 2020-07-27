@@ -1,4 +1,3 @@
-import asyncio
 import re
 import weakref
 
@@ -13,7 +12,6 @@ from .. import db
 from .. import logger
 from .. import __version__
 from . import middlewares
-from . import websocket
 
 RE_CID = re.compile(r'(?P<replace>cid:(?P<cid>.+))')
 RE_CID_URL = re.compile(r'url\(\s*(?P<quote>["\']?)(?P<replace>cid:(?P<cid>[^\\\')]+))(?P=quote)\s*\)')
@@ -194,7 +192,7 @@ async def get_message_part(rq):
     return await _part_response(rq, part)
 
 
-async def websocket_handler(rq: aiohttp.web.Request):
+async def websocket_handler(rq: aiohttp.web.Request) -> aiohttp.web.WebSocketResponse:
     ws = aiohttp.web.WebSocketResponse()
     await ws.prepare(rq)
 
@@ -203,9 +201,9 @@ async def websocket_handler(rq: aiohttp.web.Request):
 
     rq.app['websockets'].add(ws)
     try:
-        async for msg in ws:
-            if msg.type == aiohttp.WSMsgType.ERROR:
-                logger.get().msg('ws connection closed with exception ', exception=ws.exception(), peer=rq.remote)
+        async for ws_message in ws:
+            if ws_message.type == aiohttp.WSMsgType.ERROR:
+                logger.get().msg('ws connection closed with error', exception=ws.exception(), peer=rq.remote)
     finally:
         rq.app['websockets'].discard(ws)
 
@@ -237,24 +235,25 @@ def configure_assets(debug: bool, autobuild: bool) -> webassets.Environment:
 
 def setup(args, http_auth):
     app = aiohttp.web.Application(debug=args.debug)
-    app.middlewares.append(middlewares.set_default_headers)
-    app.middlewares.append(middlewares.error_handler)
-    app.middlewares.append(middlewares.response_from_dict)
+    app.middlewares.extend([
+        middlewares.set_default_headers,
+        middlewares.error_handler,
+        middlewares.response_from_dict,
+    ])
 
-    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(TEMPLATES_DIR))
-
-    assets = configure_assets(args.debug, args.autobuild_assets)
-    app['assets'] = assets
     app['MAILTRAP_NO_QUIT'] = args.no_quit
     app['MAILTRAP_NO_CLEAR'] = args.no_clear
     app['HEADER_NAME'] = args.template_header_name
     app['HEADER_URL'] = args.template_header_url
-    # aiohttp_jinja requirement
-    app['static_root_url'] = STATIC_URL
     app['debug'] = args.debug
     app['websockets'] = weakref.WeakSet()
 
-    websocket.setup(app)
+    assets = configure_assets(args.debug, args.autobuild_assets)
+    app['assets'] = assets
+
+    # aiohttp_jinja requirement
+    app['static_root_url'] = STATIC_URL
+    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(TEMPLATES_DIR))
 
     auth = middlewares.BasicAuth(http_auth)
     app.add_routes([

@@ -1,29 +1,32 @@
 import json
+import pathlib
 import sqlite3
-from typing import Optional
+from typing import Optional, Union, List
 
 import aiosqlite
 import uuid
 from contextlib import asynccontextmanager
+from email.message import Message
 from email.header import decode_header as _decode_header
 from email.utils import getaddresses
 
 from . import logger
 from . import webhook
-from .http import websocket
+from . import notifier
 
 _db: Optional[str] = None
 
 
-async def set_db(db: str):
+async def setup(db: Union[str, pathlib.Path]) -> None:
     global _db
-    _db = db
+    _db = str(db)
 
     async with connection() as conn:
         await create_tables(conn)
+        logger.get().msg('DB initialized')
 
 
-def decode_header(value):
+def decode_header(value: Union[str, bytes, None]) -> str:
     if not value:
         return ''
     headers = []
@@ -35,12 +38,12 @@ def decode_header(value):
     return (b''.join(headers)).decode()
 
 
-def split_addresses(value):
+def split_addresses(value) -> List[str]:
     return [('{0} <{1}>'.format(name, addr) if name else addr)
             for name, addr in getaddresses([value])]
 
 
-def iter_message_parts(message):
+def iter_message_parts(message: Message):
     if message.is_multipart():
         for message in message.get_payload():
             for part in iter_message_parts(message):
@@ -49,7 +52,7 @@ def iter_message_parts(message):
         yield message
 
 
-def _parse_recipients(recipients):
+def _parse_recipients(recipients: Optional[str]) -> List[str]:
     if not recipients:
         return []
     recipients = json.loads(recipients)
@@ -66,7 +69,6 @@ async def connection():
 
 
 async def create_tables(conn: aiosqlite.Connection):
-    logger.get().msg('DB: creating tables')
     await conn.execute("""
         CREATE TABLE IF NOT EXISTS message (
             id INTEGER PRIMARY KEY ASC,
@@ -152,9 +154,10 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
         parts += 1
     await conn.commit()
     await cur.close()
+
     logger.get().msg('DB: stored message', message_id=message_id, parts=parts)
-    await websocket.broadcast('add_message', message_id)
-    await webhook.execute(msg_info)
+    await notifier.broadcast('add_message', message_id)
+    await webhook.enqueue(msg_info)
     return message_id
 
 

@@ -1,4 +1,4 @@
-__all__ = ['get_server']
+__all__ = []
 
 import binascii
 import email.message
@@ -146,8 +146,9 @@ class Controller(aiosmtpd.controller.Controller):
         return SMTP(self.handler, self.smtp_auth, self.debug)
 
 
-def get_server(smtp_host: str, smtp_port: int, smtp_auth: Optional[HtpasswdFile], debug: bool):
+def run(smtp_host: str, smtp_port: int, smtp_auth: Optional[HtpasswdFile], debug: bool):
     message = AsyncMessage(smtp_auth=smtp_auth)
     controller = Controller(message, smtp_auth, debug, hostname=smtp_host, port=smtp_port)
+    controller.start()
 
     return controller

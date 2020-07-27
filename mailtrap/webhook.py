@@ -1,7 +1,10 @@
+__all__ = ['setup', 'enqueue']
+
+import argparse
 import asyncio
 import json
-from contextlib import asynccontextmanager
 import traceback
+from contextlib import asynccontextmanager
 from typing import Optional
 
 import aiohttp
@@ -9,22 +12,22 @@ import aiohttp
 from . import __version__
 from . import logger
 
-HTTP_URL: Optional[str] = None
 HTTP_METHOD: str = 'POST'
+HTTP_URL: Optional[str] = None
 HTTP_AUTH: Optional[str] = None
 DEBUG = False
-WebhookTasks: Optional[asyncio.Queue] = None
+Messages: Optional[asyncio.Queue] = None
 
 
-def setup(args):
-    global HTTP_URL, HTTP_METHOD, HTTP_AUTH, DEBUG, WebhookTasks
+def setup(args: argparse.Namespace) -> bool:
+    global HTTP_URL, HTTP_METHOD, HTTP_AUTH, DEBUG, Messages
 
     DEBUG = args.debug
 
     if not args.webhook_http_url:
         if DEBUG:
             logger.get().msg('webhooks disabled')
-        return
+        return False
 
     HTTP_URL = args.webhook_http_url
 
@@ -34,18 +37,18 @@ def setup(args):
     if args.webhook_http_auth:
         HTTP_AUTH = args.webhook_http_auth.split(':', 1)
 
-    WebhookTasks = asyncio.Queue()
+    Messages = asyncio.Queue()
 
     if DEBUG:
-        logger.get().msg('INIT: webhooks enabled', method=HTTP_METHOD, url=HTTP_URL,
+        logger.get().msg('webhooks enabled', method=HTTP_METHOD, url=HTTP_URL,
             auth='enabled' if HTTP_AUTH else 'disabled')
+    return True
 
 
-def build_payload(data):
+def prepare_payload(data: dict) -> None:
     data['recipients_message_to'] = json.loads(data['recipients_message_to'])
     data['recipients_message_cc'] = json.loads(data['recipients_message_cc'])
     data['recipients_message_bcc'] = json.loads(data['recipients_message_bcc'])
-    return data
 
 
 @asynccontextmanager
@@ -62,33 +65,38 @@ async def get_session() -> aiohttp.ClientSession:
     session_kwargs = {
         'auth': auth,
         'headers': headers,
-        'timeout': aiohttp.ClientTimeout(connect=5, total=60),
+        'timeout': aiohttp.ClientTimeout(connect=5, total=30),
     }
 
     session = aiohttp.ClientSession(**session_kwargs)
-    yield session
-    await session.close()
+    try:
+        yield session
+    finally:
+        await session.close()
 
 
-async def send_messages():
+async def send_messages() -> None:
     while True:
-        msg = await WebhookTasks.get()
-
-        payload = build_payload(msg)
+        payload = await Messages.get()
+        prepare_payload(payload)
 
         try:
             async with get_session() as session:
                 async with session.request(HTTP_METHOD, HTTP_URL, json=payload) as rsp:
-                    if DEBUG:
-                        logger.get().msg('webhook sent', message_id=msg['message_id'], status=rsp.status,
-                                         reason=rsp.reason, url=HTTP_URL)
+                    if rsp.status != 200:
+                        logger.get().msg('webhook response error', message_id=payload['message_id'], status=rsp.status,
+                            reason=rsp.reason, url=HTTP_URL)
+                    elif DEBUG:
+                        logger.get().msg('webhook sent', message_id=payload['message_id'], status=rsp.status,
+                            reason=rsp.reason, url=HTTP_URL)
         except aiohttp.ClientError:
-            logger.get().msg('webhook failed', traceback=traceback.format_exc())
-        WebhookTasks.task_done()
+            logger.get().msg('webhook client error', traceback=traceback.format_exc())
+
+        Messages.task_done()
 
 
-async def execute(msg):
+async def enqueue(msg):
     if not HTTP_URL:
         return
 
-    WebhookTasks.put_nowait(msg)
+    Messages.put_nowait(msg)
