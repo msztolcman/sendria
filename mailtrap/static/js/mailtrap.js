@@ -129,9 +129,9 @@
         function wsConnect() {
             var wsUrl = window.location.host + '/ws';
             try {
-                var socket = new WebSocket('wss://' + wsUrl);
-            } catch (err) {
                 var socket = new WebSocket('ws://' + wsUrl);
+            } catch (err) {
+                var socket = new WebSocket('wss://' + wsUrl);
             }
             var terminating = false;
             window.onbeforeunload = function () {

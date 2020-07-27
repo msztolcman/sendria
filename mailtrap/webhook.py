@@ -1,3 +1,4 @@
+import asyncio
 import json
 from contextlib import asynccontextmanager
 import traceback
@@ -12,6 +13,7 @@ HTTP_URL: Union[str, None] = None
 HTTP_METHOD: str = 'POST'
 HTTP_AUTH: Union[str, None] = None
 DEBUG = False
+WebhookTasks = asyncio.Queue()
 
 
 def setup(args):
@@ -66,19 +68,29 @@ async def get_session() -> aiohttp.ClientSession:
     await session.close()
 
 
+async def send_messages():
+    while True:
+        msg = await WebhookTasks.get()
+
+        payload = build_payload(msg)
+
+        try:
+            async with get_session() as session:
+                async with session.request(HTTP_METHOD, HTTP_URL, json=payload) as rsp:
+                    if DEBUG:
+                        logger.get().msg('webhook sent', message_id=msg['message_id'], status=rsp.status,
+                                         reason=rsp.reason, url=HTTP_URL)
+        except aiohttp.ClientError:
+            logger.get().msg('webhook failed', traceback=traceback.format_exc())
+            raise
+        WebhookTasks.task_done()
+
+        await asyncio.sleep(0.5)
+
+
+
 async def execute(msg):
     if not HTTP_URL:
         return
 
-    payload = build_payload(msg)
-
-    try:
-        async with get_session() as session:
-            async with session.request(HTTP_METHOD, HTTP_URL, json=payload) as rsp:
-                if DEBUG:
-                    logger.get().msg('webhook sent', message_id=msg['message_id'], status=rsp.status,
-                        reason=rsp.reason, url=HTTP_URL)
-    except aiohttp.ClientError:
-        logger.get().msg('webhook failed', traceback=traceback.format_exc())
-        raise
-
+    WebhookTasks.put_nowait(msg)
