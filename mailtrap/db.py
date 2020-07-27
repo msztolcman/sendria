@@ -50,6 +50,8 @@ def iter_message_parts(message):
 
 
 def _parse_recipients(recipients):
+    if not recipients:
+        return []
     recipients = json.loads(recipients)
     return recipients
 
