@@ -2,7 +2,7 @@ import os
 import subprocess
 import shutil
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
 
 requirements = [
@@ -68,7 +68,7 @@ setup(
     license='MIT',
     zip_safe=False,
     include_package_data=True,
-    packages=('mailtrap', ),
+    packages=find_packages(),
     python_requires='>=3.7',
     entry_points={
         'console_scripts': [
