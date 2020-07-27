@@ -1,5 +1,6 @@
 import os
 import subprocess
+import shutil
 
 from setuptools import setup
 from setuptools.command.build_py import build_py
@@ -35,6 +36,12 @@ class BuildPyWithAssets(build_py):
         # means that webassets might not be installed yet and thus we cannot build the assets now...
         if os.path.exists(asset_dir) and os.listdir(asset_dir):
             return
+
+        webassets = shutil.which('webassets')
+        if not webassets:
+            print("Cannot find webassets. Please execute manually: /path/to/webassets -m mailtrap.build_assets build'")
+            return
+
         args = ['webassets', '-m', 'mailtrap.build_assets', 'build']
         with open(os.devnull, 'w') as devnull:
             subprocess.check_call(args, stderr=devnull)
