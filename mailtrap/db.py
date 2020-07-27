@@ -1,5 +1,6 @@
 import json
 import sqlite3
+from typing import Union
 
 import aiosqlite
 import uuid
@@ -11,7 +12,7 @@ from . import logger
 from . import webhook
 from .http import websocket
 
-_db: str = None
+_db: Union[str, None] = None
 
 
 async def set_db(db: str):
