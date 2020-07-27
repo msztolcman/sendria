@@ -12,6 +12,14 @@ def set_webapp(app: aiohttp.web.Application) -> None:
     _webapp = app
 
 
+async def ping():
+    while True:
+        ws: aiohttp.web.WebSocketResponse
+        for ws in WEBAPP['websockets']:
+            await ws.ping()
+        await asyncio.sleep(30)
+
+
 async def broadcast(*args) -> None:
     WebsocketMessages.put_nowait(args)
 

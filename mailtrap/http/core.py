@@ -215,14 +215,6 @@ async def websocket_handler(rq: aiohttp.web.Request):
     return ws
 
 
-async def websocket_ping(websockets):
-    while True:
-        ws: aiohttp.web.WebSocketResponse
-        for ws in websockets:
-            await ws.ping()
-        await asyncio.sleep(30)
-
-
 def configure_assets(debug: bool, autobuild: bool) -> webassets.Environment:
     js = webassets.Bundle('js/lib/jquery.js', 'js/lib/jquery-ui.js', 'js/lib/jquery.hotkeys.js',
         'js/lib/handlebars.js', 'js/lib/moment.js', 'js/lib/jstorage.js',

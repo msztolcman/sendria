@@ -1,1 +1,2 @@
-from .core import setup, websocket_ping
+from .core import setup
+from . import websocket
