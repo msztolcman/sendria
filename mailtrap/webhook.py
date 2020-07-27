@@ -2,16 +2,16 @@ import asyncio
 import json
 from contextlib import asynccontextmanager
 import traceback
-from typing import Union
+from typing import Optional
 
 import aiohttp
 
 from . import __version__
 from . import logger
 
-HTTP_URL: Union[str, None] = None
+HTTP_URL: Optional[str] = None
 HTTP_METHOD: str = 'POST'
-HTTP_AUTH: Union[str, None] = None
+HTTP_AUTH: Optional[str] = None
 DEBUG = False
 WebhookTasks: Optional[asyncio.Queue] = None
 
