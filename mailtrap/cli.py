@@ -175,6 +175,7 @@ def run_http_server(loop, args, http_auth):
     server = site.start()
     loop.run_until_complete(server)
     loop.create_task(http.websocket.ping())
+    loop.create_task(http.websocket.send_messages())
 
     async def _stop():
         # print('run_http_server _stop')
@@ -183,6 +184,10 @@ def run_http_server(loop, args, http_auth):
         await app.shutdown()
 
     shutdown.append(_stop())
+
+
+def run_webhook_runner(loop, args):
+    loop.create_task(webhook.send_messages())
 
 
 def setup_db(loop, args):
@@ -251,6 +256,7 @@ def main():
         loop = asyncio.get_event_loop()
 
         webhook.setup(args)
+        run_webhook_runner(loop, args)
         setup_db(loop, args)
         logger.get().msg('INIT: DB configured', db=args.db)
 

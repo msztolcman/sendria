@@ -13,11 +13,11 @@ HTTP_URL: Union[str, None] = None
 HTTP_METHOD: str = 'POST'
 HTTP_AUTH: Union[str, None] = None
 DEBUG = False
-WebhookTasks = asyncio.Queue()
+WebhookTasks: Optional[asyncio.Queue] = None
 
 
 def setup(args):
-    global HTTP_URL, HTTP_METHOD, HTTP_AUTH, DEBUG
+    global HTTP_URL, HTTP_METHOD, HTTP_AUTH, DEBUG, WebhookTasks
 
     DEBUG = args.debug
 
@@ -34,8 +34,10 @@ def setup(args):
     if args.webhook_http_auth:
         HTTP_AUTH = args.webhook_http_auth.split(':', 1)
 
+    WebhookTasks = asyncio.Queue()
+
     if DEBUG:
-        logger.get().msg('webhooks enabled', method=HTTP_METHOD, url=HTTP_URL,
+        logger.get().msg('INIT: webhooks enabled', method=HTTP_METHOD, url=HTTP_URL,
             auth='enabled' if HTTP_AUTH else 'disabled')
 
 

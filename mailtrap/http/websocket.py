@@ -1,15 +1,22 @@
 import asyncio
+from typing import Optional
 
 import aiohttp.web
 
-_webapp = None
+from .. import logger
 
-WebsocketMessages = asyncio.Queue()
+DEBUG: Optional[bool] = False
+WEBAPP = None
+
+WebsocketMessages: Optional[asyncio.Queue] = None
 
 
-def set_webapp(app: aiohttp.web.Application) -> None:
-    global _webapp
-    _webapp = app
+def setup(app: aiohttp.web.Application) -> None:
+    global WEBAPP, WebsocketMessages, DEBUG
+    WEBAPP = app
+    DEBUG = app['debug']
+
+    WebsocketMessages = asyncio.Queue()
 
 
 async def ping():
@@ -27,8 +34,11 @@ async def broadcast(*args) -> None:
 async def send_messages():
     while True:
         msg = await WebsocketMessages.get()
-        for ws in set(_webapp['websockets']):
-            await ws.send_str(','.join(map(str, msg)))
-        WebsocketMessages.task_done()
 
-        await asyncio.sleep(0.5)
+        ws: aiohttp.web.WebSocketResponse
+        for ws in set(WEBAPP['websockets']):
+            data = ','.join(map(str, msg))
+            await ws.send_str(data)
+            if DEBUG:
+                logger.get().msg('websocket message sent', message=data)
+        WebsocketMessages.task_done()
