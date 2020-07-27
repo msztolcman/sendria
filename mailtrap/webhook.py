@@ -84,11 +84,7 @@ async def send_messages():
                                          reason=rsp.reason, url=HTTP_URL)
         except aiohttp.ClientError:
             logger.get().msg('webhook failed', traceback=traceback.format_exc())
-            raise
         WebhookTasks.task_done()
-
-        await asyncio.sleep(0.5)
-
 
 
 async def execute(msg):
