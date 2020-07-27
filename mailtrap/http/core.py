@@ -1,3 +1,4 @@
+import asyncio
 import re
 import weakref
 
@@ -212,6 +213,14 @@ async def websocket_handler(rq: aiohttp.web.Request):
         logger.get().msg('websocket connection closed', peer=rq.remote)
 
     return ws
+
+
+async def websocket_ping(websockets):
+    while True:
+        ws: aiohttp.web.WebSocketResponse
+        for ws in websockets:
+            await ws.ping()
+        await asyncio.sleep(30)
 
 
 def configure_assets(debug: bool, autobuild: bool) -> webassets.Environment:

@@ -174,6 +174,7 @@ def run_http_server(loop, args, http_auth):
     site = aiohttp.web.TCPSite(runner, host=args.http_ip, port=args.http_port)
     server = site.start()
     loop.run_until_complete(server)
+    loop.create_task(http.websocket_ping(app['websockets']))
 
     async def _stop():
         # print('run_http_server _stop')
