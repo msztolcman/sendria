@@ -243,8 +243,6 @@ def setup(args, http_auth):
 
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(TEMPLATES_DIR))
 
-    websocket.set_webapp(app)
-
     assets = configure_assets(args.debug, args.autobuild_assets)
     app['assets'] = assets
     app['MAILTRAP_NO_QUIT'] = args.no_quit
@@ -255,6 +253,8 @@ def setup(args, http_auth):
     app['static_root_url'] = STATIC_URL
     app['debug'] = args.debug
     app['websockets'] = weakref.WeakSet()
+
+    websocket.setup(app)
 
     auth = middlewares.BasicAuth(http_auth)
     app.add_routes([
