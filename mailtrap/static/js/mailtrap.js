@@ -133,6 +133,7 @@
                 var socket = new WebSocket('wss://' + wsUrl);
             }
             var terminating = false;
+            var wsConnected = false;
             window.onbeforeunload = function () {
                 terminating = true;
                 socket.close();
@@ -141,17 +142,25 @@
             socket.onopen = function () {
                 $('#disconnected-dialog').dialog('close');
                 Message.loadAll();
+                wsConnected = true;
             };
             socket.onclose = function () {
                 if (terminating) {
                     return;
                 }
-                $('#loading-dialog').dialog('close');
-                $('#disconnected-dialog').dialog('open');
+
+                wsConnected = false;
+
+                setTimeout(function() {
+                    if (!wsConnected) {
+                        $('#loading-dialog').dialog('close');
+                        $('#disconnected-dialog').dialog('open');
+                    }
+                }, 5000);
 
                 setTimeout(
                     function() { wsConnect(); },
-                    3000
+                    2000
                 );
             };
             socket.onmessage = function (ev) {
