@@ -125,6 +125,7 @@
         Message.loadAll();
 
         // Real-time updates
+        var wsConnected = false;
         function wsConnect() {
             var wsUrl = window.location.host + '/ws';
             try {
@@ -133,7 +134,6 @@
                 var socket = new WebSocket('ws://' + wsUrl);
             }
             var terminating = false;
-            var wsConnected = false;
             window.onbeforeunload = function () {
                 terminating = true;
                 socket.close();
