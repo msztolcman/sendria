@@ -34,7 +34,7 @@ class AsyncMessage(aiosmtpd.handlers.AsyncMessage):
         logger.get().msg("message received",
             envelope_from=message['X-MailFrom'],
             envelope_to=message['X-RcptTo'],
-            peer=message['X-Peer'],
+            peer=':'.join([i.strip(" '()")for i in message['X-Peer'].split(',')]),
             length=len(body)
         )
         async with db.connection() as conn:
