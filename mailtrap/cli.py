@@ -1,10 +1,10 @@
 import asyncio
 import argparse
+import errno
 import os
 import pathlib
-import sys
-import errno
 import signal
+import sys
 
 import aiohttp.web
 import daemon
@@ -12,13 +12,13 @@ from daemon.pidfile import TimeoutPIDLockFile
 from passlib.apache import HtpasswdFile
 
 from . import STATIC_DIR, ASSETS_DIR
+from . import __version__
+from . import db
+from . import http
 from . import logger
 from . import notifier
 from . import smtp
-from . import http
-from . import db
 from . import webhook
-from . import __version__
 
 shutdown = []
 
