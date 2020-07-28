@@ -20,7 +20,7 @@ from . import notifier
 from . import smtp
 from . import webhook
 
-shutdown = []
+SHUTDOWN = []
 
 
 def exit_err(msg, exit_code=1, **kwargs):
@@ -149,7 +149,7 @@ async def terminate_server(sig, loop):
         # Terminate the line containing ^C
         print()
 
-    await asyncio.gather(*shutdown, return_exceptions=True)
+    await asyncio.gather(*SHUTDOWN, return_exceptions=True)
 
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
     for task in tasks:
@@ -159,13 +159,25 @@ async def terminate_server(sig, loop):
     loop.stop()
 
 
-def initialize_aiohttp_services(loop, args):
-    app = http.setup(args, args.http_auth)
+def run_mailtrap_servers(loop, args: argparse.Namespace) -> None:
+    # initialize db
+    loop.run_until_complete(db.setup(args.db))
 
-    notifier.setup(app['websockets'], app['debug'])
-    loop.create_task(notifier.ping())
-    loop.create_task(notifier.send_messages())
-    logger.get().msg('notifier initialized')
+    # initialize and start webhooks
+    webhooks_enabled = webhook.setup(args)
+    if webhooks_enabled:
+        loop.create_task(webhook.send_messages())
+
+    # start smtp server
+    smtp.run(args.smtp_ip, args.smtp_port, args.smtp_auth, args.debug)
+    logger.get().msg('smtp server started', host=args.smtp_ip, port=args.smtp_port,
+        auth='enabled' if args.smtp_auth else 'disabled',
+        password_file=str(args.smtp_auth.path) if args.smtp_auth else None,
+        url=f'smtp://{args.smtp_ip}:{args.smtp_port}'
+    )
+
+    # initialize and start web server
+    app = http.setup(args, args.http_auth)
 
     runner = aiohttp.web.AppRunner(app)
     loop.run_until_complete(runner.setup())
@@ -181,13 +193,24 @@ def initialize_aiohttp_services(loop, args):
         password_file=str(args.http_auth.path) if args.http_auth else None,
     )
 
+    # initialize and run websocket notifier
+    notifier.setup(app['websockets'], app['debug'])
+    loop.create_task(notifier.ping())
+    loop.create_task(notifier.send_messages())
+    logger.get().msg('notifier initialized')
+
+    # prepare for clean terminate
     async def _initialize_aiohttp_services__stop():
         # print('initialize_aiohttp_services _stop')
         for ws in set(app['websockets']):
             await ws.close(code=aiohttp.WSCloseCode.GOING_AWAY, message='Server shutdown')
         await app.shutdown()
 
-    shutdown.append(_initialize_aiohttp_services__stop())
+    SHUTDOWN.append(_initialize_aiohttp_services__stop())
+
+    signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+    for s in signals:
+        loop.add_signal_handler(s, lambda s=s: asyncio.create_task(terminate_server(s, loop)))
 
 
 def stop(pidfile):
@@ -221,7 +244,7 @@ def main():
         stop(args.pidfile)
         sys.exit(0)
 
-    logger.get().msg('MailTrap starting',
+    logger.get().msg('starting MailTrap',
         debug='enabled' if args.debug else 'disabled',
         pidfile=str(args.pidfile) if args.pidfile else None,
         db=str(args.db),
@@ -262,25 +285,8 @@ def main():
     with context:
         loop = asyncio.get_event_loop()
 
-        loop.run_until_complete(db.setup(args.db))
+        run_mailtrap_servers(loop, args)
 
-        # initialize webhooks
-        webhooks_enabled = webhook.setup(args)
-        if webhooks_enabled:
-            loop.create_task(webhook.send_messages())
-
-        smtp.run(args.smtp_ip, args.smtp_port, args.smtp_auth, args.debug)
-        logger.get().msg('smtp server started', host=args.smtp_ip, port=args.smtp_port,
-            auth='enabled' if args.smtp_auth else 'disabled',
-            password_file=str(args.smtp_auth.path) if args.smtp_auth else None,
-            url=f'smtp://{args.smtp_ip}:{args.smtp_port}'
-        )
-
-        initialize_aiohttp_services(loop, args)
-
-        signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
-        for s in signals:
-            loop.add_signal_handler(s, lambda s=s: asyncio.create_task(terminate_server(s, loop)))
         loop.run_forever()
 
     logger.get().msg('stop signal received')
