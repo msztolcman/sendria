@@ -223,6 +223,11 @@ ChangeLog
 * addons for [nginx](https://github.com/msztolcman/mailtrap/tree/master/addons/nginx.conf)
 and [supervisor](https://github.com/msztolcman/mailtrap/tree/master/addons/supervisor.conf)
 
+#### Backward incompatible changes:
+
+* all api's requests are now prefixed with `/api` (look at [API section](#api))
+* `--htpasswd` cli param is renamed to `--http-auth`
+
 ### v0.1.6
 
 * fixed issue with old call do `gevent.signal`
