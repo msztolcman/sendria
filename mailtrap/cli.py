@@ -173,18 +173,21 @@ def initialize_aiohttp_services(loop, args):
     site = aiohttp.web.TCPSite(runner, host=args.http_ip, port=args.http_port)
     server = site.start()
     loop.run_until_complete(server)
-    logger.get().msg('http server started', host=args.http_ip, port=args.http_port,
-        url=f'http://{args.http_ip}:{args.http_port}', auth='enabled' if args.http_auth else 'disabled',
+
+    logger.get().msg('http server started',
+        host=args.http_ip, port=args.http_port,
+        url=f'http://{args.http_ip}:{args.http_port}',
+        auth='enabled' if args.http_auth else 'disabled',
         password_file=str(args.http_auth.path) if args.http_auth else None,
     )
 
-    async def _stop():
+    async def _initialize_aiohttp_services__stop():
         # print('initialize_aiohttp_services _stop')
         for ws in set(app['websockets']):
             await ws.close(code=aiohttp.WSCloseCode.GOING_AWAY, message='Server shutdown')
         await app.shutdown()
 
-    shutdown.append(_stop())
+    shutdown.append(_initialize_aiohttp_services__stop())
 
 
 def stop(pidfile):

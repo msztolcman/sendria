@@ -1,7 +1,7 @@
 import re
 
 
-class MailtrapException(Exception):
+class MailTrapException(Exception):
     http_code = 400
     _response_code_rxp = re.compile(r'[A-Z]+[a-z0-9]+')
 

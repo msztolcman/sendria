@@ -13,7 +13,7 @@ from .json_encoder import json_response
 async def error_handler(rq: aiohttp.web.Request, handler) -> aiohttp.web.StreamResponse:
     try:
         rsp = await handler(rq)
-    except errors.MailtrapException as exp:
+    except errors.MailTrapException as exp:
         ret = {
             'code': exp.get_response_code(),
         }
