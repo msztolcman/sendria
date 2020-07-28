@@ -1,3 +1,5 @@
+__all__ = ['setup', 'configure_assets']
+
 import argparse
 import bs4
 import re

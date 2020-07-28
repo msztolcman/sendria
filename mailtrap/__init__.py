@@ -1,3 +1,5 @@
+__all__ = ['__version__', 'ROOT_DIR', 'STATIC_DIR', 'STATIC_URL', 'TEMPLATES_DIR', 'ASSETS_DIR']
+
 import pathlib
 import pkgutil
 

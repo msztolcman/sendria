@@ -1,3 +1,8 @@
+__all__ = ['setup', 'connection', 'add_message', 'delete_message', 'delete_messages', 'get_message',
+    'get_message_attachments', 'get_message_part_cid', 'get_message_part_html', 'get_message_part_plain',
+    'get_messages',
+]
+
 import json
 import pathlib
 import sqlite3
