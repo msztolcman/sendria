@@ -12,36 +12,36 @@ import aiohttp
 from . import __version__
 from . import logger
 
-HTTP_METHOD: str = 'POST'
-HTTP_URL: Optional[str] = None
-HTTP_AUTH: Optional[str] = None
+WEBHOOK_METHOD: str = 'POST'
+WEBHOOK_URL: Optional[str] = None
+WEBHOOK_AUTH: Optional[str] = None
 DEBUG = False
 Messages: Optional[asyncio.Queue] = None
 
 
 def setup(args: argparse.Namespace) -> bool:
-    global HTTP_URL, HTTP_METHOD, HTTP_AUTH, DEBUG, Messages
+    global WEBHOOK_URL, WEBHOOK_METHOD, WEBHOOK_AUTH, DEBUG, Messages
 
     DEBUG = args.debug
 
-    if not args.webhook_http_url:
+    if not args.callback_webhook_url:
         if DEBUG:
             logger.get().msg('webhooks disabled')
         return False
 
-    HTTP_URL = args.webhook_http_url
+    WEBHOOK_URL = args.callback_webhook_url
 
-    if args.webhook_http_method:
-        HTTP_METHOD = args.webhook_http_method
+    if args.callback_webhook_method:
+        WEBHOOK_METHOD = args.callback_webhook_method.upper()
 
-    if args.webhook_http_auth:
-        HTTP_AUTH = args.webhook_http_auth.split(':', 1)
+    if args.callback_webhook_auth:
+        WEBHOOK_AUTH = args.callback_webhook_auth.split(':', 1)
 
     Messages = asyncio.Queue()
 
     if DEBUG:
-        logger.get().msg('webhooks enabled', method=HTTP_METHOD, url=HTTP_URL,
-            auth='enabled' if HTTP_AUTH else 'disabled')
+        logger.get().msg('webhooks enabled', method=WEBHOOK_METHOD, url=WEBHOOK_URL,
+            auth='enabled' if WEBHOOK_AUTH else 'disabled')
     return True
 
 
@@ -54,8 +54,8 @@ def prepare_payload(data: dict) -> None:
 @asynccontextmanager
 async def get_session() -> aiohttp.ClientSession:
     auth = None
-    if HTTP_AUTH:
-        auth = aiohttp.BasicAuth(*HTTP_AUTH)
+    if WEBHOOK_AUTH:
+        auth = aiohttp.BasicAuth(*WEBHOOK_AUTH)
 
     headers = {
         'User-agent': f'MailTrap/{__version__} (https://github.com/msztolcman/mailtrap)',
@@ -82,13 +82,13 @@ async def send_messages() -> None:
 
         try:
             async with get_session() as session:
-                async with session.request(HTTP_METHOD, HTTP_URL, json=payload) as rsp:
+                async with session.request(WEBHOOK_METHOD, WEBHOOK_URL, json=payload) as rsp:
                     if rsp.status != 200:
                         logger.get().msg('webhook response error', message_id=payload['message_id'], status=rsp.status,
-                            reason=rsp.reason, url=HTTP_URL)
+                            reason=rsp.reason, url=WEBHOOK_URL, method=WEBHOOK_METHOD)
                     elif DEBUG:
                         logger.get().msg('webhook sent', message_id=payload['message_id'], status=rsp.status,
-                            reason=rsp.reason, url=HTTP_URL)
+                            reason=rsp.reason, url=WEBHOOK_URL)
         except aiohttp.ClientError:
             logger.get().msg('webhook client error', traceback=traceback.format_exc())
 
@@ -96,7 +96,7 @@ async def send_messages() -> None:
 
 
 async def enqueue(msg: Any) -> None:
-    if not HTTP_URL:
+    if not WEBHOOK_URL:
         return
 
     Messages.put_nowait(msg)

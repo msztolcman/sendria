@@ -16,7 +16,7 @@ from email.header import decode_header as _decode_header
 from email.utils import getaddresses
 
 from . import logger
-from . import webhook
+from . import callback
 from . import notifier
 
 _db: Optional[str] = None
@@ -162,7 +162,7 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
 
     logger.get().msg('DB: stored message', message_id=message_id, parts=parts)
     await notifier.broadcast('add_message', message_id)
-    await webhook.enqueue(msg_info)
+    await callback.enqueue(msg_info)
     return message_id
 
 

@@ -20,7 +20,7 @@ from . import http
 from . import logger
 from . import notifier
 from . import smtp
-from . import webhook
+from . import callback
 
 SHUTDOWN = []
 
@@ -57,11 +57,11 @@ def parse_argv(argv):
         action='store_true')
     parser.add_argument('-p', '--pidfile', help='Use a PID file')
     parser.add_argument('--stop', help='Sends SIGTERM to the running daemon (needs --pidfile)', action='store_true')
-    parser.add_argument('--webhook-http-url',
+    parser.add_argument('--callback-webhook-url',
         help='URL where webhook shoud be sent. If empty (default) then no webhook is sent.')
-    parser.add_argument('--webhook-http-method', default='POST',
+    parser.add_argument('--callback-webhook-method', default='POST',
         help='HTTP method for webhook')
-    parser.add_argument('--webhook-http-auth',
+    parser.add_argument('--callback-webhook-auth',
         help='Optional credentials ("login:password") for webhook (only Basic Auth supported). If empty, then no '
             'authorization header is sent')
 
@@ -166,9 +166,9 @@ def run_mailtrap_servers(loop, args: argparse.Namespace) -> None:
     loop.run_until_complete(db.setup(args.db))
 
     # initialize and start webhooks
-    webhooks_enabled = webhook.setup(args)
-    if webhooks_enabled:
-        loop.create_task(webhook.send_messages())
+    callbacks_enabled = callback.setup(args)
+    if callbacks_enabled:
+        loop.create_task(callback.send_messages())
 
     # start smtp server
     smtp.run(args.smtp_ip, args.smtp_port, args.smtp_auth, args.debug)
