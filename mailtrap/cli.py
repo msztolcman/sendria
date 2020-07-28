@@ -65,16 +65,12 @@ def parse_argv(argv):
 
     args = parser.parse_args(argv)
 
-    if args.version:
-        print('MailTrap %s' % __version__)
-        sys.exit(0)
-
     if args.pidfile:
         args.pidfile = pathlib.Path(args.pidfile)
         if not args.pidfile.is_absolute():
             args.pidfile = args.pidfile.resolve()
 
-    if args.stop:
+    if args.stop or args.version:
         return args
 
     if not args.db:
@@ -154,6 +150,7 @@ async def terminate_server(sig, loop):
         print()
 
     await asyncio.gather(*shutdown, return_exceptions=True)
+
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
     for task in tasks:
         task.cancel()
@@ -208,17 +205,25 @@ def stop(pidfile):
 def main():
     args = parse_argv(sys.argv[1:])
 
+    if args.version:
+        print('MailTrap %s' % __version__)
+        sys.exit(0)
+
+    # Do we just want to stop a running daemon?
+    if args.stop:
+        logger.get().msg('stopping MailTrap',
+            debug='enabled' if args.debug else 'disabled',
+            pidfile=str(args.pidfile) if args.pidfile else None,
+        )
+        stop(args.pidfile)
+        sys.exit(0)
+
     logger.get().msg('MailTrap starting',
         debug='enabled' if args.debug else 'disabled',
         pidfile=str(args.pidfile) if args.pidfile else None,
         db=str(args.db),
         foreground='true' if args.foreground else 'false',
     )
-
-    # Do we just want to stop a running daemon?
-    if args.stop:
-        stop(args.pidfile)
-        sys.exit(0)
 
     # Check if the static folder is writable
     if args.autobuild_assets and not os.access(STATIC_DIR, os.W_OK):
