@@ -61,14 +61,14 @@ async def set_default_headers(rq, handler) -> aiohttp.web.StreamResponse:
 
 
 class BasicAuth(BasicAuthMiddleware):
-    def __init__(self, htpasswd, *args, **kwargs):
-        self._htpasswd = htpasswd
+    def __init__(self, http_auth, *args, **kwargs):
+        self._http_auth = http_auth
         kwargs['realm'] = 'MailTrap'
         kwargs['force'] = False
         super().__init__(*args, **kwargs)
 
     async def authenticate(self, rq):
-        if not self._htpasswd:
+        if not self._http_auth:
             return True
 
         res = await super().authenticate(rq)
@@ -82,7 +82,7 @@ class BasicAuth(BasicAuthMiddleware):
         return res
 
     async def check_credentials(self, username, password, rq):
-        if self._htpasswd.check_password(username, password):
+        if self._http_auth.check_password(username, password):
             if rq.app['debug']:
                 logger.get().msg('request authenticated', uri=rq.url.human_repr(), username=username)
             return True
