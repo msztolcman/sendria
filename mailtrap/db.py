@@ -160,7 +160,7 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
     await conn.commit()
     await cur.close()
 
-    logger.get().msg('DB: stored message', message_id=message_id, parts=parts)
+    logger.get().msg('message stored', message_id=message_id, parts=parts)
     await notifier.broadcast('add_message', message_id)
     await callback.enqueue(msg_info)
     return message_id
@@ -299,7 +299,7 @@ async def delete_message(conn: aiosqlite.Connection, message_id: int) -> None:
     await conn.execute('DELETE FROM message WHERE id = ?', (message_id,))
     await conn.execute('DELETE FROM message_part WHERE message_id = ?', (message_id,))
     await conn.commit()
-    logger.get().msg('deleted message {0}'.format(message_id))
+    logger.get().msg('message deleted', message_id=message_id)
     await notifier.broadcast('delete_message', message_id)
 
 
@@ -307,5 +307,5 @@ async def delete_messages(conn: aiosqlite.Connection) -> None:
     await conn.execute('DELETE FROM message')
     await conn.execute('DELETE FROM message_part')
     await conn.commit()
-    logger.get().msg('deleted all messages')
+    logger.get().msg('all messages deleted')
     await notifier.broadcast('delete_messages')
