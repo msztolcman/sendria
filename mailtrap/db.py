@@ -1,7 +1,7 @@
 import json
 import pathlib
 import sqlite3
-from typing import Optional, Union, List
+from typing import Iterable, Optional, Union, List
 
 import aiosqlite
 import uuid
@@ -68,7 +68,7 @@ async def connection():
     await conn.close()
 
 
-async def create_tables(conn: aiosqlite.Connection):
+async def create_tables(conn: aiosqlite.Connection) -> None:
     await conn.execute("""
         CREATE TABLE IF NOT EXISTS message (
             id INTEGER PRIMARY KEY ASC,
@@ -103,7 +103,7 @@ async def create_tables(conn: aiosqlite.Connection):
     """)
 
 
-async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, message, peer):
+async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, message, peer) -> int:
     sql = """
         INSERT INTO message
             (sender_envelope, sender_message, recipients_envelope, recipients_message_to,
@@ -161,7 +161,7 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
     return message_id
 
 
-async def _add_message_part(conn: aiosqlite.Connection, message_id, cid, part):
+async def _add_message_part(conn: aiosqlite.Connection, message_id: int, cid: str, part) -> None:
     sql = """
         INSERT INTO message_part
             (message_id, cid, type, is_attachment, filename, charset, body, size, created_at)
@@ -186,14 +186,14 @@ async def _add_message_part(conn: aiosqlite.Connection, message_id, cid, part):
     )
 
 
-def _prepare_message_row_inplace(row) -> None:
+def _prepare_message_row_inplace(row: dict) -> None:
     row['recipients_envelope'] = split_addresses(row['recipients_envelope'])
     row['recipients_message_to'] = _parse_recipients(row['recipients_message_to'])
     row['recipients_message_cc'] = _parse_recipients(row['recipients_message_cc'])
     row['recipients_message_bcc'] = _parse_recipients(row['recipients_message_bcc'])
 
 
-async def get_message(conn: aiosqlite.Connection, message_id):
+async def get_message(conn: aiosqlite.Connection, message_id: int) -> Optional[dict]:
     async with conn.execute('SELECT * FROM message WHERE id = ?', (message_id,)) as cur:
         row = await cur.fetchone()
     if not row:
@@ -203,7 +203,7 @@ async def get_message(conn: aiosqlite.Connection, message_id):
     return row
 
 
-async def get_message_attachments(conn: aiosqlite.Connection, message_id):
+async def get_message_attachments(conn: aiosqlite.Connection, message_id: int) -> Iterable[sqlite3.Row]:
     sql = """
         SELECT
             message_id, cid, type, filename, size
@@ -221,7 +221,7 @@ async def get_message_attachments(conn: aiosqlite.Connection, message_id):
     return data
 
 
-async def _get_message_part_types(conn: aiosqlite.Connection, message_id, types):
+async def _get_message_part_types(conn: aiosqlite.Connection, message_id: int, types: List[str]) -> sqlite3.Row:
     sql = """
         SELECT
             *
@@ -240,21 +240,21 @@ async def _get_message_part_types(conn: aiosqlite.Connection, message_id, types)
     return data
 
 
-async def get_message_part_html(conn: aiosqlite.Connection, message_id):
+async def get_message_part_html(conn: aiosqlite.Connection, message_id: int) -> sqlite3.Row:
     return await _get_message_part_types(conn, message_id, ('text/html', 'application/xhtml+xml'))
 
 
-async def get_message_part_plain(conn: aiosqlite.Connection, message_id):
+async def get_message_part_plain(conn: aiosqlite.Connection, message_id: int) -> sqlite3.Row:
     return await _get_message_part_types(conn, message_id, ('text/plain',))
 
 
-async def get_message_part_cid(conn: aiosqlite.Connection, message_id, cid):
+async def get_message_part_cid(conn: aiosqlite.Connection, message_id: int, cid: str) -> sqlite3.Row:
     async with conn.execute('SELECT * FROM message_part WHERE message_id = ? AND cid = ?', (message_id, cid)) as cur:
         data = await cur.fetchone()
     return data
 
 
-async def _message_has_types(conn: aiosqlite.Connection, message_id, types):
+async def _message_has_types(conn: aiosqlite.Connection, message_id: int, types: List[str]) -> bool:
     sql = """
         SELECT
             1
@@ -272,15 +272,15 @@ async def _message_has_types(conn: aiosqlite.Connection, message_id, types):
     return data is not None
 
 
-async def message_has_html(conn: aiosqlite.Connection, message_id):
+async def message_has_html(conn: aiosqlite.Connection, message_id: int) -> bool:
     return await _message_has_types(conn, message_id, ('application/xhtml+xml', 'text/html'))
 
 
-async def message_has_plain(conn: aiosqlite.Connection, message_id):
+async def message_has_plain(conn: aiosqlite.Connection, message_id: int) -> bool:
     return await _message_has_types(conn, message_id, ('text/plain',))
 
 
-async def get_messages(conn: aiosqlite.Connection):
+async def get_messages(conn: aiosqlite.Connection) -> List[dict]:
     async with conn.execute('SELECT * FROM message ORDER BY created_at ASC') as cur:
         data = await cur.fetchall()
 
@@ -290,17 +290,17 @@ async def get_messages(conn: aiosqlite.Connection):
     return data
 
 
-async def delete_message(conn: aiosqlite.Connection, message_id):
+async def delete_message(conn: aiosqlite.Connection, message_id: int) -> None:
     await conn.execute('DELETE FROM message WHERE id = ?', (message_id,))
     await conn.execute('DELETE FROM message_part WHERE message_id = ?', (message_id,))
     await conn.commit()
-    logger.get().msg('DB: Deleted message {0}'.format(message_id))
-    await websocket.broadcast('delete_message', message_id)
+    logger.get().msg('deleted message {0}'.format(message_id))
+    await notifier.broadcast('delete_message', message_id)
 
 
-async def delete_messages(conn: aiosqlite.Connection):
+async def delete_messages(conn: aiosqlite.Connection) -> None:
     await conn.execute('DELETE FROM message')
     await conn.execute('DELETE FROM message_part')
     await conn.commit()
-    logger.get().msg('DB: Deleted all messages')
-    await websocket.broadcast('delete_messages')
+    logger.get().msg('deleted all messages')
+    await notifier.broadcast('delete_messages')

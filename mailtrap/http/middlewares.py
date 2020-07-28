@@ -1,7 +1,9 @@
 import traceback
+from typing import Callable
 
 import aiohttp.web
 from aiohttp_basicauth import BasicAuthMiddleware
+from passlib.apache import HtpasswdFile
 
 from .. import errors
 from .. import logger
@@ -10,7 +12,7 @@ from .json_encoder import json_response
 
 
 @aiohttp.web.middleware
-async def error_handler(rq: aiohttp.web.Request, handler) -> aiohttp.web.StreamResponse:
+async def error_handler(rq: aiohttp.web.Request, handler: Callable) -> aiohttp.web.StreamResponse:
     try:
         rsp = await handler(rq)
     except errors.MailTrapException as exp:
@@ -34,7 +36,7 @@ async def error_handler(rq: aiohttp.web.Request, handler) -> aiohttp.web.StreamR
 
 
 @aiohttp.web.middleware
-async def response_from_dict(rq, handler) -> aiohttp.web.StreamResponse:
+async def response_from_dict(rq: aiohttp.web.Request, handler: Callable) -> aiohttp.web.StreamResponse:
     rsp = await handler(rq)
 
     if isinstance(rsp, aiohttp.web.StreamResponse):
@@ -54,20 +56,20 @@ async def response_from_dict(rq, handler) -> aiohttp.web.StreamResponse:
 
 
 @aiohttp.web.middleware
-async def set_default_headers(rq, handler) -> aiohttp.web.StreamResponse:
+async def set_default_headers(rq: aiohttp.web.Request, handler: Callable) -> aiohttp.web.StreamResponse:
     rsp = await handler(rq)
     rsp.headers['Server'] = f'MailTrap/{__version__} (https://github.com/msztolcman/mailtrap)'
     return rsp
 
 
 class BasicAuth(BasicAuthMiddleware):
-    def __init__(self, http_auth, *args, **kwargs):
+    def __init__(self, http_auth: HtpasswdFile, *args, **kwargs):
         self._http_auth = http_auth
         kwargs['realm'] = 'MailTrap'
         kwargs['force'] = False
         super().__init__(*args, **kwargs)
 
-    async def authenticate(self, rq):
+    async def authenticate(self, rq: aiohttp.web.Request) -> bool:
         if not self._http_auth:
             return True
 
@@ -81,7 +83,7 @@ class BasicAuth(BasicAuthMiddleware):
 
         return res
 
-    async def check_credentials(self, username, password, rq):
+    async def check_credentials(self, username: str, password: str, rq: aiohttp.web.Request) -> bool:
         if self._http_auth.check_password(username, password):
             if rq.app['debug']:
                 logger.get().msg('request authenticated', uri=rq.url.human_repr(), username=username)

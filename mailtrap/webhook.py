@@ -5,7 +5,7 @@ import asyncio
 import json
 import traceback
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import Any, Optional
 
 import aiohttp
 
@@ -95,7 +95,7 @@ async def send_messages() -> None:
         Messages.task_done()
 
 
-async def enqueue(msg):
+async def enqueue(msg: Any) -> None:
     if not HTTP_URL:
         return
 

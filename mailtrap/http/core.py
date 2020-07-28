@@ -1,24 +1,30 @@
+import argparse
+import bs4
 import re
 import weakref
+from typing import Union
 
 import aiohttp.web
 import aiohttp_jinja2
-import bs4
 import jinja2
 import webassets
+import yarl
+from passlib.apache import HtpasswdFile
 
 from .. import STATIC_DIR, STATIC_URL, TEMPLATES_DIR
+from .. import __version__
 from .. import db
 from .. import logger
-from .. import __version__
 from . import middlewares
 
 RE_CID = re.compile(r'(?P<replace>cid:(?P<cid>.+))')
 RE_CID_URL = re.compile(r'url\(\s*(?P<quote>["\']?)(?P<replace>cid:(?P<cid>[^\\\')]+))(?P=quote)\s*\)')
 
+WebHandlerResponse = Union[dict, list, str, int, aiohttp.web.StreamResponse, None]
+
 
 @aiohttp_jinja2.template('index.html')
-async def home(rq):
+async def home(rq: aiohttp.web.Request) -> WebHandlerResponse:
     assets = rq.app['assets']
     return {
         'version': __version__,
@@ -31,7 +37,7 @@ async def home(rq):
     }
 
 
-async def terminate(rq):
+async def terminate(rq: aiohttp.web.Request) -> WebHandlerResponse:
     if rq.app['MAILTRAP_NO_QUIT']:
         raise aiohttp.web.HTTPForbidden()
 
@@ -40,22 +46,26 @@ async def terminate(rq):
     import signal
     os.kill(os.getpid(), signal.SIGTERM)
 
+    return
 
-async def delete_messages(rq):
+
+async def delete_messages(rq: aiohttp.web.Request) -> WebHandlerResponse:
     if rq.app['MAILTRAP_NO_CLEAR']:
         raise aiohttp.web.HTTPForbidden()
 
     async with db.connection() as conn:
         await db.delete_messages(conn)
 
+    return
 
-async def get_messages(rq):
+
+async def get_messages(rq: aiohttp.web.Request) -> WebHandlerResponse:
     async with db.connection() as conn:
         messages = await db.get_messages(conn)
     return messages
 
 
-async def delete_message(rq):
+async def delete_message(rq: aiohttp.web.Request) -> WebHandlerResponse:
     message_id = rq.match_info.get('message_id')
     async with db.connection() as conn:
         message = await db.get_message(conn, message_id)
@@ -63,12 +73,14 @@ async def delete_message(rq):
             raise aiohttp.web.HTTPNotFound(text='404: message does not exist')
         await db.delete_message(conn, message_id)
 
+    return
 
-async def _part_url(rq, part):
+
+async def _part_url(rq: aiohttp.web.Request, part) -> yarl.URL:
     return rq.app.router['get-message-part'].url_for(message_id=str(part['message_id']), cid=part['cid'])
 
 
-async def _part_response(rq, part, body=None, charset=None):
+async def _part_response(rq: aiohttp.web.Request, part, body=None, charset=None) -> WebHandlerResponse:
     charset = charset or part['charset'] or 'utf-8'
     if body is None:
         body = part['body']
@@ -85,7 +97,7 @@ async def _part_response(rq, part, body=None, charset=None):
     return response
 
 
-async def get_message_info(rq):
+async def get_message_info(rq: aiohttp.web.Request) -> WebHandlerResponse:
     message_id = rq.match_info.get('message_id')
     async with db.connection() as conn:
         message = await db.get_message(conn, message_id)
@@ -101,7 +113,7 @@ async def get_message_info(rq):
     return message
 
 
-async def get_message_plain(rq):
+async def get_message_plain(rq: aiohttp.web.Request) -> WebHandlerResponse:
     message_id = rq.match_info.get('message_id')
     async with db.connection() as conn:
         part = await db.get_message_part_plain(conn, message_id)
@@ -110,7 +122,7 @@ async def get_message_plain(rq):
     return await _part_response(rq, part)
 
 
-async def _fix_cid_links(rq, soup, message_id):
+async def _fix_cid_links(rq: aiohttp.web.Request, soup, message_id) -> None:
     def _url_from_cid_match(m):
         url = rq.app.router['get-message-part'].url_for(message_id=str(message_id), cid=m.group('cid'))
         return m.group().replace(m.group('replace'), str(url))
@@ -131,13 +143,13 @@ async def _fix_cid_links(rq, soup, message_id):
         tag.string = RE_CID_URL.sub(_url_from_cid_match, tag.string)
 
 
-def _links_target_blank(soup):
+def _links_target_blank(soup) -> None:
     for tag in soup.descendants:
         if isinstance(tag, bs4.Tag) and tag.name == 'a':
             tag.attrs['target'] = 'blank'
 
 
-async def get_message_html(rq):
+async def get_message_html(rq: aiohttp.web.Request) -> WebHandlerResponse:
     message_id = rq.match_info.get('message_id')
     async with db.connection() as conn:
         part = await db.get_message_part_html(conn, message_id)
@@ -150,7 +162,7 @@ async def get_message_html(rq):
     return await _part_response(rq, part, str(soup), 'utf-8')
 
 
-async def get_message_source(rq):
+async def get_message_source(rq: aiohttp.web.Request) -> WebHandlerResponse:
     message_id = rq.match_info.get('message_id')
     async with db.connection() as conn:
         message = await db.get_message(conn, message_id)
@@ -166,7 +178,7 @@ async def get_message_source(rq):
     return response
 
 
-async def get_message_eml(rq):
+async def get_message_eml(rq: aiohttp.web.Request) -> WebHandlerResponse:
     message_id = rq.match_info.get('message_id')
     async with db.connection() as conn:
         message = await db.get_message(conn, message_id)
@@ -182,7 +194,7 @@ async def get_message_eml(rq):
     return response
 
 
-async def get_message_part(rq):
+async def get_message_part(rq: aiohttp.web.Request) -> WebHandlerResponse:
     message_id = rq.match_info.get('message_id')
     cid = rq.match_info.get('cid')
     async with db.connection() as conn:
@@ -233,7 +245,7 @@ def configure_assets(debug: bool, autobuild: bool) -> webassets.Environment:
     return assets
 
 
-def setup(args, http_auth):
+def setup(args: argparse.Namespace, http_auth: HtpasswdFile) -> aiohttp.web.Application:
     app = aiohttp.web.Application(debug=args.debug)
     app.middlewares.extend([
         middlewares.set_default_headers,

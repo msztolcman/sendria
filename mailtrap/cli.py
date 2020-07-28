@@ -137,14 +137,14 @@ def pid_exists(pid: int):
         return True
 
 
-def read_pidfile(path: pathlib.Path):
+def read_pidfile(path: pathlib.Path) -> int:
     try:
-        return int(path.read_text())
+        return int(path.read_text().strip())
     except Exception as exc:
         raise ValueError(exc.message)
 
 
-async def terminate_server(sig, loop):
+async def terminate_server(sig: int, loop: asyncio.AbstractEventLoop) -> None:
     if sig == signal.SIGINT and os.isatty(sys.stdout.fileno()):
         # Terminate the line containing ^C
         print()
@@ -213,7 +213,7 @@ def run_mailtrap_servers(loop, args: argparse.Namespace) -> None:
         loop.add_signal_handler(s, lambda s=s: asyncio.create_task(terminate_server(s, loop)))
 
 
-def stop(pidfile):
+def stop(pidfile: pathlib.Path) -> None:
     if not pidfile or not pidfile.exists():
         exit_err('PID file not specified or not found')
 
