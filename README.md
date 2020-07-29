@@ -37,6 +37,7 @@ Features
 * Keyboard navigation between messages.
 * Optionally password protected access to web interface.
 * Optionally password protected access to SMTP (SMTP AUTH).
+* It's all Python!
 
 Installation
 ------------
