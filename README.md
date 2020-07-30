@@ -32,7 +32,7 @@ Features
 * Lists attachments and allows separate downloading of parts.
 * Download original email to view in your native mail client(s).
 * Mail appears instantly if your browser supports [WebSockets](https://en.wikipedia.org/wiki/WebSocket).
-* Optionally, send webhook on every received message
+* Optionally, send webhook on every received message.
 * Runs as a daemon in the background, optionally in foreground.
 * Keyboard navigation between messages.
 * Optionally password protected access to web interface.
