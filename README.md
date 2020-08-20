@@ -4,7 +4,7 @@ MailTrap
 [![mailtrap version](https://img.shields.io/pypi/v/mailtrap.svg)](https://pypi.python.org/pypi/mailtrap)
 [![mailtrap license](https://img.shields.io/pypi/l/mailtrap.svg)](https://pypi.python.org/pypi/mailtrap)
 [![mailtrap python compatibility](https://img.shields.io/pypi/pyversions/mailtrap.svg)](https://pypi.python.org/pypi/mailtrap)
-[![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/msztolcman)
+[![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
 MailTrap is a SMTP server designed to run in your dev/test environment, that is designed to catch any email you or your application is sending, and display it in a web interface instead if sending to real world. It help you prevents sending any dev/test emails to real people, no matter what address you provide.
 Just point your app/email client to smtp://127.0.0.1:1025 and look at your emails on http://127.0.0.1/1080.
@@ -13,7 +13,7 @@ MailTrap is built on shoulders of:
 * [MailCatcher](https://mailcatcher.me/) - original idea comes of this tool by Samuel Cochran.
 * [MailDump](https://github.com/ThiefMaster/maildump) - base source code of `MailTrap`, by Adrian Mönnich.
 
-If you like this tool, just [say thanks](https://saythanks.io/to/msztolcman).
+If you like this tool, just [say thanks](https://saythanks.io/to/marcin%40urzenia.net).
 
 Current stable version
 ----------------------
