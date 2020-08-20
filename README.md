@@ -153,6 +153,13 @@ If you want to try, just run:
 docker run -p 1025:1025 -p 1080:1080 msztolcman/mailtrap
 ```
 
+Help!
+-----
+
+I'm backend developer, not a frontend guy nor designer... If you are, and want to help, just [mail me!](mailto:marcin@urzenia.net).
+I think GUI should be redesigned, or at least few minor issues could be solved. Also, project requires some logo and/or icon. Again,
+do not hesitate to [mail me](mailto:marcin@urzenia.net) if you want and can help :)
+
 Configure Rails
 ---------------
 
