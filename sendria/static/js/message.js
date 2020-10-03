@@ -154,7 +154,7 @@
             var self = this;
             var msg = 'From ' + this.sender_envelope + '\xa0 to \xa0' + this.recipients_envelope.join(', ');
             this._closeNotification = NotificationUtil.show(this.subject, msg, {
-                icon: '/static/images/icon_80x80.png'
+                icon: '/static/images/icon_128x128.png'
             }, 10000, function() {
                 self.select();
             });

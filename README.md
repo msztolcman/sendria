@@ -17,6 +17,8 @@ Sendria is built on shoulders of:
 
 If you like this tool, just [say thanks](https://saythanks.io/to/marcin%40urzenia.net).
 
+Icon made by [Freepik](http://www.freepik.com/) from [www.flaticon.com](https://www.flaticon.com/).
+
 Current stable version
 ----------------------
 
