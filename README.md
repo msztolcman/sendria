@@ -213,6 +213,10 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 ChangeLog
 ---------
 
+### v2.0.1
+
+* new icon (by [Freepik](http://www.freepik.com/) from [www.flaticon.com](https://www.flaticon.com/))
+
 ### v2.0.0
 
 * rename MailTrap -> Sendria

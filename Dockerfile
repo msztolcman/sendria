@@ -4,7 +4,7 @@ MAINTAINER Marcin Sztolcman <marcin@urzenia.net>
 RUN useradd --create-home sendria
 WORKDIR /home/sendria
 USER sendria
-RUN python3 -m pip install --user sendria==2.0.0
+RUN python3 -m pip install --user sendria==2.0.1
 
 EXPOSE 1025 1080
 
