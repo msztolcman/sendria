@@ -20,7 +20,7 @@ If you like this tool, just [say thanks](https://saythanks.io/to/marcin%40urzeni
 Current stable version
 ----------------------
 
-1.0.0
+2.0.0
 
 Features
 --------
@@ -210,6 +210,10 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+
+### v2.0.0
+
+* rename MailTrap -> Sendria
 
 ### v1.0.0
 
