@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <link rel="shortcut icon" type="image/png" href="{{ static('images/icon_16x16.png') }}">
     {%  if not header_name %}
-        <title>MailTrap:{{ version }}</title>
+        <title>Sendria:{{ version }}</title>
     {% else %}
-        <title>{{ header_name }} :: MailTrap:{{ version }}</title>
+        <title>{{ header_name }} :: Sendria:{{ version }}</title>
     {% endif %}
     {% for asset_url in css_all %}
         <link rel="stylesheet" type="text/css" href="{{ asset_url }}">
@@ -18,7 +18,7 @@
 <body>
     <header class="top">
         <h1>
-            <a href="{{ header_url or 'https://github.com/msztolcman/mailtrap' }}" title="MailTrap {{ version }}">{{ header_name or 'MailTrap' }}</a>
+            <a href="{{ header_url or 'https://github.com/msztolcman/sendria' }}" title="Sendria {{ version }}">{{ header_name or 'Sendria' }}</a>
         </h1>
         <nav class="app">
             <ul>
@@ -28,14 +28,14 @@
                 <li class="notifications">
                     <a href="#" title="Toggle WebKit desktop notifications">Enable notifications</a>
                 </li>
-                {% if not mailtrap_no_clear %}
+                {% if not sendria_no_clear %}
                     <li class="clear">
                         <a href="#" title="Delete all messages">Clear</a>
                     </li>
                 {% endif %}
-                {% if not mailtrap_no_quit %}
+                {% if not sendria_no_quit %}
                     <li class="quit">
-                        <a href="#" title="Terminate MailTrap">Quit</a>
+                        <a href="#" title="Terminate Sendria">Quit</a>
                     </li>
                 {% endif %}
             </ul>
@@ -148,7 +148,7 @@
     {% endraw %}
 
     <div class="hidden" id="disconnected-dialog" title="Disconnected">
-        <p>Connection to MailTrap lost.</p>
+        <p>Connection to Sendria lost.</p>
         <p>Trying to reconnect - be patient!</p>
     </div>
 

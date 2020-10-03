@@ -17,7 +17,7 @@ from .json_encoder import json_response
 async def error_handler(rq: aiohttp.web.Request, handler: Callable) -> aiohttp.web.StreamResponse:
     try:
         rsp = await handler(rq)
-    except errors.MailTrapException as exp:
+    except errors.SendriaException as exp:
         ret = {
             'code': exp.get_response_code(),
         }
@@ -60,14 +60,14 @@ async def response_from_dict(rq: aiohttp.web.Request, handler: Callable) -> aioh
 @aiohttp.web.middleware
 async def set_default_headers(rq: aiohttp.web.Request, handler: Callable) -> aiohttp.web.StreamResponse:
     rsp = await handler(rq)
-    rsp.headers['Server'] = f'MailTrap/{__version__} (https://github.com/msztolcman/mailtrap)'
+    rsp.headers['Server'] = f'Sendria/{__version__} (https://github.com/msztolcman/sendria)'
     return rsp
 
 
 class BasicAuth(BasicAuthMiddleware):
     def __init__(self, http_auth: HtpasswdFile, *args, **kwargs):
         self._http_auth = http_auth
-        kwargs['realm'] = 'MailTrap'
+        kwargs['realm'] = 'Sendria'
         kwargs['force'] = False
         super().__init__(*args, **kwargs)
 

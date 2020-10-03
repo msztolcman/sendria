@@ -5,20 +5,20 @@ distro: ## build and upload distro
 clean: ## cleanup all distro
 	-rm -fr dist
 	-rm -fr __pycache__
-	-rm -fr mailtrap/__pycache__
+	-rm -fr sendria/__pycache__
 	-rm -fr build
-	-rm -fr mailtrap/static/.webassets-cache/ mailtrap/static/assets/bundle.*
+	-rm -fr sendria/static/.webassets-cache/ sendria/static/assets/bundle.*
 
 build: ## build distro
-	webassets -m mailtrap.build_assets build
+	webassets -m sendria.build_assets build
 	python3 setup.py sdist bdist_wheel
-	-rm -rf mailtrap/static/.webassets-cache/ mailtrap/static/assets/bundle.*
+	-rm -rf sendria/static/.webassets-cache/ sendria/static/assets/bundle.*
 
 upload: ## upload distro
-	twine upload dist/mailtrap*
+	twine upload dist/sendria*
 
 upload-test: ## upload distro to test Pypi
-	twine upload --repository testpypi dist/mailtrap*
+	twine upload --repository testpypi dist/sendria*
 
 .DEFAULT_GOAL := help
 help:

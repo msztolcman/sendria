@@ -58,7 +58,7 @@ async def get_session() -> aiohttp.ClientSession:
         auth = aiohttp.BasicAuth(*WEBHOOK_AUTH)
 
     headers = {
-        'User-agent': f'MailTrap/{__version__} (https://github.com/msztolcman/mailtrap)',
+        'User-agent': f'Sendria/{__version__} (https://github.com/msztolcman/sendria)',
         'Content-type': 'application/javascript',
     }
 

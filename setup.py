@@ -31,7 +31,7 @@ class BuildPyWithAssets(build_py):
         build_py.run(self)
 
     def _build_assets(self):
-        asset_dir = 'mailtrap/static/assets'
+        asset_dir = 'sendria/static/assets'
         # Lame check if we have prebuilt assets. If we do so we are probably installing from a pypi package which
         # means that webassets might not be installed yet and thus we cannot build the assets now...
         if os.path.exists(asset_dir) and os.listdir(asset_dir):
@@ -39,10 +39,10 @@ class BuildPyWithAssets(build_py):
 
         webassets = shutil.which('webassets')
         if not webassets:
-            print("Cannot find webassets. Please execute manually: /path/to/webassets -m mailtrap.build_assets build'")
+            print("Cannot find webassets. Please execute manually: /path/to/webassets -m sendria.build_assets build'")
             return
 
-        args = ['webassets', '-m', 'mailtrap.build_assets', 'build']
+        args = ['webassets', '-m', 'sendria.build_assets', 'build']
         with open(os.devnull, 'w') as devnull:
             subprocess.check_call(args, stderr=devnull)
             subprocess.check_call(args + ['--production'], stderr=devnull)
@@ -52,17 +52,17 @@ with open('README.md') as f:
     readme = f.read()
 
 setup(
-    name='mailtrap',
+    name='sendria',
     version='1.0.0',
     description='An SMTP server that makes all received mails accessible via a web interface and REST API.',
     long_description=readme,
     long_description_content_type='text/markdown',
-    url='https://github.com/msztolcman/mailtrap',
+    url='https://github.com/msztolcman/sendria',
     project_urls={
-        'GitHub: issues': 'https://github.com/msztolcman/mailtrap/issues',
-        'GitHub: repo': 'https://github.com/msztolcman/mailtrap',
+        'GitHub: issues': 'https://github.com/msztolcman/sendria/issues',
+        'GitHub: repo': 'https://github.com/msztolcman/sendria',
     },
-    download_url='https://github.com/msztolcman/mailtrap',
+    download_url='https://github.com/msztolcman/sendria',
     author='Marcin Sztolcman',
     author_email='marcin@urzenia.net',
     license='MIT',
@@ -72,7 +72,7 @@ setup(
     python_requires='>=3.7',
     entry_points={
         'console_scripts': [
-            'mailtrap = mailtrap.cli:main',
+            'sendria = sendria.cli:main',
         ],
     },
     install_requires=requirements,

@@ -7,8 +7,8 @@
 /build/
 /env/
 /env-*/
-/mailtrap/static/assets/
-/mailtrap/static/.webassets-cache/
+/sendria/static/assets/
+/sendria/static/.webassets-cache/
 /*.sqlite
 /*.htpasswd
 /.venv

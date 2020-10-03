@@ -40,7 +40,7 @@ def parse_argv(argv):
         help='Apache-style htpasswd file for SMTP authorization. '
             'WARNING: do not rely only on this as a security '
             'mechanism, use also additional methods for securing '
-            'MailTrap instance, ie. IP restrictions.')
+            'Sendria instance, ie. IP restrictions.')
     parser.add_argument('--http-ip', default='127.0.0.1', metavar='IP', help='HTTP ip (default: 127.0.0.1)')
     parser.add_argument('--http-port', default=1080, type=int, metavar='PORT', help='HTTP port (default: 1080)')
     parser.add_argument('-s', '--db', metavar='PATH', help='Path to SQLite database. Will be created if doesn\'t exist')
@@ -161,7 +161,7 @@ async def terminate_server(sig: int, loop: asyncio.AbstractEventLoop) -> None:
     loop.stop()
 
 
-def run_mailtrap_servers(loop, args: argparse.Namespace) -> None:
+def run_sendria_servers(loop, args: argparse.Namespace) -> None:
     # initialize db
     loop.run_until_complete(db.setup(args.db))
 
@@ -234,19 +234,19 @@ def main():
     args = parse_argv(sys.argv[1:])
 
     if args.version:
-        print('MailTrap %s' % __version__)
+        print('Sendria %s' % __version__)
         sys.exit(0)
 
     # Do we just want to stop a running daemon?
     if args.stop:
-        logger.get().msg('stopping MailTrap',
+        logger.get().msg('stopping Sendria',
             debug='enabled' if args.debug else 'disabled',
             pidfile=str(args.pidfile) if args.pidfile else None,
         )
         stop(args.pidfile)
         sys.exit(0)
 
-    logger.get().msg('starting MailTrap',
+    logger.get().msg('starting Sendria',
         debug='enabled' if args.debug else 'disabled',
         pidfile=str(args.pidfile) if args.pidfile else None,
         db=str(args.db),
@@ -258,7 +258,7 @@ def main():
         exit_err('autobuilding assets requires write access to %s' % STATIC_DIR)
 
     if not args.autobuild_assets and (not ASSETS_DIR.exists() or not list(ASSETS_DIR.glob('*'))):
-        exit_err('assets not found. Generate assets using: webassets -m mailtrap.build_assets build', 0)
+        exit_err('assets not found. Generate assets using: webassets -m sendria.build_assets build', 0)
 
     daemon_kw = {}
 
@@ -287,7 +287,7 @@ def main():
     with context:
         loop = asyncio.get_event_loop()
 
-        run_mailtrap_servers(loop, args)
+        run_sendria_servers(loop, args)
 
         loop.run_forever()
 

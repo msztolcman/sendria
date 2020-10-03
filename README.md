@@ -1,19 +1,19 @@
-MailTrap
+Sendria
 ==========
 
-[![mailtrap version](https://img.shields.io/pypi/v/mailtrap.svg)](https://pypi.python.org/pypi/mailtrap)
-[![mailtrap license](https://img.shields.io/pypi/l/mailtrap.svg)](https://pypi.python.org/pypi/mailtrap)
-[![mailtrap python compatibility](https://img.shields.io/pypi/pyversions/mailtrap.svg)](https://pypi.python.org/pypi/mailtrap)
+[![sendria version](https://img.shields.io/pypi/v/sendria.svg)](https://pypi.python.org/pypi/sendria)
+[![sendria license](https://img.shields.io/pypi/l/sendria.svg)](https://pypi.python.org/pypi/sendria)
+[![sendria python compatibility](https://img.shields.io/pypi/pyversions/sendria.svg)](https://pypi.python.org/pypi/sendria)
 [![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
-MailTrap is a SMTP server designed to run in your dev/test environment, that is designed to catch any email you
+Sendria (formerly MailTrap) is a SMTP server designed to run in your dev/test environment, that is designed to catch any email you
 or your application is sending, and display it in a web interface instead of sending to real world.
 It help you prevents sending any dev/test emails to real people, no matter what address you provide.
 Just point your app/email client to `smtp://127.0.0.1:1025` and look at your emails on `http://127.0.0.1:1080`.
 
-MailTrap is built on shoulders of:
+Sendria is built on shoulders of:
 * [MailCatcher](https://mailcatcher.me/) - original idea comes of this tool by Samuel Cochran.
-* [MailDump](https://github.com/ThiefMaster/maildump) - base source code of `MailTrap` (version pre 1.0.0), by Adrian Mönnich.
+* [MailDump](https://github.com/ThiefMaster/maildump) - base source code of `Sendria` (version pre 1.0.0), by Adrian Mönnich.
 
 If you like this tool, just [say thanks](https://saythanks.io/to/marcin%40urzenia.net).
 
@@ -42,50 +42,50 @@ Features
 Installation
 ------------
 
-`MailTrap` should work on any POSIX platform where [Python](http://python.org)
+`Sendria` should work on any POSIX platform where [Python](http://python.org)
 is available, it means Linux, MacOS/OSX etc.
 
 Simplest way is to use Python's built-in package system:
 
-    python3 -m pip install mailtrap
+    python3 -m pip install sendria
 
 You can also use [pipx](https://pipxproject.github.io/pipx/) if you don't want to
-mess with system packages and install `MailTrap` in virtual environment:
+mess with system packages and install `Sendria` in virtual environment:
 
-    pipx install mailtrap
+    pipx install sendria
 
 Voila!
 
 Python version
 --------------
 
-`MailTrap` is tested against Python 3.7+. Older Python versions may work, or may not.
+`Sendria` is tested against Python 3.7+. Older Python versions may work, or may not.
 
 If you want to run this software on Python 2.6+, just use [MailDump](https://github.com/ThiefMaster/maildump).
 
 How to use
 ----------
 
-[After installing](#installation) `MailTrap`, just run command:
+[After installing](#installation) `Sendria`, just run command:
 
-    mailtrap --db mails.sqlite
+    sendria --db mails.sqlite
 
 Now send emails through `smtp://127.0.0.1:1025`, ie.:
 
 ```shell
-echo 'From: MailTrap <mailtrap@example.com>\n'\
+echo 'From: Sendria <sendria@example.com>\n'\
 'To: You <you@exampl.com>\n'\
 'Subject: Welcome!\n\n'\
-'Welcome to MailTrap!' | \
-  curl smtp://localhost:1025 --mail-from mailtrap@example.com \
+'Welcome to Sendria!' | \
+  curl smtp://localhost:1025 --mail-from sendria@example.com \
     --mail-rcpt you@example.com --upload-file -
 ```
 
-And finally look at `MailTrap` GUI on [127.0.0.1:1080](http://127.0.0.1:1080).
+And finally look at `Sendria` GUI on [127.0.0.1:1080](http://127.0.0.1:1080).
 
 If you want more details, run:
 
-    mailtrap --help
+    sendria --help
 
 for more info, ie. how to protect access to gui.
 
@@ -93,7 +93,7 @@ for more info, ie. how to protect access to gui.
 API
 ---
 
-`MailTrap` offers RESTful API you can use to fetch list of messages or particular message, ie. for testing purposes.
+`Sendria` offers RESTful API you can use to fetch list of messages or particular message, ie. for testing purposes.
 
 You can use excellent [httpie](https://httpie.org/) tool:
 
@@ -103,7 +103,7 @@ HTTP/1.1 200 OK
 Content-Length: 620
 Content-Type: application/json; charset=utf-8
 Date: Wed, 22 Jul 2020 20:04:46 GMT
-Server: MailTrap/1.0.0 (https://github.com/msztolcman/mailtrap)
+Server: Sendria/1.0.0 (https://github.com/msztolcman/sendria)
 
 {
     "code": "OK",
@@ -120,10 +120,10 @@ Server: MailTrap/1.0.0 (https://github.com/msztolcman/mailtrap)
             "recipients_message_to": [
                 "You <you@exampl.com>"
             ],
-            "sender_envelope": "mailtrap@example.com",
-            "sender_message": "MailTrap <mailtrap@example.com>",
+            "sender_envelope": "sendria@example.com",
+            "sender_message": "Sendria <sendria@example.com>",
             "size": 191,
-            "source": "From: MailTrap <mailtrap@example.com>\nTo: You <you@exampl.com>\nSubject: Welcome!\nX-Peer: ('127.0.0.1', 59872)\nX-MailFrom: mailtrap@example.com\nX-RcptTo: you@example.com\n\nWelcome to MailTrap!\n",
+            "source": "From: Sendria <sendria@example.com>\nTo: You <you@exampl.com>\nSubject: Welcome!\nX-Peer: ('127.0.0.1', 59872)\nX-MailFrom: sendria@example.com\nX-RcptTo: you@example.com\n\nWelcome to Sendria!\n",
             "subject": "Welcome!",
             "type": "text/plain"
         }
@@ -146,11 +146,11 @@ There are available endpoints:
 Docker
 ------
 
-There is also available [Docker image of MailTrap](https://hub.docker.com/layers/msztolcman/mailtrap/).
+There is also available [Docker image of Sendria](https://hub.docker.com/layers/msztolcman/sendria/).
 If you want to try, just run:
 
 ```shell
-docker run -p 1025:1025 -p 1080:1080 msztolcman/mailtrap
+docker run -p 1025:1025 -p 1080:1080 msztolcman/sendria
 ```
 
 Help!
@@ -172,7 +172,7 @@ For your rails application just set in your `environments/development.rb`:
 Configure Django
 ----------------
 
-To configure Django to work with `MailTrap`, add the following to your projects' `settings.py`:
+To configure Django to work with `Sendria`, add the following to your projects' `settings.py`:
 
     if DEBUG:
         EMAIL_HOST = '127.0.0.1'
@@ -184,20 +184,20 @@ To configure Django to work with `MailTrap`, add the following to your projects'
 Behind nginx
 ------------
 
-If you want to hide `MailTrap` behind nginx (ie. to terminate ssl) then you can [use example
-config (see in addons)](https://github.com/msztolcman/mailtrap/tree/master/addons/nginx.conf).
+If you want to hide `Sendria` behind nginx (ie. to terminate ssl) then you can [use example
+config (see in addons)](https://github.com/msztolcman/sendria/tree/master/addons/nginx.conf).
 
 Supervisord
 -----------
 
-To start `Mailtrap` automatically with [Supervisor](https://supervisord.org/) there is in
-[addons example config file for this purpose](https://github.com/msztolcman/mailtrap/tree/master/addons/supervisor.conf).
+To start `Sendria` automatically with [Supervisor](https://supervisord.org/) there is in
+[addons example config file for this purpose](https://github.com/msztolcman/sendria/tree/master/addons/supervisor.conf).
 
 Authors
 -------
 
 * Marcin Sztolcman ([marcin@urzenia.net](mailto:marcin@urzenia.net))
-* Adrian Mönnich (author of [MailDump](https://github.com/ThiefMaster/maildump), base of `MailTrap`)
+* Adrian Mönnich (author of [MailDump](https://github.com/ThiefMaster/maildump), base of `Sendria`)
 
 Contact
 -------
@@ -206,21 +206,21 @@ If you like or dislike this software, please do not hesitate to tell me about
 this me via email ([marcin@urzenia.net](mailto:marcin@urzenia.net)).
 
 If you find bug or have an idea to enhance this tool, please use GitHub's
-[issues](https://github.com/msztolcman/mailtrap/issues).
+[issues](https://github.com/msztolcman/sendria/issues).
 
 ChangeLog
 ---------
 
 ### v1.0.0
 
-* complete rewrite of backend part. MailTrap is using [asyncio](https://docs.python.org/3/library/asyncio.html) and
+* complete rewrite of backend part. Sendria is using [asyncio](https://docs.python.org/3/library/asyncio.html) and
   [aio-libs](https://github.com/aio-libs/) now:
   * switch to [aiohttp](https://docs.aiohttp.org/) from Flask
   * switch to [aiosmtpd](https://aiosmtpd.readthedocs.io) from [smtpd](https://docs.python.org/3/library/smtpd.html)
   * switch to [aiosqlite](https://github.com/omnilib/aiosqlite) from [sqlite3](https://docs.python.org/3/library/sqlite3.html)
   * changed logger to [structlog](https://www.structlog.org/)
 * using asynchronous version of libraries drastically improved performance
-* `MailTrap` now can send a webhook about every received message
+* `Sendria` now can send a webhook about every received message
 * show in GUI information about envelope sender and recipients
 * all API requests has their own namespace now: `/api`
 * allow to replace name of application or url in template
@@ -228,8 +228,8 @@ ChangeLog
 * fixed issues with `WebSockets`, should refresh mails list and reconnect if disconnected
 * fixed issues with autobuilding assets
 * many cleanups and reformatting code
-* addons for [nginx](https://github.com/msztolcman/mailtrap/tree/master/addons/nginx.conf)
-and [supervisor](https://github.com/msztolcman/mailtrap/tree/master/addons/supervisor.conf)
+* addons for [nginx](https://github.com/msztolcman/sendria/tree/master/addons/nginx.conf)
+and [supervisor](https://github.com/msztolcman/sendria/tree/master/addons/supervisor.conf)
 
 #### Backward incompatible changes:
 

@@ -30,8 +30,8 @@ async def home(rq: aiohttp.web.Request) -> WebHandlerResponse:
     assets = rq.app['assets']
     return {
         'version': __version__,
-        'mailtrap_no_quit': rq.app['MAILTRAP_NO_QUIT'],
-        'mailtrap_no_clear': rq.app['MAILTRAP_NO_CLEAR'],
+        'sendria_no_quit': rq.app['SENDRIA_NO_QUIT'],
+        'sendria_no_clear': rq.app['SENDRIA_NO_CLEAR'],
         'js_all': assets['js_all'].urls(),
         'css_all': assets['css_all'].urls(),
         'header_name': rq.app['HEADER_NAME'],
@@ -40,7 +40,7 @@ async def home(rq: aiohttp.web.Request) -> WebHandlerResponse:
 
 
 async def terminate(rq: aiohttp.web.Request) -> WebHandlerResponse:
-    if rq.app['MAILTRAP_NO_QUIT']:
+    if rq.app['SENDRIA_NO_QUIT']:
         raise aiohttp.web.HTTPForbidden()
 
     logger.get().msg('Terminate request received')
@@ -52,7 +52,7 @@ async def terminate(rq: aiohttp.web.Request) -> WebHandlerResponse:
 
 
 async def delete_messages(rq: aiohttp.web.Request) -> WebHandlerResponse:
-    if rq.app['MAILTRAP_NO_CLEAR']:
+    if rq.app['SENDRIA_NO_CLEAR']:
         raise aiohttp.web.HTTPForbidden()
 
     async with db.connection() as conn:
@@ -230,10 +230,10 @@ async def websocket_handler(rq: aiohttp.web.Request) -> aiohttp.web.WebSocketRes
 def configure_assets(debug: bool, autobuild: bool) -> webassets.Environment:
     js = webassets.Bundle('js/lib/jquery.js', 'js/lib/jquery-ui.js', 'js/lib/jquery.hotkeys.js',
         'js/lib/handlebars.js', 'js/lib/moment.js', 'js/lib/jstorage.js',
-        'js/util.js', 'js/message.js', 'js/mailtrap.js',
+        'js/util.js', 'js/message.js', 'js/sendria.js',
         filters='rjsmin', output='assets/bundle.%(version)s.js')
-    scss = webassets.Bundle('css/mailtrap.scss',
-        filters='pyscss', output='assets/mailtrap.%(version)s.css')
+    scss = webassets.Bundle('css/sendria.scss',
+        filters='pyscss', output='assets/sendria.%(version)s.css')
     css = webassets.Bundle('css/reset.css', 'css/jquery-ui.css', scss,
         filters=('cssrewrite', 'cssmin'), output='assets/bundle.%(version)s.css')
 
@@ -255,8 +255,8 @@ def setup(args: argparse.Namespace, http_auth: HtpasswdFile) -> aiohttp.web.Appl
         middlewares.response_from_dict,
     ])
 
-    app['MAILTRAP_NO_QUIT'] = args.no_quit
-    app['MAILTRAP_NO_CLEAR'] = args.no_clear
+    app['SENDRIA_NO_QUIT'] = args.no_quit
+    app['SENDRIA_NO_CLEAR'] = args.no_clear
     app['HEADER_NAME'] = args.template_header_name
     app['HEADER_URL'] = args.template_header_url
     app['debug'] = args.debug
