@@ -148,7 +148,7 @@ There are available endpoints:
 Docker
 ------
 
-There is also available [Docker image of Sendria](https://hub.docker.com/layers/msztolcman/sendria/).
+There is also available [Docker image of Sendria](https://hub.docker.com/r/msztolcman/sendria).
 If you want to try, just run:
 
 ```shell
