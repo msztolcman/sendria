@@ -58,13 +58,13 @@ async def delete_messages(rq: aiohttp.web.Request) -> WebHandlerResponse:
     async with db.connection() as conn:
         await db.delete_messages(conn)
 
-    return
+    return {}
 
 
 async def get_messages(rq: aiohttp.web.Request) -> WebHandlerResponse:
     async with db.connection() as conn:
         messages = await db.get_messages(conn)
-    return messages
+    return messages or []
 
 
 async def delete_message(rq: aiohttp.web.Request) -> WebHandlerResponse:
@@ -75,7 +75,7 @@ async def delete_message(rq: aiohttp.web.Request) -> WebHandlerResponse:
             raise aiohttp.web.HTTPNotFound(text='404: message does not exist')
         await db.delete_message(conn, message_id)
 
-    return
+    return {}
 
 
 async def _part_url(rq: aiohttp.web.Request, part) -> yarl.URL:
@@ -112,7 +112,7 @@ async def get_message_info(rq: aiohttp.web.Request) -> WebHandlerResponse:
         if await db.message_has_html(conn, message_id):
             message['formats']['html'] = rq.app.router['get-message-html'].url_for(message_id=message_id)
         message['attachments'] = [dict(part, href=await _part_url(rq, part)) for part in await db.get_message_attachments(conn, message_id)]
-    return message
+    return message or {}
 
 
 async def get_message_plain(rq: aiohttp.web.Request) -> WebHandlerResponse:
@@ -121,7 +121,7 @@ async def get_message_plain(rq: aiohttp.web.Request) -> WebHandlerResponse:
         part = await db.get_message_part_plain(conn, message_id)
     if not part:
         raise aiohttp.web.HTTPNotFound(text='404: part does not exist')
-    return await _part_response(rq, part)
+    return await _part_response(rq, part) or {}
 
 
 async def _fix_cid_links(rq: aiohttp.web.Request, soup, message_id) -> None:
@@ -161,7 +161,7 @@ async def get_message_html(rq: aiohttp.web.Request) -> WebHandlerResponse:
     soup = bs4.BeautifulSoup(part['body'].decode(charset, 'ignore'), 'html5lib')
     await _fix_cid_links(rq, soup, message_id)
     _links_target_blank(soup)
-    return await _part_response(rq, part, str(soup), 'utf-8')
+    return await _part_response(rq, part, str(soup), 'utf-8') or {}
 
 
 async def get_message_source(rq: aiohttp.web.Request) -> WebHandlerResponse:
@@ -177,7 +177,7 @@ async def get_message_source(rq: aiohttp.web.Request) -> WebHandlerResponse:
     await response.write(message['source'].encode('utf-8', 'ignore'))
     await response.write_eof()
 
-    return response
+    return response or {}
 
 
 async def get_message_eml(rq: aiohttp.web.Request) -> WebHandlerResponse:
@@ -193,7 +193,7 @@ async def get_message_eml(rq: aiohttp.web.Request) -> WebHandlerResponse:
     await response.write(message['source'].encode('utf-8', 'ignore'))
     await response.write_eof()
 
-    return response
+    return response or {}
 
 
 async def get_message_part(rq: aiohttp.web.Request) -> WebHandlerResponse:
@@ -203,7 +203,7 @@ async def get_message_part(rq: aiohttp.web.Request) -> WebHandlerResponse:
         part = await db.get_message_part_cid(conn, message_id, cid)
     if not part:
         raise aiohttp.web.HTTPNotFound(text='404: part does not exist')
-    return await _part_response(rq, part)
+    return await _part_response(rq, part) or {}
 
 
 async def websocket_handler(rq: aiohttp.web.Request) -> aiohttp.web.WebSocketResponse:

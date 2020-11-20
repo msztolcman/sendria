@@ -49,7 +49,7 @@ async def response_from_dict(rq: aiohttp.web.Request, handler: Callable) -> aioh
             'code': 'OK',
         }
 
-        if rsp:
+        if rsp is not None:
             ret['data'] = rsp
 
         rsp = ret
