@@ -143,7 +143,7 @@ def read_pidfile(path: pathlib.Path) -> int:
     try:
         return int(path.read_text().strip())
     except Exception as exc:
-        raise ValueError(exc.message)
+        raise ValueError(str(exc))
 
 
 async def terminate_server(sig: int, loop: asyncio.AbstractEventLoop) -> None:
@@ -273,7 +273,11 @@ def main():
 
     if args.pidfile:
         if args.pidfile.exists():
-            pid = read_pidfile(args.pidfile)
+            try:
+                pid = read_pidfile(args.pidfile)
+            except Exception as exc:
+                exit_err(f'Cannot read pid file: {exc}', 1)
+
             if not pid_exists(pid):
                 logger.get().msg('deleting obsolete PID file (process %s does not exist)' % pid, pid=pid)
                 args.pidfile.unlink()
