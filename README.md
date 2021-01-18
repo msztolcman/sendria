@@ -212,6 +212,9 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+### v2.1-dev
+
+* auth mechanisms are now implemented in [aiosmtpd](https://aiosmtpd.readthedocs.io) (thanks [Arzaroth](https://github.com/Arzaroth))
 
 ### v2.0.1
 
@@ -257,7 +260,7 @@ and [supervisor](https://github.com/msztolcman/sendria/tree/master/addons/superv
 
 ### v0.1.3
 
-* fixed layout issues ([radoslawhryciow](https://github.com/radoslawhryciow))
+* fixed layout issues (thanks [radoslawhryciow](https://github.com/radoslawhryciow))
 
 ### v0.1.2
 
