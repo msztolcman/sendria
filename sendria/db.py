@@ -119,7 +119,6 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
     """
 
     body = message.as_string()
-    cur = await conn.cursor()
     msg_info = {
         'sender_envelope': decode_header(sender),
         'sender_message': decode_header(message['FROM']),
@@ -132,6 +131,17 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
         'type': message.get_content_type(),
         'peer': ':'.join([i.strip(" '()")for i in peer.split(',')])
     }
+
+    parts = []
+    for part in iter_message_parts(message):
+        cid = part.get('Content-Id') or str(uuid.uuid4())
+        if cid[0] == '<' and cid[-1] == '>':
+            cid = cid[1:-1]
+        parts.append({'cid': cid, 'part': part})
+
+    cur = await conn.cursor()
+    await cur.execute('BEGIN')
+
     await cur.execute(
         sql,
         (
@@ -150,14 +160,9 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
     )
     message_id = msg_info['message_id'] = cur.lastrowid
     # Store parts (why do we do this for non-multipart at all?!)
-    parts = 0
-    for part in iter_message_parts(message):
-        cid = part.get('Content-Id') or str(uuid.uuid4())
-        if cid[0] == '<' and cid[-1] == '>':
-            cid = cid[1:-1]
-        await _add_message_part(conn, message_id, cid, part)
-        parts += 1
-    await conn.commit()
+    for part in parts:
+        await _add_message_part(cur, message_id, part['cid'], part['part'])
+    await cur.execute('COMMIT')
     await cur.close()
 
     logger.get().msg('message stored', message_id=message_id, parts=parts)
@@ -166,7 +171,7 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
     return message_id
 
 
-async def _add_message_part(conn: aiosqlite.Connection, message_id: int, cid: str, part) -> None:
+async def _add_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, part) -> None:
     sql = """
         INSERT INTO message_part
             (message_id, cid, type, is_attachment, filename, charset, body, size, created_at)
@@ -176,7 +181,7 @@ async def _add_message_part(conn: aiosqlite.Connection, message_id: int, cid: st
 
     body = part.get_payload(decode=True)
     body_len = len(body) if body else 0
-    await conn.execute(
+    await cur.execute(
         sql,
         (
             message_id,
