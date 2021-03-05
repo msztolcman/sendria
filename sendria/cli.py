@@ -41,6 +41,8 @@ def parse_argv(argv):
             'WARNING: do not rely only on this as a security '
             'mechanism, use also additional methods for securing '
             'Sendria instance, ie. IP restrictions.')
+    parser.add_argument('--smtp-ident', default='ESMTP Sendria (https://github.com/msztolcman/sendria)',
+        help='How SMTP server will identify when connect')
     parser.add_argument('--http-ip', default='127.0.0.1', metavar='IP', help='HTTP ip (default: 127.0.0.1)')
     parser.add_argument('--http-port', default=1080, type=int, metavar='PORT', help='HTTP port (default: 1080)')
     parser.add_argument('-s', '--db', metavar='PATH', help='Path to SQLite database. Will be created if doesn\'t exist')
@@ -171,7 +173,7 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> None:
         loop.create_task(callback.send_messages())
 
     # start smtp server
-    smtp.run(args.smtp_ip, args.smtp_port, args.smtp_auth, args.debug)
+    smtp.run(args.smtp_ip, args.smtp_port, args.smtp_auth, args.smtp_ident, args.debug)
     logger.get().msg('smtp server started', host=args.smtp_ip, port=args.smtp_port,
         auth='enabled' if args.smtp_auth else 'disabled',
         password_file=str(args.smtp_auth.path) if args.smtp_auth else None,

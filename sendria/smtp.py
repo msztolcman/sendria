@@ -55,16 +55,17 @@ class Controller(aiosmtpd.controller.Controller):
     def __init__(self, handler, smtp_auth, debug, *args, **kwargs):
         self.smtp_auth = smtp_auth
         self.debug = debug
+        self.ident = kwargs.pop('ident')
 
         super().__init__(handler, *args, **kwargs)
 
     def factory(self):
-        return SMTP(self.handler, self.smtp_auth, self.debug)
+        return SMTP(self.handler, self.smtp_auth, self.debug, ident=self.ident)
 
 
-def run(smtp_host: str, smtp_port: int, smtp_auth: Optional[HtpasswdFile], debug: bool):
+def run(smtp_host: str, smtp_port: int, smtp_auth: Optional[HtpasswdFile], ident: Optional[str], debug: bool):
     message = AsyncMessage(smtp_auth=smtp_auth)
-    controller = Controller(message, smtp_auth, debug, hostname=smtp_host, port=smtp_port)
+    controller = Controller(message, smtp_auth, debug, hostname=smtp_host, port=smtp_port, ident=ident)
     controller.start()
 
     return controller
