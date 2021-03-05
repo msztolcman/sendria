@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ed0d3bfef5753dcb3ba0256b5b84545a35307dcc5d98719496ee790d68aacb05"
+            "sha256": "0ddbd77342b53b3432d2383b371b9a28fb90f0d245b75310a107310f14fbd442"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -75,11 +75,10 @@
         },
         "aiosmtpd": {
             "hashes": [
-                "sha256:00e7efb9dcd73b8266f1ec1a8ea3d5f208fc68f2f88b3717a1f1da8a748aa650",
-                "sha256:5b4e5c93be32cb7008951e994824233867aeb25cf3e881959d4907a6ceceae8c"
+                "sha256:47fb2a64495e51301af390b6d2d887a16ad01d1df40b0de7ccf456046c52357d"
             ],
             "index": "pypi",
-            "version": "==1.4.1"
+            "version": "==1.2.2"
         },
         "aiosqlite": {
             "hashes": [
@@ -337,7 +336,6 @@
                 "sha256:99d4073b617d30288f569d3f13d2bd7548c3a7e4c8de87db09a9d29bb3a4a60c",
                 "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"
             ],
-            "markers": "python_version < '3.8'",
             "version": "==3.7.4.3"
         },
         "webassets": {
@@ -461,11 +459,10 @@
         },
         "aiosmtpd": {
             "hashes": [
-                "sha256:00e7efb9dcd73b8266f1ec1a8ea3d5f208fc68f2f88b3717a1f1da8a748aa650",
-                "sha256:5b4e5c93be32cb7008951e994824233867aeb25cf3e881959d4907a6ceceae8c"
+                "sha256:47fb2a64495e51301af390b6d2d887a16ad01d1df40b0de7ccf456046c52357d"
             ],
             "index": "pypi",
-            "version": "==1.4.1"
+            "version": "==1.2.2"
         },
         "aiosqlite": {
             "hashes": [
@@ -849,7 +846,6 @@
                 "sha256:99d4073b617d30288f569d3f13d2bd7548c3a7e4c8de87db09a9d29bb3a4a60c",
                 "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"
             ],
-            "markers": "python_version < '3.8'",
             "version": "==3.7.4.3"
         },
         "urllib3": {
