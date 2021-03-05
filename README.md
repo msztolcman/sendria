@@ -215,6 +215,7 @@ ChangeLog
 ### v2.1-dev
 
 * auth mechanisms are now implemented in [aiosmtpd](https://aiosmtpd.readthedocs.io) (thanks [Arzaroth](https://github.com/Arzaroth))
+* added default SMTP server identification string and CLI param to change it if needed
 
 ### v2.0.1
 
