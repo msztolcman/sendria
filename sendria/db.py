@@ -69,8 +69,10 @@ async def connection():
     conn = await aiosqlite.connect(_db, detect_types=sqlite3.PARSE_DECLTYPES)
     conn.row_factory = aiosqlite.Row
     conn.text_factory = str
-    yield conn
-    await conn.close()
+    try:
+        yield conn
+    finally:
+        await conn.close()
 
 
 async def create_tables(conn: aiosqlite.Connection) -> None:
