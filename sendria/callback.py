@@ -5,7 +5,7 @@ import asyncio
 import json
 import traceback
 from contextlib import asynccontextmanager
-from typing import Any, Optional
+from typing import Any, Optional, NoReturn
 
 import aiohttp
 
@@ -62,13 +62,12 @@ async def get_session() -> aiohttp.ClientSession:
         'Content-type': 'application/javascript',
     }
 
-    session_kwargs = {
-        'auth': auth,
-        'headers': headers,
-        'timeout': aiohttp.ClientTimeout(connect=5, total=30),
-    }
-
-    session = aiohttp.ClientSession(**session_kwargs)
+    session = aiohttp.ClientSession(
+        auth=auth,
+        headers=headers,
+        # TODO: extract connect and total to some kind of settings/cli params
+        timeout=aiohttp.ClientTimeout(connect=5, total=30),
+    )
     try:
         yield session
     finally:
@@ -88,14 +87,14 @@ async def send_messages() -> None:
                             reason=rsp.reason, url=WEBHOOK_URL, method=WEBHOOK_METHOD)
                     elif DEBUG:
                         logger.get().msg('webhook sent', message_id=payload['message_id'], status=rsp.status,
-                            reason=rsp.reason, url=WEBHOOK_URL)
+                            reason=rsp.reason, url=WEBHOOK_URL, method=WEBHOOK_METHOD)
         except aiohttp.ClientError:
             logger.get().msg('webhook client error', traceback=traceback.format_exc())
 
         Messages.task_done()
 
 
-async def enqueue(msg: Any) -> None:
+async def enqueue(msg: Any) -> NoReturn:
     if not WEBHOOK_URL:
         return
 

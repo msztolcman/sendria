@@ -59,7 +59,7 @@ class Controller(aiosmtpd.controller.Controller):
         self.debug = debug
         self.ident = kwargs.pop('ident')
 
-        super().__init__(handler, *args, **kwargs)
+        super().__init__(handler, ready_timeout=5.0, *args, **kwargs)
 
     def factory(self):
         return SMTP(self.handler, self.smtp_auth, self.debug, ident=self.ident)
