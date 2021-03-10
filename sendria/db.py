@@ -329,16 +329,22 @@ async def get_messages(conn: aiosqlite.Connection) -> List[dict]:
 
 
 async def delete_message(conn: aiosqlite.Connection, message_id: int) -> None:
-    await conn.execute('DELETE FROM message WHERE id = ?', (message_id,))
-    await conn.execute('DELETE FROM message_part WHERE message_id = ?', (message_id,))
-    await conn.commit()
+    cur = await conn.cursor()
+    try:
+        await cur.execute('DELETE FROM message WHERE id = ?', (message_id,))
+        await cur.execute('DELETE FROM message_part WHERE message_id = ?', (message_id,))
+    finally:
+        await cur.close()
     logger.get().msg('message deleted', message_id=message_id)
     await notifier.broadcast('delete_message', message_id)
 
 
 async def delete_messages(conn: aiosqlite.Connection) -> None:
-    await conn.execute('DELETE FROM message')
-    await conn.execute('DELETE FROM message_part')
-    await conn.commit()
+    cur = await conn.cursor()
+    try:
+        await cur.execute('DELETE FROM message')
+        await cur.execute('DELETE FROM message_part')
+    finally:
+        await cur.close()
     logger.get().msg('all messages deleted')
     await notifier.broadcast('delete_messages')
