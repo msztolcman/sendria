@@ -39,7 +39,9 @@ class SMTP(aiosmtpd.smtp.SMTP):
 
         super().__init__(
             handler,
-            auth_required=smtp_auth is not None, auth_require_tls=False, auth_callback=self.authenticate,
+            auth_required=smtp_auth is not None,
+            auth_require_tls=False,
+            auth_callback=self.authenticate,
             *args, **kwargs
         )
 
