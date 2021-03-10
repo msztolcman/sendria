@@ -4,7 +4,7 @@ import argparse
 import bs4
 import re
 import weakref
-from typing import Union
+from typing import Union, NoReturn
 
 import aiohttp.web
 import aiohttp_jinja2
@@ -124,7 +124,7 @@ async def get_message_plain(rq: aiohttp.web.Request) -> WebHandlerResponse:
     return await _part_response(rq, part) or {}
 
 
-async def _fix_cid_links(rq: aiohttp.web.Request, soup, message_id) -> None:
+async def _fix_cid_links(rq: aiohttp.web.Request, soup, message_id) -> NoReturn:
     def _url_from_cid_match(m):
         url = rq.app.router['get-message-part'].url_for(message_id=str(message_id), cid=m.group('cid'))
         return m.group().replace(m.group('replace'), str(url))
@@ -145,7 +145,7 @@ async def _fix_cid_links(rq: aiohttp.web.Request, soup, message_id) -> None:
         tag.string = RE_CID_URL.sub(_url_from_cid_match, tag.string)
 
 
-def _links_target_blank(soup) -> None:
+def _links_target_blank(soup) -> NoReturn:
     for tag in soup.descendants:
         if isinstance(tag, bs4.Tag) and tag.name == 'a':
             tag.attrs['target'] = 'blank'

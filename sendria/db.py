@@ -24,7 +24,7 @@ _db: Optional[str] = None
 Messages: Optional[asyncio.Queue] = None
 
 
-async def setup(db: Union[str, pathlib.Path]) -> None:
+async def setup(db: Union[str, pathlib.Path]) -> NoReturn:
     global _db, Messages
     _db = str(db)
 
@@ -198,7 +198,7 @@ async def save_message(conn: aiosqlite.Connection, sender, recipients_envelope, 
     return message_id
 
 
-async def _add_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, part) -> None:
+async def _add_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, part) -> NoReturn:
     sql = """
         INSERT INTO message_part
             (message_id, cid, type, is_attachment, filename, charset, body, size, created_at)
@@ -223,7 +223,7 @@ async def _add_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, pa
     )
 
 
-def _prepare_message_row_inplace(row: dict) -> None:
+def _prepare_message_row_inplace(row: dict) -> NoReturn:
     row['recipients_envelope'] = split_addresses(row['recipients_envelope'])
     row['recipients_message_to'] = _parse_recipients(row['recipients_message_to'])
     row['recipients_message_cc'] = _parse_recipients(row['recipients_message_cc'])
@@ -327,7 +327,7 @@ async def get_messages(conn: aiosqlite.Connection) -> List[dict]:
     return data
 
 
-async def delete_message(conn: aiosqlite.Connection, message_id: int) -> None:
+async def delete_message(conn: aiosqlite.Connection, message_id: int) -> NoReturn:
     cur = await conn.cursor()
     try:
         await cur.execute('DELETE FROM message WHERE id = ?', (message_id,))
@@ -338,7 +338,7 @@ async def delete_message(conn: aiosqlite.Connection, message_id: int) -> None:
     await notifier.broadcast('delete_message', message_id)
 
 
-async def delete_messages(conn: aiosqlite.Connection) -> None:
+async def delete_messages(conn: aiosqlite.Connection) -> NoReturn:
     cur = await conn.cursor()
     try:
         await cur.execute('DELETE FROM message')

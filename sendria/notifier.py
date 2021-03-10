@@ -1,6 +1,6 @@
 import asyncio
 import weakref
-from typing import Optional
+from typing import Optional, NoReturn
 
 import aiohttp.web
 
@@ -12,7 +12,7 @@ WSHandlers: Optional[weakref.WeakSet] = None
 WebsocketMessages: Optional[asyncio.Queue] = None
 
 
-def setup(websockets, debug) -> None:
+def setup(websockets, debug) -> NoReturn:
     global WSHandlers, WebsocketMessages, DEBUG
 
     DEBUG = debug
@@ -20,7 +20,7 @@ def setup(websockets, debug) -> None:
     WebsocketMessages = asyncio.Queue()
 
 
-async def ping() -> None:
+async def ping() -> NoReturn:
     while True:
         ws: aiohttp.web.WebSocketResponse
         for ws in WSHandlers:
@@ -28,11 +28,11 @@ async def ping() -> None:
         await asyncio.sleep(30)
 
 
-async def broadcast(*args) -> None:
+async def broadcast(*args) -> NoReturn:
     WebsocketMessages.put_nowait(args)
 
 
-async def send_messages() -> None:
+async def send_messages() -> NoReturn:
     while True:
         msg = await WebsocketMessages.get()
         msg = ','.join(map(str, msg))

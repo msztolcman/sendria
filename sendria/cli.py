@@ -7,6 +7,7 @@ import os
 import pathlib
 import signal
 import sys
+from typing import NoReturn
 
 import aiohttp.web
 import daemon
@@ -148,7 +149,7 @@ def read_pidfile(path: pathlib.Path) -> int:
         raise ValueError(str(exc))
 
 
-async def terminate_server(sig: int, loop: asyncio.AbstractEventLoop) -> None:
+async def terminate_server(sig: int, loop: asyncio.AbstractEventLoop) -> NoReturn:
     if sig == signal.SIGINT and os.isatty(sys.stdout.fileno()):
         # Terminate the line containing ^C
         print()
@@ -163,7 +164,7 @@ async def terminate_server(sig: int, loop: asyncio.AbstractEventLoop) -> None:
     loop.stop()
 
 
-def run_sendria_servers(loop, args: argparse.Namespace) -> None:
+def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
     # initialize db
     loop.run_until_complete(db.setup(args.db))
 
@@ -220,7 +221,7 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> None:
         loop.add_signal_handler(s, lambda s=s: asyncio.create_task(terminate_server(s, loop)))
 
 
-def stop(pidfile: pathlib.Path) -> None:
+def stop(pidfile: pathlib.Path) -> NoReturn:
     if not pidfile or not pidfile.exists():
         exit_err('PID file not specified or not found')
 
