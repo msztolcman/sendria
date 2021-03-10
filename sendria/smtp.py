@@ -1,6 +1,5 @@
 __all__ = []
 
-import binascii
 import email.message
 from typing import Optional
 

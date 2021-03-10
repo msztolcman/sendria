@@ -7,7 +7,7 @@ import asyncio
 import json
 import pathlib
 import sqlite3
-from typing import Iterable, Optional, Union, List
+from typing import Iterable, Optional, Union, List, NoReturn
 
 import aiosqlite
 import uuid
@@ -69,7 +69,7 @@ def _parse_recipients(recipients: Optional[str]) -> List[str]:
 
 
 @asynccontextmanager
-async def connection():
+async def connection() -> NoReturn:
     conn = await aiosqlite.connect(_db, detect_types=sqlite3.PARSE_DECLTYPES)
     conn.row_factory = aiosqlite.Row
     conn.text_factory = str
@@ -79,7 +79,7 @@ async def connection():
         await conn.close()
 
 
-async def create_tables(conn: aiosqlite.Connection) -> None:
+async def create_tables(conn: aiosqlite.Connection) -> NoReturn:
     await conn.execute("""
         CREATE TABLE IF NOT EXISTS message (
             id INTEGER PRIMARY KEY ASC,
