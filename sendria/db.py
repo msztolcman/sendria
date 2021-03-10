@@ -1,6 +1,6 @@
 __all__ = ['setup', 'connection', 'add_message', 'delete_message', 'delete_messages', 'get_message',
     'get_message_attachments', 'get_message_part_cid', 'get_message_part_html', 'get_message_part_plain',
-    'get_messages',
+    'get_messages', 'saver',
 ]
 
 import asyncio
@@ -130,7 +130,6 @@ async def saver() -> NoReturn:
     while True:
         payload = await Messages.get()
         async with connection() as conn:
-            logger.get().msg('payload:', t=type(payload), l=payload)
             await save_message(conn, payload['sender'], payload['recipients_envelope'], payload['message'], payload['peer'])
         Messages.task_done()
 

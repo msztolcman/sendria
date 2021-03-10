@@ -30,9 +30,8 @@ class AsyncMessage(aiosmtpd.handlers.AsyncMessage):
 
 
 class SMTP(aiosmtpd.smtp.SMTP):
-    def __init__(self, handler, smtp_auth, debug, *args, **kwargs):
+    def __init__(self, handler, smtp_auth, *args, **kwargs):
         self._smtp_auth = smtp_auth
-        self._debug_mode = debug
         self._username = None
 
         super().__init__(
@@ -42,10 +41,6 @@ class SMTP(aiosmtpd.smtp.SMTP):
             auth_callback=self.authenticate,
             *args, **kwargs
         )
-
-    def _debug(self, message, **params):
-        if self._debug_mode:
-            logger.get().msg('SMTP: ' + message, **params)
 
     def authenticate(self, mechanism, login, password):
         return self._smtp_auth.check_password(login, password)
@@ -60,7 +55,7 @@ class Controller(aiosmtpd.controller.Controller):
         super().__init__(handler, ready_timeout=5.0, *args, **kwargs)
 
     def factory(self):
-        return SMTP(self.handler, self.smtp_auth, self.debug, ident=self.ident)
+        return SMTP(self.handler, self.smtp_auth, ident=self.ident, hostname=self.hostname)
 
 
 def run(smtp_host: str, smtp_port: int, smtp_auth: Optional[HtpasswdFile], ident: Optional[str], debug: bool):
