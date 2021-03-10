@@ -19,7 +19,6 @@ python-daemon = "*"
 pytz = "*"
 structlog = "*"
 webassets = "*"
-zodb = "*"
 
 [dev-packages]
 versionner = "*"
