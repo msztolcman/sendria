@@ -52,6 +52,7 @@ class Controller(aiosmtpd.controller.Controller):
         self.debug = debug
         self.ident = kwargs.pop('ident')
 
+        # TODO: extract connect and total to some kind of settings/cli params
         super().__init__(handler, ready_timeout=5.0, *args, **kwargs)
 
     def factory(self):

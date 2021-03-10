@@ -45,7 +45,7 @@ def setup(args: argparse.Namespace) -> bool:
     return True
 
 
-def prepare_payload(data: dict) -> None:
+def prepare_payload(data: dict) -> NoReturn:
     data['recipients_message_to'] = json.loads(data['recipients_message_to'])
     data['recipients_message_cc'] = json.loads(data['recipients_message_cc'])
     data['recipients_message_bcc'] = json.loads(data['recipients_message_bcc'])
@@ -74,7 +74,7 @@ async def get_session() -> aiohttp.ClientSession:
         await session.close()
 
 
-async def send_messages() -> None:
+async def send_messages() -> NoReturn:
     while True:
         payload = await Messages.get()
         prepare_payload(payload)
