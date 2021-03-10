@@ -27,8 +27,7 @@ class AsyncMessage(aiosmtpd.handlers.AsyncMessage):
             peer=':'.join([i.strip(" '()")for i in message['X-Peer'].split(',')]),
             length=len(body)
         )
-        async with db.connection() as conn:
-            await db.add_message(conn, message['X-MailFrom'], message['X-RcptTo'], message, message['X-Peer'])
+        db.add_message(message['X-MailFrom'], message['X-RcptTo'], message, message['X-Peer'])
 
 
 class SMTP(aiosmtpd.smtp.SMTP):

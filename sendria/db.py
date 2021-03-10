@@ -3,6 +3,7 @@ __all__ = ['setup', 'connection', 'add_message', 'delete_message', 'delete_messa
     'get_messages',
 ]
 
+import asyncio
 import json
 import pathlib
 import sqlite3
@@ -20,11 +21,14 @@ from . import callback
 from . import notifier
 
 _db: Optional[str] = None
+Messages: Optional[asyncio.Queue] = None
 
 
 async def setup(db: Union[str, pathlib.Path]) -> None:
-    global _db
+    global _db, Messages
     _db = str(db)
+
+    Messages = asyncio.Queue()
 
     async with connection() as conn:
         await create_tables(conn)
@@ -110,7 +114,28 @@ async def create_tables(conn: aiosqlite.Connection) -> None:
     """)
 
 
-async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, message, peer) -> int:
+def add_message(sender, recipients_envelope, message, peer) -> NoReturn:
+    Messages._loop.call_soon_threadsafe(
+        Messages.put_nowait,
+        {
+            'sender': sender,
+            'recipients_envelope': recipients_envelope,
+            'message': message,
+            'peer': peer,
+        }
+    )
+
+
+async def saver() -> NoReturn:
+    while True:
+        payload = await Messages.get()
+        async with connection() as conn:
+            logger.get().msg('payload:', t=type(payload), l=payload)
+            await save_message(conn, payload['sender'], payload['recipients_envelope'], payload['message'], payload['peer'])
+        Messages.task_done()
+
+
+async def save_message(conn: aiosqlite.Connection, sender, recipients_envelope, message, peer) -> int:
     sql = """
         INSERT INTO message
             (sender_envelope, sender_message, recipients_envelope, recipients_message_to,
@@ -142,30 +167,31 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
         parts.append({'cid': cid, 'part': part})
 
     cur = await conn.cursor()
-    await cur.execute('BEGIN')
 
-    await cur.execute(
-        sql,
-        (
-            msg_info['sender_envelope'],
-            msg_info['sender_message'],
-            msg_info['recipients_envelope'],
-            msg_info['recipients_message_to'],
-            msg_info['recipients_message_cc'],
-            msg_info['recipients_message_bcc'],
-            msg_info['subject'],
-            msg_info['source'],
-            msg_info['type'],
-            len(body),
-            msg_info['peer'],
+    try:
+        await cur.execute(
+            sql,
+            (
+                msg_info['sender_envelope'],
+                msg_info['sender_message'],
+                msg_info['recipients_envelope'],
+                msg_info['recipients_message_to'],
+                msg_info['recipients_message_cc'],
+                msg_info['recipients_message_bcc'],
+                msg_info['subject'],
+                msg_info['source'],
+                msg_info['type'],
+                len(body),
+                msg_info['peer'],
+            )
         )
-    )
-    message_id = msg_info['message_id'] = cur.lastrowid
-    # Store parts (why do we do this for non-multipart at all?!)
-    for part in parts:
-        await _add_message_part(cur, message_id, part['cid'], part['part'])
-    await cur.execute('COMMIT')
-    await cur.close()
+        message_id = msg_info['message_id'] = cur.lastrowid
+        # Store parts (why do we do this for non-multipart at all?!)
+        for part in parts:
+            await _add_message_part(cur, message_id, part['cid'], part['part'])
+        await cur.execute('COMMIT')
+    finally:
+        await cur.close()
 
     logger.get().msg('message stored', message_id=message_id, parts=parts)
     await notifier.broadcast('add_message', message_id)

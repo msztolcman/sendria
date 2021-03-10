@@ -172,6 +172,9 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> None:
     if callbacks_enabled:
         loop.create_task(callback.send_messages())
 
+    # initialize and start message saver
+    loop.create_task(db.saver())
+
     # start smtp server
     smtp.run(args.smtp_ip, args.smtp_port, args.smtp_auth, args.smtp_ident, args.debug)
     logger.get().msg('smtp server started', host=args.smtp_ip, port=args.smtp_port,
