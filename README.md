@@ -212,10 +212,20 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
-### v2.1-dev
+### v2.1.0
 
-* auth mechanisms are now implemented in [aiosmtpd](https://aiosmtpd.readthedocs.io) (thanks [Arzaroth](https://github.com/Arzaroth))
-* added default SMTP server identification string and CLI param to change it if needed
+* auth mechanisms are now implemented in [aiosmtpd](https://aiosmtpd.readthedocs.io)
+  (thanks [Arzaroth](https://github.com/Arzaroth) for PR)
+* huge improvements to handling DB inserts. Now all messages are stored in an internal queue,
+  then it's saved to the DB. It solves many problems with performance and single-threaded
+  SQLite (thanks [KathrynN](https://github.com/KathrynN) for reporting)
+* fixed API response when there is no data to return (#3) (
+  thanks [KathrynN](https://github.com/KathrynN) for reporting)
+* improved logging system, now log messages has log levels, also many simplifications in
+  logging system
+* Sendria now introduce as itself when connect through SMTP (also `--smtp-ident` CLI param added)
+* minor fixes and performance issues solved, updated dependencies
+* next step in cleanups and making code modern
 
 ### v2.0.1
 
