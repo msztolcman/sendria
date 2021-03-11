@@ -1,7 +1,7 @@
 __all__ = ['main', 'terminate_server']
 
-import asyncio
 import argparse
+import asyncio
 import errno
 import os
 import pathlib
@@ -14,15 +14,15 @@ import daemon
 import structlog
 from daemon.pidfile import TimeoutPIDLockFile
 from passlib.apache import HtpasswdFile
+from structlog import get_logger
 
 from . import STATIC_DIR, ASSETS_DIR
 from . import __version__
+from . import callback
 from . import db
 from . import http
-from structlog import get_logger
 from . import notifier
 from . import smtp
-from . import callback
 
 SHUTDOWN = []
 

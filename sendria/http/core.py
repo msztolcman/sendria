@@ -1,23 +1,23 @@
 __all__ = ['setup', 'configure_assets']
 
 import argparse
-import bs4
 import re
 import weakref
 from typing import Union, NoReturn
 
 import aiohttp.web
 import aiohttp_jinja2
+import bs4
 import jinja2
 import webassets
 import yarl
 from passlib.apache import HtpasswdFile
+from structlog import get_logger
 
+from . import middlewares
 from .. import STATIC_DIR, STATIC_URL, TEMPLATES_DIR
 from .. import __version__
 from .. import db
-from structlog import get_logger
-from . import middlewares
 
 RE_CID = re.compile(r'(?P<replace>cid:(?P<cid>.+))')
 RE_CID_URL = re.compile(r'url\(\s*(?P<quote>["\']?)(?P<replace>cid:(?P<cid>[^\\\')]+))(?P=quote)\s*\)')

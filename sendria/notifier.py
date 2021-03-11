@@ -3,7 +3,6 @@ import weakref
 from typing import Optional, NoReturn
 
 import aiohttp.web
-
 from structlog import get_logger
 
 DEBUG: bool = False

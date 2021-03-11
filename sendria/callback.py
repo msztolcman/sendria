@@ -8,9 +8,9 @@ from contextlib import asynccontextmanager
 from typing import Any, Optional, NoReturn
 
 import aiohttp
+from structlog import get_logger
 
 from . import __version__
-from structlog import get_logger
 
 WEBHOOK_METHOD: str = 'POST'
 WEBHOOK_URL: Optional[str] = None

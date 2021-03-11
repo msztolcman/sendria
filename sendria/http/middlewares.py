@@ -6,11 +6,11 @@ from typing import Callable
 import aiohttp.web
 from aiohttp_basicauth import BasicAuthMiddleware
 from passlib.apache import HtpasswdFile
-
-from .. import errors
 from structlog import get_logger
-from .. import __version__
+
 from .json_encoder import json_response
+from .. import __version__
+from .. import errors
 
 
 @aiohttp.web.middleware

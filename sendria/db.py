@@ -7,16 +7,16 @@ import asyncio
 import json
 import pathlib
 import sqlite3
+import uuid
+from contextlib import asynccontextmanager
+from email.header import decode_header as _decode_header
+from email.message import Message
+from email.utils import getaddresses
 from typing import Iterable, Optional, Union, List, NoReturn
 
 import aiosqlite
-import uuid
-from contextlib import asynccontextmanager
-from email.message import Message
-from email.header import decode_header as _decode_header
-from email.utils import getaddresses
-
 from structlog import get_logger
+
 from . import callback
 from . import notifier
 
