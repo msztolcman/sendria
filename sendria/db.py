@@ -187,18 +187,19 @@ async def save_message(conn: aiosqlite.Connection, sender, recipients_envelope, 
         message_id = msg_info['message_id'] = cur.lastrowid
         # Store parts (why do we do this for non-multipart at all?!)
         for part in parts:
-            await _add_message_part(cur, message_id, part['cid'], part['part'])
+            part_id = await _add_message_part(cur, message_id, part['cid'], part['part'])
+            part['part_id'] = part_id
         await cur.execute('COMMIT')
     finally:
         await cur.close()
 
-    get_logger().debug('message stored', message_id=message_id, parts=parts)
+    get_logger().debug('message stored', message_id=message_id, parts=[{'part_id': part['part_id'], 'cid': part['cid']}  for part in parts])
     await notifier.broadcast('add_message', message_id)
     await callback.enqueue(msg_info)
     return message_id
 
 
-async def _add_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, part) -> NoReturn:
+async def _add_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, part) -> int:
     sql = """
         INSERT INTO message_part
             (message_id, cid, type, is_attachment, filename, charset, body, size, created_at)
@@ -221,6 +222,7 @@ async def _add_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, pa
             body_len
         )
     )
+    return cur.lastrowid
 
 
 def _prepare_message_row_inplace(row: dict) -> NoReturn:
