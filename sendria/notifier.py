@@ -4,7 +4,7 @@ from typing import Optional, NoReturn
 
 import aiohttp.web
 
-from . import logger
+from .logger import get_logger
 
 DEBUG: bool = False
 
@@ -46,4 +46,4 @@ async def send_messages() -> NoReturn:
         WebsocketMessages.task_done()
 
         if DEBUG:
-            logger.get().debug('websocket messages sent', message=msg, receivers_cnt=cnt)
+            get_logger().debug('websocket messages sent', message=msg, receivers_cnt=cnt)

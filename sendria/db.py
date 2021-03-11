@@ -16,7 +16,7 @@ from email.message import Message
 from email.header import decode_header as _decode_header
 from email.utils import getaddresses
 
-from . import logger
+from .logger import get_logger
 from . import callback
 from . import notifier
 
@@ -32,7 +32,7 @@ async def setup(db: Union[str, pathlib.Path]) -> NoReturn:
 
     async with connection() as conn:
         await create_tables(conn)
-        logger.get().info('DB initialized')
+        get_logger().info('DB initialized')
 
 
 def decode_header(value: Union[str, bytes, None]) -> str:
@@ -192,7 +192,7 @@ async def save_message(conn: aiosqlite.Connection, sender, recipients_envelope, 
     finally:
         await cur.close()
 
-    logger.get().debug('message stored', message_id=message_id, parts=parts)
+    get_logger().debug('message stored', message_id=message_id, parts=parts)
     await notifier.broadcast('add_message', message_id)
     await callback.enqueue(msg_info)
     return message_id
@@ -334,7 +334,7 @@ async def delete_message(conn: aiosqlite.Connection, message_id: int) -> NoRetur
         await cur.execute('DELETE FROM message_part WHERE message_id = ?', (message_id,))
     finally:
         await cur.close()
-    logger.get().debug('message deleted', message_id=message_id)
+    get_logger().debug('message deleted', message_id=message_id)
     await notifier.broadcast('delete_message', message_id)
 
 
@@ -345,5 +345,5 @@ async def delete_messages(conn: aiosqlite.Connection) -> NoReturn:
         await cur.execute('DELETE FROM message_part')
     finally:
         await cur.close()
-    logger.get().debug('all messages deleted')
+    get_logger().debug('all messages deleted')
     await notifier.broadcast('delete_messages')

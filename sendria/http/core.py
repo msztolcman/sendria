@@ -16,7 +16,7 @@ from passlib.apache import HtpasswdFile
 from .. import STATIC_DIR, STATIC_URL, TEMPLATES_DIR
 from .. import __version__
 from .. import db
-from .. import logger
+from ..logger import get_logger
 from . import middlewares
 
 RE_CID = re.compile(r'(?P<replace>cid:(?P<cid>.+))')
@@ -43,7 +43,7 @@ async def terminate(rq: aiohttp.web.Request) -> WebHandlerResponse:
     if rq.app['SENDRIA_NO_QUIT']:
         raise aiohttp.web.HTTPForbidden()
 
-    logger.get().info('Terminate request received')
+    get_logger().info('Terminate request received')
     import os
     import signal
     os.kill(os.getpid(), signal.SIGTERM)
@@ -211,18 +211,18 @@ async def websocket_handler(rq: aiohttp.web.Request) -> aiohttp.web.WebSocketRes
     await ws.prepare(rq)
 
     if rq.app['debug']:
-        logger.get().debug('websocket connection opened', peer=rq.remote)
+        get_logger().debug('websocket connection opened', peer=rq.remote)
 
     rq.app['websockets'].add(ws)
     try:
         async for ws_message in ws:
             if ws_message.type == aiohttp.WSMsgType.ERROR:
-                logger.get().warning('ws connection closed with error', exception=ws.exception(), peer=rq.remote)
+                get_logger().warning('ws connection closed with error', exception=ws.exception(), peer=rq.remote)
     finally:
         rq.app['websockets'].discard(ws)
 
     if rq.app['debug']:
-        logger.get().debug('websocket connection closed', peer=rq.remote)
+        get_logger().debug('websocket connection closed', peer=rq.remote)
 
     return ws
 

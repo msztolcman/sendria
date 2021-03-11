@@ -22,7 +22,7 @@ def configure_logger():
     return log
 
 
-def get():
+def get_logger():
     global _logger
 
     if not _logger:

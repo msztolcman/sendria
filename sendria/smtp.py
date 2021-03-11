@@ -9,7 +9,7 @@ import aiosmtpd.smtp
 from passlib.apache import HtpasswdFile
 
 from . import db
-from . import logger
+from .logger import get_logger
 
 
 class AsyncMessage(aiosmtpd.handlers.AsyncMessage):
@@ -20,7 +20,7 @@ class AsyncMessage(aiosmtpd.handlers.AsyncMessage):
 
     async def handle_message(self, message: email.message.Message):
         body = message.get_payload()
-        logger.get().debug("message received",
+        get_logger().debug("message received",
             envelope_from=message['X-MailFrom'],
             envelope_to=message['X-RcptTo'],
             peer=':'.join([i.strip(" '()")for i in message['X-Peer'].split(',')]),

@@ -10,7 +10,7 @@ from typing import Any, Optional, NoReturn
 import aiohttp
 
 from . import __version__
-from . import logger
+from .logger import get_logger
 
 WEBHOOK_METHOD: str = 'POST'
 WEBHOOK_URL: Optional[str] = None
@@ -26,7 +26,7 @@ def setup(args: argparse.Namespace) -> bool:
 
     if not args.callback_webhook_url:
         if DEBUG:
-            logger.get().info('webhooks disabled')
+            get_logger().info('webhooks disabled')
         return False
 
     WEBHOOK_URL = args.callback_webhook_url
@@ -40,7 +40,7 @@ def setup(args: argparse.Namespace) -> bool:
     Messages = asyncio.Queue()
 
     if DEBUG:
-        logger.get().debug('webhooks enabled', method=WEBHOOK_METHOD, url=WEBHOOK_URL,
+        get_logger().debug('webhooks enabled', method=WEBHOOK_METHOD, url=WEBHOOK_URL,
             auth='enabled' if WEBHOOK_AUTH else 'disabled')
     return True
 
@@ -83,13 +83,13 @@ async def send_messages() -> NoReturn:
             async with get_session() as session:
                 async with session.request(WEBHOOK_METHOD, WEBHOOK_URL, json=payload) as rsp:
                     if rsp.status != 200:
-                        logger.get().warning('webhook response error', message_id=payload['message_id'], status=rsp.status,
+                        get_logger().warning('webhook response error', message_id=payload['message_id'], status=rsp.status,
                             reason=rsp.reason, url=WEBHOOK_URL, method=WEBHOOK_METHOD)
                     elif DEBUG:
-                        logger.get().debug('webhook sent', message_id=payload['message_id'], status=rsp.status,
+                        get_logger().debug('webhook sent', message_id=payload['message_id'], status=rsp.status,
                             reason=rsp.reason, url=WEBHOOK_URL, method=WEBHOOK_METHOD)
         except aiohttp.ClientError:
-            logger.get().error('webhook client error', traceback=traceback.format_exc())
+            get_logger().error('webhook client error', traceback=traceback.format_exc())
 
         Messages.task_done()
 
