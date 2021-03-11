@@ -22,11 +22,11 @@ from . import notifier
 
 logger = get_logger()
 _db: Optional[str] = None
-Messages: Optional[asyncio.Queue] = None
+CallbackMessagesQueue: Optional[asyncio.Queue] = None
 
 
 async def setup(db: Union[str, pathlib.Path]) -> NoReturn:
-    global _db, Messages
+    global _db, CallbackMessagesQueue
     _db = str(db)
 
     Messages = asyncio.Queue()
@@ -116,8 +116,8 @@ async def create_tables(conn: aiosqlite.Connection) -> NoReturn:
 
 
 def add_message(sender, recipients_envelope, message, peer) -> NoReturn:
-    Messages._loop.call_soon_threadsafe(
-        Messages.put_nowait,
+    CallbackMessagesQueue._loop.call_soon_threadsafe(
+        CallbackMessagesQueue.put_nowait,
         {
             'sender': sender,
             'recipients_envelope': recipients_envelope,
@@ -129,10 +129,10 @@ def add_message(sender, recipients_envelope, message, peer) -> NoReturn:
 
 async def saver() -> NoReturn:
     while True:
-        payload = await Messages.get()
+        payload = await CallbackMessagesQueue.get()
         async with connection() as conn:
             await save_message(conn, payload['sender'], payload['recipients_envelope'], payload['message'], payload['peer'])
-        Messages.task_done()
+        CallbackMessagesQueue.task_done()
 
 
 async def save_message(conn: aiosqlite.Connection, sender, recipients_envelope, message, peer) -> int:

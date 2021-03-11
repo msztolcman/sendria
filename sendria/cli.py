@@ -204,7 +204,12 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
     loop.run_until_complete(db.setup(args.db))
 
     # initialize and start webhooks
-    callbacks_enabled = callback.setup(args)
+    callbacks_enabled = callback.setup(
+        debug_mode=args.debug,
+        callback_webhook_url=args.callback_webhook_url,
+        callback_webhook_method=args.callback_webhook_method,
+        callback_webhook_auth=args.callback_webhook_auth,
+    )
     if callbacks_enabled:
         loop.create_task(callback.send_messages())
 
@@ -237,7 +242,7 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
     )
 
     # initialize and run websocket notifier
-    notifier.setup(app['websockets'], app['debug'])
+    notifier.setup(websockets=app['websockets'], debug_mode=app['debug'])
     loop.create_task(notifier.ping())
     loop.create_task(notifier.send_messages())
     logger.info('notifier initialized')

@@ -1,6 +1,5 @@
 __all__ = ['setup', 'enqueue']
 
-import argparse
 import asyncio
 import json
 import traceback
@@ -17,28 +16,34 @@ WEBHOOK_METHOD: str = 'POST'
 WEBHOOK_URL: Optional[str] = None
 WEBHOOK_AUTH: Optional[str] = None
 DEBUG = False
-Messages: Optional[asyncio.Queue] = None
+CallbackMessagesQueue: Optional[asyncio.Queue] = None
 
 
-def setup(args: argparse.Namespace) -> bool:
-    global WEBHOOK_URL, WEBHOOK_METHOD, WEBHOOK_AUTH, DEBUG, Messages
+def setup(
+    *,
+    debug_mode: bool = False,
+    callback_webhook_url: str = None,
+    callback_webhook_method: str = None,
+    callback_webhook_auth: str = None,
+) -> bool:
+    global WEBHOOK_URL, WEBHOOK_METHOD, WEBHOOK_AUTH, DEBUG, CallbackMessagesQueue
 
-    DEBUG = args.debug
+    DEBUG = debug_mode
 
-    if not args.callback_webhook_url:
+    if not callback_webhook_url:
         if DEBUG:
-            logger.info('webhooks disabled')
+            logger.debug('webhooks disabled')
         return False
 
-    WEBHOOK_URL = args.callback_webhook_url
+    WEBHOOK_URL = callback_webhook_url
 
-    if args.callback_webhook_method:
-        WEBHOOK_METHOD = args.callback_webhook_method.upper()
+    if callback_webhook_method:
+        WEBHOOK_METHOD = callback_webhook_method.upper()
 
-    if args.callback_webhook_auth:
-        WEBHOOK_AUTH = args.callback_webhook_auth.split(':', 1)
+    if callback_webhook_auth:
+        WEBHOOK_AUTH = callback_webhook_auth.split(':', 1)
 
-    Messages = asyncio.Queue()
+    CallbackMessagesQueue = asyncio.Queue()
 
     if DEBUG:
         logger.debug('webhooks enabled', method=WEBHOOK_METHOD, url=WEBHOOK_URL,
@@ -77,7 +82,7 @@ async def get_session() -> aiohttp.ClientSession:
 
 async def send_messages() -> NoReturn:
     while True:
-        payload = await Messages.get()
+        payload = await CallbackMessagesQueue.get()
         prepare_payload(payload)
 
         try:
@@ -92,11 +97,11 @@ async def send_messages() -> NoReturn:
         except aiohttp.ClientError:
             logger.error('webhook client error', traceback=traceback.format_exc())
 
-        Messages.task_done()
+        CallbackMessagesQueue.task_done()
 
 
 async def enqueue(msg: Any) -> NoReturn:
     if not WEBHOOK_URL:
         return
 
-    Messages.put_nowait(msg)
+    CallbackMessagesQueue.put_nowait(msg)

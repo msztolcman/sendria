@@ -3,7 +3,7 @@ __all__ = ['json_response']
 import datetime
 import json
 
-import aiohttp
+import aiohttp.web
 import yarl
 
 
@@ -17,7 +17,7 @@ class JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
-def json_response(*args, **kwargs):
+def json_response(*args, **kwargs) -> aiohttp.web.Response:
     def dumps(*a, **b):
         b['cls'] = JSONEncoder
         return json.dumps(*a, **b)
