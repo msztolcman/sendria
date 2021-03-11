@@ -213,7 +213,7 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
         loop.create_task(callback.send_messages())
 
     # initialize and start message saver
-    loop.create_task(db.saver())
+    loop.create_task(db.message_saver())
 
     # start smtp server
     smtp.run(args.smtp_ip, args.smtp_port, args.smtp_auth, args.smtp_ident, args.debug)

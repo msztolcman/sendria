@@ -1,6 +1,6 @@
 __all__ = []
 
-import email.message
+from email.message import Message as EmailMessage
 from typing import Optional
 
 import aiosmtpd.controller
@@ -10,6 +10,7 @@ from passlib.apache import HtpasswdFile
 from structlog import get_logger
 
 from . import db
+from .message import Message
 
 logger = get_logger()
 
@@ -20,15 +21,13 @@ class AsyncMessage(aiosmtpd.handlers.AsyncMessage):
 
         super().__init__(*args, **kwargs)
 
-    async def handle_message(self, message: email.message.Message):
-        body = message.get_payload()
+    async def handle_message(self, email: EmailMessage):
         logger.debug("message received",
-            envelope_from=message['X-MailFrom'],
-            envelope_to=message['X-RcptTo'],
-            peer=':'.join([i.strip(" '()")for i in message['X-Peer'].split(',')]),
-            length=len(body)
+            envelope_from=email['X-MailFrom'],
+            envelope_to=email['X-RcptTo'],
+            peer=':'.join([i.strip(" '()")for i in email['X-Peer'].split(',')]),
         )
-        db.add_message(message['X-MailFrom'], message['X-RcptTo'], message, message['X-Peer'])
+        db.add_message(Message.from_email(email))
 
 
 class SMTP(aiosmtpd.smtp.SMTP):

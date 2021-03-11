@@ -1,15 +1,15 @@
 __all__ = ['setup', 'enqueue']
 
 import asyncio
-import json
 import traceback
 from contextlib import asynccontextmanager
-from typing import Any, Optional, NoReturn
+from typing import Optional, NoReturn
 
 import aiohttp
 from structlog import get_logger
 
 from . import __version__
+from .message import Message
 
 logger = get_logger()
 WEBHOOK_METHOD: str = 'POST'
@@ -51,12 +51,6 @@ def setup(
     return True
 
 
-def prepare_payload(data: dict) -> NoReturn:
-    data['recipients_message_to'] = json.loads(data['recipients_message_to'])
-    data['recipients_message_cc'] = json.loads(data['recipients_message_cc'])
-    data['recipients_message_bcc'] = json.loads(data['recipients_message_bcc'])
-
-
 @asynccontextmanager
 async def get_session() -> aiohttp.ClientSession:
     auth = None
@@ -82,17 +76,19 @@ async def get_session() -> aiohttp.ClientSession:
 
 async def send_messages() -> NoReturn:
     while True:
-        payload = await CallbackMessagesQueue.get()
-        prepare_payload(payload)
+        message: Message = await CallbackMessagesQueue.get()
 
         try:
             async with get_session() as session:
-                async with session.request(WEBHOOK_METHOD, WEBHOOK_URL, json=payload) as rsp:
+                message_data = message.to_dict()
+                del message_data['parts'], message_data['created_at']
+
+                async with session.request(WEBHOOK_METHOD, WEBHOOK_URL, json=message_data) as rsp:
                     if rsp.status != 200:
-                        logger.warning('webhook response error', message_id=payload['message_id'], status=rsp.status,
+                        logger.warning('webhook response error', message_id=message.id, status=rsp.status,
                             reason=rsp.reason, url=WEBHOOK_URL, method=WEBHOOK_METHOD)
                     elif DEBUG:
-                        logger.debug('webhook sent', message_id=payload['message_id'], status=rsp.status,
+                        logger.debug('webhook sent', message_id=message.id, status=rsp.status,
                             reason=rsp.reason, url=WEBHOOK_URL, method=WEBHOOK_METHOD)
         except aiohttp.ClientError:
             logger.error('webhook client error', traceback=traceback.format_exc())
@@ -100,7 +96,7 @@ async def send_messages() -> NoReturn:
         CallbackMessagesQueue.task_done()
 
 
-async def enqueue(msg: Any) -> NoReturn:
+async def enqueue(msg: Message) -> NoReturn:
     if not WEBHOOK_URL:
         return
 
