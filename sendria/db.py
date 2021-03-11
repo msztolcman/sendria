@@ -18,7 +18,7 @@ import aiosqlite
 from structlog import get_logger
 
 from . import callback
-from . import notifier
+from .http import notifier
 
 logger = get_logger()
 _db: Optional[str] = None

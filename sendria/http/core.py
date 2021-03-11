@@ -1,6 +1,7 @@
 __all__ = ['setup', 'configure_assets']
 
 import argparse
+import asyncio
 import re
 import weakref
 from typing import Union, NoReturn
@@ -15,6 +16,7 @@ from passlib.apache import HtpasswdFile
 from structlog import get_logger
 
 from . import middlewares
+from . import notifier
 from .. import STATIC_DIR, STATIC_URL, TEMPLATES_DIR
 from .. import __version__
 from .. import db
@@ -287,5 +289,12 @@ def setup(args: argparse.Namespace, http_auth: HtpasswdFile) -> aiohttp.web.Appl
         aiohttp.web.get(r'/ws', websocket_handler),
     ])
     app.router.add_static('/static/', path=STATIC_DIR, name='static')
+
+    # initialize and run websocket notifier
+    notifier.setup(websockets=app['websockets'], debug_mode=app['debug'])
+    loop = asyncio.get_event_loop()
+    loop.create_task(notifier.ping())
+    loop.create_task(notifier.send_messages())
+    logger.info('notifier initialized')
 
     return app

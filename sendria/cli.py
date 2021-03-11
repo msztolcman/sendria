@@ -21,7 +21,6 @@ from . import __version__
 from . import callback
 from . import db
 from . import http
-from . import notifier
 from . import smtp
 
 logger = get_logger()
@@ -241,15 +240,8 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
         password_file=str(args.http_auth.path) if args.http_auth else None,
     )
 
-    # initialize and run websocket notifier
-    notifier.setup(websockets=app['websockets'], debug_mode=app['debug'])
-    loop.create_task(notifier.ping())
-    loop.create_task(notifier.send_messages())
-    logger.info('notifier initialized')
-
     # prepare for clean terminate
     async def _initialize_aiohttp_services__stop():
-        # print('initialize_aiohttp_services _stop')
         for ws in set(app['websockets']):
             await ws.close(code=aiohttp.WSCloseCode.GOING_AWAY, message='Server shutdown')
         await app.shutdown()
