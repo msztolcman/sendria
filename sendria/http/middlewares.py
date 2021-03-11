@@ -29,10 +29,10 @@ async def error_handler(rq: aiohttp.web.Request, handler: Callable) -> aiohttp.w
         raise
     except (aiohttp.web.HTTPForbidden, aiohttp.web.HTTPUnauthorized):
         header = rq.headers.get('authorization', None)
-        logger.get().msg('unauthorized access', uri=rq.url.human_repr(), header=header)
+        logger.get().debug('unauthorized access', uri=rq.url.human_repr(), header=header)
         raise
     except Exception:
-        logger.get().msg('exception', exc_info=traceback.format_exc())
+        logger.get().exception('exception', exc_info=traceback.format_exc())
         raise
     return rsp
 
@@ -77,7 +77,7 @@ class BasicAuth(BasicAuthMiddleware):
 
         res = await super().authenticate(rq)
         if not res:
-            logger.get().msg(
+            logger.get().info(
                 'request authentication failed',
                 uri=rq.url.human_repr(),
                 header=rq.headers.get('authorization', None)
@@ -88,7 +88,7 @@ class BasicAuth(BasicAuthMiddleware):
     async def check_credentials(self, username: str, password: str, rq: aiohttp.web.Request) -> bool:
         if self._http_auth.check_password(username, password):
             if rq.app['debug']:
-                logger.get().msg('request authenticated', uri=rq.url.human_repr(), username=username)
+                logger.get().debug('request authenticated', uri=rq.url.human_repr(), username=username)
             return True
 
         return False

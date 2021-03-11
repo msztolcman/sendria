@@ -46,4 +46,4 @@ async def send_messages() -> NoReturn:
         WebsocketMessages.task_done()
 
         if DEBUG:
-            logger.get().msg('websocket messages sent', message=msg, receivers_cnt=cnt)
+            logger.get().debug('websocket messages sent', message=msg, receivers_cnt=cnt)

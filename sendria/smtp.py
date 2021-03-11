@@ -20,7 +20,7 @@ class AsyncMessage(aiosmtpd.handlers.AsyncMessage):
 
     async def handle_message(self, message: email.message.Message):
         body = message.get_payload()
-        logger.get().msg("message received",
+        logger.get().debug("message received",
             envelope_from=message['X-MailFrom'],
             envelope_to=message['X-RcptTo'],
             peer=':'.join([i.strip(" '()")for i in message['X-Peer'].split(',')]),
