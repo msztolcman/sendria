@@ -1,24 +1,27 @@
 __all__ = ['setup', 'configure_assets']
 
 import argparse
-import bs4
+import asyncio
 import re
 import weakref
-from typing import Union
+from typing import Union, NoReturn
 
 import aiohttp.web
 import aiohttp_jinja2
+import bs4
 import jinja2
 import webassets
 import yarl
 from passlib.apache import HtpasswdFile
+from structlog import get_logger
 
+from . import middlewares
+from . import notifier
 from .. import STATIC_DIR, STATIC_URL, TEMPLATES_DIR
 from .. import __version__
 from .. import db
-from .. import logger
-from . import middlewares
 
+logger = get_logger()
 RE_CID = re.compile(r'(?P<replace>cid:(?P<cid>.+))')
 RE_CID_URL = re.compile(r'url\(\s*(?P<quote>["\']?)(?P<replace>cid:(?P<cid>[^\\\')]+))(?P=quote)\s*\)')
 
@@ -43,7 +46,7 @@ async def terminate(rq: aiohttp.web.Request) -> WebHandlerResponse:
     if rq.app['SENDRIA_NO_QUIT']:
         raise aiohttp.web.HTTPForbidden()
 
-    logger.get().msg('Terminate request received')
+    logger.info('Terminate request received')
     import os
     import signal
     os.kill(os.getpid(), signal.SIGTERM)
@@ -124,7 +127,7 @@ async def get_message_plain(rq: aiohttp.web.Request) -> WebHandlerResponse:
     return await _part_response(rq, part) or {}
 
 
-async def _fix_cid_links(rq: aiohttp.web.Request, soup, message_id) -> None:
+async def _fix_cid_links(rq: aiohttp.web.Request, soup, message_id) -> NoReturn:
     def _url_from_cid_match(m):
         url = rq.app.router['get-message-part'].url_for(message_id=str(message_id), cid=m.group('cid'))
         return m.group().replace(m.group('replace'), str(url))
@@ -145,7 +148,7 @@ async def _fix_cid_links(rq: aiohttp.web.Request, soup, message_id) -> None:
         tag.string = RE_CID_URL.sub(_url_from_cid_match, tag.string)
 
 
-def _links_target_blank(soup) -> None:
+def _links_target_blank(soup) -> NoReturn:
     for tag in soup.descendants:
         if isinstance(tag, bs4.Tag) and tag.name == 'a':
             tag.attrs['target'] = 'blank'
@@ -211,18 +214,18 @@ async def websocket_handler(rq: aiohttp.web.Request) -> aiohttp.web.WebSocketRes
     await ws.prepare(rq)
 
     if rq.app['debug']:
-        logger.get().msg('websocket connection opened', peer=rq.remote)
+        logger.debug('websocket connection opened', peer=rq.remote)
 
     rq.app['websockets'].add(ws)
     try:
         async for ws_message in ws:
             if ws_message.type == aiohttp.WSMsgType.ERROR:
-                logger.get().msg('ws connection closed with error', exception=ws.exception(), peer=rq.remote)
+                logger.warning('ws connection closed with error', exception=ws.exception(), peer=rq.remote)
     finally:
         rq.app['websockets'].discard(ws)
 
     if rq.app['debug']:
-        logger.get().msg('websocket connection closed', peer=rq.remote)
+        logger.debug('websocket connection closed', peer=rq.remote)
 
     return ws
 
@@ -286,5 +289,12 @@ def setup(args: argparse.Namespace, http_auth: HtpasswdFile) -> aiohttp.web.Appl
         aiohttp.web.get(r'/ws', websocket_handler),
     ])
     app.router.add_static('/static/', path=STATIC_DIR, name='static')
+
+    # initialize and run websocket notifier
+    notifier.setup(websockets=app['websockets'], debug_mode=app['debug'])
+    loop = asyncio.get_event_loop()
+    loop.create_task(notifier.ping())
+    loop.create_task(notifier.send_messages())
+    logger.info('notifier initialized')
 
     return app

@@ -1,16 +1,18 @@
 __all__ = []
 
-import binascii
-import email.message
+from email.message import Message as EmailMessage
 from typing import Optional
 
 import aiosmtpd.controller
 import aiosmtpd.handlers
 import aiosmtpd.smtp
 from passlib.apache import HtpasswdFile
+from structlog import get_logger
 
 from . import db
-from . import logger
+from .message import Message
+
+logger = get_logger()
 
 
 class AsyncMessage(aiosmtpd.handlers.AsyncMessage):
@@ -19,22 +21,18 @@ class AsyncMessage(aiosmtpd.handlers.AsyncMessage):
 
         super().__init__(*args, **kwargs)
 
-    async def handle_message(self, message: email.message.Message):
-        body = message.get_payload()
-        logger.get().msg("message received",
-            envelope_from=message['X-MailFrom'],
-            envelope_to=message['X-RcptTo'],
-            peer=':'.join([i.strip(" '()")for i in message['X-Peer'].split(',')]),
-            length=len(body)
+    async def handle_message(self, email: EmailMessage):
+        logger.debug("message received",
+            envelope_from=email['X-MailFrom'],
+            envelope_to=email['X-RcptTo'],
+            peer=':'.join([i.strip(" '()")for i in email['X-Peer'].split(',')]),
         )
-        async with db.connection() as conn:
-            await db.add_message(conn, message['X-MailFrom'], message['X-RcptTo'], message, message['X-Peer'])
+        db.add_message(Message.from_email(email))
 
 
 class SMTP(aiosmtpd.smtp.SMTP):
-    def __init__(self, handler, smtp_auth, debug, *args, **kwargs):
+    def __init__(self, handler, smtp_auth, *args, **kwargs):
         self._smtp_auth = smtp_auth
-        self._debug_mode = debug
         self._username = None
 
         super().__init__(
@@ -44,10 +42,6 @@ class SMTP(aiosmtpd.smtp.SMTP):
             auth_callback=self.authenticate,
             *args, **kwargs
         )
-
-    def _debug(self, message, **params):
-        if self._debug_mode:
-            logger.get().msg('SMTP: ' + message, **params)
 
     def authenticate(self, mechanism, login, password):
         return self._smtp_auth.check_password(login, password)
@@ -59,10 +53,11 @@ class Controller(aiosmtpd.controller.Controller):
         self.debug = debug
         self.ident = kwargs.pop('ident')
 
-        super().__init__(handler, *args, **kwargs)
+        # TODO: extract connect and total to some kind of settings/cli params
+        super().__init__(handler, ready_timeout=5.0, *args, **kwargs)
 
     def factory(self):
-        return SMTP(self.handler, self.smtp_auth, self.debug, ident=self.ident)
+        return SMTP(self.handler, self.smtp_auth, ident=self.ident, hostname=self.hostname)
 
 
 def run(smtp_host: str, smtp_port: int, smtp_auth: Optional[HtpasswdFile], ident: Optional[str], debug: bool):

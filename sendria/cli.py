@@ -1,32 +1,34 @@
 __all__ = ['main', 'terminate_server']
 
-import asyncio
 import argparse
+import asyncio
 import errno
 import os
 import pathlib
 import signal
 import sys
+from typing import NoReturn
 
 import aiohttp.web
 import daemon
+import structlog
 from daemon.pidfile import TimeoutPIDLockFile
 from passlib.apache import HtpasswdFile
+from structlog import get_logger
 
 from . import STATIC_DIR, ASSETS_DIR
 from . import __version__
+from . import callback
 from . import db
 from . import http
-from . import logger
-from . import notifier
 from . import smtp
-from . import callback
 
+logger = get_logger()
 SHUTDOWN = []
 
 
 def exit_err(msg, exit_code=1, **kwargs):
-    logger.get().msg(msg, **kwargs)
+    logger.error(msg, **kwargs)
     sys.exit(exit_code)
 
 
@@ -66,6 +68,8 @@ def parse_argv(argv):
     parser.add_argument('--callback-webhook-auth',
         help='Optional credentials ("login:password") for webhook (only Basic Auth supported). If empty, then no '
             'authorization header is sent')
+    parser.add_argument('--log-file', default='sendria.log',
+        help='Where logs have to come if working in background. Ignored if working in foreground.')
 
     args = parser.parse_args(argv)
 
@@ -73,6 +77,11 @@ def parse_argv(argv):
         args.pidfile = pathlib.Path(args.pidfile)
         if not args.pidfile.is_absolute():
             args.pidfile = args.pidfile.resolve()
+
+    if args.foreground or not args.pidfile or args.log_file == '-':
+        args.log_handler = sys.stdout
+    else:
+        args.log_handler = open(args.log_file, 'a')
 
     if args.stop or args.version:
         return args
@@ -86,7 +95,7 @@ def parse_argv(argv):
 
     # Default to foreground mode if no pid file is specified
     if not args.pidfile and not args.foreground:
-        logger.get().msg('no PID file specified; runnning in foreground')
+        logger.info('no PID file specified; runnning in foreground')
         args.foreground = True
 
     # Warn about relative paths and absolutize them
@@ -109,6 +118,32 @@ def parse_argv(argv):
         args.smtp_auth = HtpasswdFile(args.smtp_auth)
 
     return args
+
+
+def configure_logger(log_handler):
+    if log_handler.name == '<stdout>':
+        processors = (
+            structlog.dev.ConsoleRenderer(),
+        )
+    else:
+        processors = (
+            structlog.processors.JSONRenderer(),
+        )
+
+    structlog.configure(
+        processors=[
+            structlog.processors.add_log_level,
+            structlog.processors.StackInfoRenderer(),
+            structlog.dev.set_exc_info,
+            structlog.processors.format_exc_info,
+            structlog.processors.TimeStamper("ISO"),
+            *processors,
+        ],
+        wrapper_class=structlog.BoundLogger,
+        context_class=dict,
+        logger_factory=structlog.PrintLoggerFactory(file=log_handler),
+        cache_logger_on_first_use=True,
+    )
 
 
 def pid_exists(pid: int):
@@ -148,7 +183,7 @@ def read_pidfile(path: pathlib.Path) -> int:
         raise ValueError(str(exc))
 
 
-async def terminate_server(sig: int, loop: asyncio.AbstractEventLoop) -> None:
+async def terminate_server(sig: int, loop: asyncio.AbstractEventLoop) -> NoReturn:
     if sig == signal.SIGINT and os.isatty(sys.stdout.fileno()):
         # Terminate the line containing ^C
         print()
@@ -163,18 +198,26 @@ async def terminate_server(sig: int, loop: asyncio.AbstractEventLoop) -> None:
     loop.stop()
 
 
-def run_sendria_servers(loop, args: argparse.Namespace) -> None:
+def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
     # initialize db
     loop.run_until_complete(db.setup(args.db))
 
     # initialize and start webhooks
-    callbacks_enabled = callback.setup(args)
+    callbacks_enabled = callback.setup(
+        debug_mode=args.debug,
+        callback_webhook_url=args.callback_webhook_url,
+        callback_webhook_method=args.callback_webhook_method,
+        callback_webhook_auth=args.callback_webhook_auth,
+    )
     if callbacks_enabled:
         loop.create_task(callback.send_messages())
 
+    # initialize and start message saver
+    loop.create_task(db.message_saver())
+
     # start smtp server
     smtp.run(args.smtp_ip, args.smtp_port, args.smtp_auth, args.smtp_ident, args.debug)
-    logger.get().msg('smtp server started', host=args.smtp_ip, port=args.smtp_port,
+    logger.info('smtp server started', host=args.smtp_ip, port=args.smtp_port,
         auth='enabled' if args.smtp_auth else 'disabled',
         password_file=str(args.smtp_auth.path) if args.smtp_auth else None,
         url=f'smtp://{args.smtp_ip}:{args.smtp_port}'
@@ -190,22 +233,15 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> None:
     server = site.start()
     loop.run_until_complete(server)
 
-    logger.get().msg('http server started',
+    logger.info('http server started',
         host=args.http_ip, port=args.http_port,
         url=f'http://{args.http_ip}:{args.http_port}',
         auth='enabled' if args.http_auth else 'disabled',
         password_file=str(args.http_auth.path) if args.http_auth else None,
     )
 
-    # initialize and run websocket notifier
-    notifier.setup(app['websockets'], app['debug'])
-    loop.create_task(notifier.ping())
-    loop.create_task(notifier.send_messages())
-    logger.get().msg('notifier initialized')
-
     # prepare for clean terminate
     async def _initialize_aiohttp_services__stop():
-        # print('initialize_aiohttp_services _stop')
         for ws in set(app['websockets']):
             await ws.close(code=aiohttp.WSCloseCode.GOING_AWAY, message='Server shutdown')
         await app.shutdown()
@@ -217,7 +253,7 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> None:
         loop.add_signal_handler(s, lambda s=s: asyncio.create_task(terminate_server(s, loop)))
 
 
-def stop(pidfile: pathlib.Path) -> None:
+def stop(pidfile: pathlib.Path) -> NoReturn:
     if not pidfile or not pidfile.exists():
         exit_err('PID file not specified or not found')
 
@@ -234,6 +270,7 @@ def stop(pidfile: pathlib.Path) -> None:
 
 def main():
     args = parse_argv(sys.argv[1:])
+    configure_logger(args.log_handler)
 
     if args.version:
         print('Sendria %s' % __version__)
@@ -241,14 +278,14 @@ def main():
 
     # Do we just want to stop a running daemon?
     if args.stop:
-        logger.get().msg('stopping Sendria',
+        logger.info('stopping Sendria',
             debug='enabled' if args.debug else 'disabled',
             pidfile=str(args.pidfile) if args.pidfile else None,
         )
         stop(args.pidfile)
         sys.exit(0)
 
-    logger.get().msg('starting Sendria',
+    logger.info('starting Sendria',
         debug='enabled' if args.debug else 'disabled',
         pidfile=str(args.pidfile) if args.pidfile else None,
         db=str(args.db),
@@ -263,6 +300,9 @@ def main():
         exit_err('assets not found. Generate assets using: webassets -m sendria.build_assets build', 0)
 
     daemon_kw = {}
+
+    if args.log_handler.name != '<stdout>':
+        daemon_kw['files_preserve'] = [args.log_handler]
 
     if args.foreground:
         # Do not detach and keep std streams open
@@ -281,7 +321,7 @@ def main():
                 exit_err(f'Cannot read pid file: {exc}', 1)
 
             if not pid_exists(pid):
-                logger.get().msg('deleting obsolete PID file (process %s does not exist)' % pid, pid=pid)
+                logger.warning('deleting obsolete PID file (process %s does not exist)' % pid, pid=pid)
                 args.pidfile.unlink()
         daemon_kw['pidfile'] = TimeoutPIDLockFile(str(args.pidfile), 5)
 
@@ -297,8 +337,8 @@ def main():
 
         loop.run_forever()
 
-    logger.get().msg('stop signal received')
+    logger.info('stop signal received')
     loop.close()
 
-    logger.get().msg('terminating')
+    logger.info('terminating')
     sys.exit(0)

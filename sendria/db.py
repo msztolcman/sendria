@@ -1,72 +1,41 @@
 __all__ = ['setup', 'connection', 'add_message', 'delete_message', 'delete_messages', 'get_message',
     'get_message_attachments', 'get_message_part_cid', 'get_message_part_html', 'get_message_part_plain',
-    'get_messages',
+    'get_messages', 'message_saver',
 ]
 
+import asyncio
 import json
 import pathlib
 import sqlite3
-from typing import Iterable, Optional, Union, List
+from contextlib import asynccontextmanager
+from typing import Iterable, Optional, Union, List, NoReturn
 
 import aiosqlite
-import uuid
-from contextlib import asynccontextmanager
-from email.message import Message
-from email.header import decode_header as _decode_header
-from email.utils import getaddresses
+from structlog import get_logger
 
-from . import logger
 from . import callback
-from . import notifier
+from .http import notifier
+from .message import Message
 
-_db: Optional[str] = None
+logger = get_logger()
+DB_PATH: Optional[str] = None
+DbMessagesQueue: Optional[asyncio.Queue] = None
 
 
-async def setup(db: Union[str, pathlib.Path]) -> None:
-    global _db
-    _db = str(db)
+async def setup(db: Union[str, pathlib.Path]) -> NoReturn:
+    global DB_PATH, DbMessagesQueue
+    DB_PATH = str(db)
+
+    DbMessagesQueue = asyncio.Queue()
 
     async with connection() as conn:
         await create_tables(conn)
-        logger.get().msg('DB initialized')
-
-
-def decode_header(value: Union[str, bytes, None]) -> str:
-    if not value:
-        return ''
-    headers = []
-    for decoded, charset in _decode_header(value):
-        if isinstance(decoded, str):
-            headers.append(decoded.encode(charset or 'utf-8'))
-        else:
-            headers.append(decoded)
-    return (b''.join(headers)).decode()
-
-
-def split_addresses(value) -> List[str]:
-    return [('{0} <{1}>'.format(name, addr) if name else addr)
-            for name, addr in getaddresses([value])]
-
-
-def iter_message_parts(message: Message):
-    if message.is_multipart():
-        for message in message.get_payload():
-            for part in iter_message_parts(message):
-                yield part
-    else:
-        yield message
-
-
-def _parse_recipients(recipients: Optional[str]) -> List[str]:
-    if not recipients:
-        return []
-    recipients = json.loads(recipients)
-    return recipients
+        logger.info('DB initialized')
 
 
 @asynccontextmanager
-async def connection():
-    conn = await aiosqlite.connect(_db, detect_types=sqlite3.PARSE_DECLTYPES)
+async def connection() -> NoReturn:
+    conn = await aiosqlite.connect(DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
     conn.row_factory = aiosqlite.Row
     conn.text_factory = str
     try:
@@ -75,7 +44,7 @@ async def connection():
         await conn.close()
 
 
-async def create_tables(conn: aiosqlite.Connection) -> None:
+async def create_tables(conn: aiosqlite.Connection) -> NoReturn:
     await conn.execute("""
         CREATE TABLE IF NOT EXISTS message (
             id INTEGER PRIMARY KEY ASC,
@@ -110,7 +79,19 @@ async def create_tables(conn: aiosqlite.Connection) -> None:
     """)
 
 
-async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, message, peer) -> int:
+def add_message(message: Message) -> NoReturn:
+    DbMessagesQueue._loop.call_soon_threadsafe(DbMessagesQueue.put_nowait, message)
+
+
+async def message_saver() -> NoReturn:
+    while True:
+        message: Message = await DbMessagesQueue.get()
+        async with connection() as conn:
+            await store_message(conn, message)
+        DbMessagesQueue.task_done()
+
+
+async def store_message(conn: aiosqlite.Connection, message: Message) -> int:
     sql = """
         INSERT INTO message
             (sender_envelope, sender_message, recipients_envelope, recipients_message_to,
@@ -120,60 +101,42 @@ async def add_message(conn: aiosqlite.Connection, sender, recipients_envelope, m
             (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     """
 
-    body = message.as_string()
-    msg_info = {
-        'sender_envelope': decode_header(sender),
-        'sender_message': decode_header(message['FROM']),
-        'recipients_envelope': recipients_envelope,
-        'recipients_message_to': json.dumps(split_addresses(decode_header(message['TO'])) if 'TO' in message else []),
-        'recipients_message_cc': json.dumps(split_addresses(decode_header(message['CC'])) if 'CC' in message else []),
-        'recipients_message_bcc': json.dumps(split_addresses(decode_header(message['BCC'])) if 'BCC' in message else []),
-        'subject': decode_header(message['Subject']),
-        'source': body,
-        'type': message.get_content_type(),
-        'peer': ':'.join([i.strip(" '()")for i in peer.split(',')])
-    }
-
-    parts = []
-    for part in iter_message_parts(message):
-        cid = part.get('Content-Id') or str(uuid.uuid4())
-        if cid[0] == '<' and cid[-1] == '>':
-            cid = cid[1:-1]
-        parts.append({'cid': cid, 'part': part})
-
     cur = await conn.cursor()
-    await cur.execute('BEGIN')
 
-    await cur.execute(
-        sql,
-        (
-            msg_info['sender_envelope'],
-            msg_info['sender_message'],
-            msg_info['recipients_envelope'],
-            msg_info['recipients_message_to'],
-            msg_info['recipients_message_cc'],
-            msg_info['recipients_message_bcc'],
-            msg_info['subject'],
-            msg_info['source'],
-            msg_info['type'],
-            len(body),
-            msg_info['peer'],
+    try:
+        await cur.execute(
+            sql,
+            (
+                message.sender_envelope,
+                message.sender_message,
+                message.recipients_envelope,
+                json.dumps(message.recipients_message_to),
+                json.dumps(message.recipients_message_cc),
+                json.dumps(message.recipients_message_bcc),
+                message.subject,
+                message.source,
+                message.type,
+                message.size,
+                message.peer,
+            )
         )
-    )
-    message_id = msg_info['message_id'] = cur.lastrowid
-    # Store parts (why do we do this for non-multipart at all?!)
-    for part in parts:
-        await _add_message_part(cur, message_id, part['cid'], part['part'])
-    await cur.execute('COMMIT')
-    await cur.close()
+        message.id = cur.lastrowid
+        # Store parts (why do we do this for non-multipart at all?!)
+        for part in message.parts:
+            part_id = await _save_message_part(cur, message.id, part['cid'], part['part'])
+            part['part_id'] = part_id
+        await cur.execute('COMMIT')
+    finally:
+        await cur.close()
 
-    logger.get().msg('message stored', message_id=message_id, parts=parts)
-    await notifier.broadcast('add_message', message_id)
-    await callback.enqueue(msg_info)
-    return message_id
+    logger.debug('message stored', message_id=message.id,
+        parts=[{'part_id': part['part_id'], 'cid': part['cid']} for part in message.parts])
+    await notifier.broadcast('add_message', message.id)
+    await callback.enqueue(message)
+    return message.id
 
 
-async def _add_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, part) -> None:
+async def _save_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, part) -> int:
     sql = """
         INSERT INTO message_part
             (message_id, cid, type, is_attachment, filename, charset, body, size, created_at)
@@ -196,10 +159,18 @@ async def _add_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, pa
             body_len
         )
     )
+    return cur.lastrowid
 
 
-def _prepare_message_row_inplace(row: dict) -> None:
-    row['recipients_envelope'] = split_addresses(row['recipients_envelope'])
+def _parse_recipients(recipients: Optional[str]) -> List[str]:
+    if not recipients:
+        return []
+    recipients = json.loads(recipients)
+    return recipients
+
+
+def _prepare_message_row_inplace(row: dict) -> NoReturn:
+    row['recipients_envelope'] = Message.split_addresses(row['recipients_envelope'])
     row['recipients_message_to'] = _parse_recipients(row['recipients_message_to'])
     row['recipients_message_cc'] = _parse_recipients(row['recipients_message_cc'])
     row['recipients_message_bcc'] = _parse_recipients(row['recipients_message_bcc'])
@@ -302,17 +273,23 @@ async def get_messages(conn: aiosqlite.Connection) -> List[dict]:
     return data
 
 
-async def delete_message(conn: aiosqlite.Connection, message_id: int) -> None:
-    await conn.execute('DELETE FROM message WHERE id = ?', (message_id,))
-    await conn.execute('DELETE FROM message_part WHERE message_id = ?', (message_id,))
-    await conn.commit()
-    logger.get().msg('message deleted', message_id=message_id)
+async def delete_message(conn: aiosqlite.Connection, message_id: int) -> NoReturn:
+    cur = await conn.cursor()
+    try:
+        await cur.execute('DELETE FROM message WHERE id = ?', (message_id,))
+        await cur.execute('DELETE FROM message_part WHERE message_id = ?', (message_id,))
+    finally:
+        await cur.close()
+    logger.debug('message deleted', message_id=message_id)
     await notifier.broadcast('delete_message', message_id)
 
 
-async def delete_messages(conn: aiosqlite.Connection) -> None:
-    await conn.execute('DELETE FROM message')
-    await conn.execute('DELETE FROM message_part')
-    await conn.commit()
-    logger.get().msg('all messages deleted')
+async def delete_messages(conn: aiosqlite.Connection) -> NoReturn:
+    cur = await conn.cursor()
+    try:
+        await cur.execute('DELETE FROM message')
+        await cur.execute('DELETE FROM message_part')
+    finally:
+        await cur.close()
+    logger.debug('all messages deleted')
     await notifier.broadcast('delete_messages')
