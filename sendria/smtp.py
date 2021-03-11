@@ -11,6 +11,8 @@ from structlog import get_logger
 
 from . import db
 
+logger = get_logger()
+
 
 class AsyncMessage(aiosmtpd.handlers.AsyncMessage):
     def __init__(self, *args, smtp_auth=None, **kwargs):
@@ -20,7 +22,7 @@ class AsyncMessage(aiosmtpd.handlers.AsyncMessage):
 
     async def handle_message(self, message: email.message.Message):
         body = message.get_payload()
-        get_logger().debug("message received",
+        logger.debug("message received",
             envelope_from=message['X-MailFrom'],
             envelope_to=message['X-RcptTo'],
             peer=':'.join([i.strip(" '()")for i in message['X-Peer'].split(',')]),

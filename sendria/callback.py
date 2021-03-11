@@ -12,6 +12,7 @@ from structlog import get_logger
 
 from . import __version__
 
+logger = get_logger()
 WEBHOOK_METHOD: str = 'POST'
 WEBHOOK_URL: Optional[str] = None
 WEBHOOK_AUTH: Optional[str] = None
@@ -26,7 +27,7 @@ def setup(args: argparse.Namespace) -> bool:
 
     if not args.callback_webhook_url:
         if DEBUG:
-            get_logger().info('webhooks disabled')
+            logger.info('webhooks disabled')
         return False
 
     WEBHOOK_URL = args.callback_webhook_url
@@ -40,7 +41,7 @@ def setup(args: argparse.Namespace) -> bool:
     Messages = asyncio.Queue()
 
     if DEBUG:
-        get_logger().debug('webhooks enabled', method=WEBHOOK_METHOD, url=WEBHOOK_URL,
+        logger.debug('webhooks enabled', method=WEBHOOK_METHOD, url=WEBHOOK_URL,
             auth='enabled' if WEBHOOK_AUTH else 'disabled')
     return True
 
@@ -83,13 +84,13 @@ async def send_messages() -> NoReturn:
             async with get_session() as session:
                 async with session.request(WEBHOOK_METHOD, WEBHOOK_URL, json=payload) as rsp:
                     if rsp.status != 200:
-                        get_logger().warning('webhook response error', message_id=payload['message_id'], status=rsp.status,
+                        logger.warning('webhook response error', message_id=payload['message_id'], status=rsp.status,
                             reason=rsp.reason, url=WEBHOOK_URL, method=WEBHOOK_METHOD)
                     elif DEBUG:
-                        get_logger().debug('webhook sent', message_id=payload['message_id'], status=rsp.status,
+                        logger.debug('webhook sent', message_id=payload['message_id'], status=rsp.status,
                             reason=rsp.reason, url=WEBHOOK_URL, method=WEBHOOK_METHOD)
         except aiohttp.ClientError:
-            get_logger().error('webhook client error', traceback=traceback.format_exc())
+            logger.error('webhook client error', traceback=traceback.format_exc())
 
         Messages.task_done()
 

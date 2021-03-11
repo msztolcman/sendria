@@ -5,6 +5,7 @@ from typing import Optional, NoReturn
 import aiohttp.web
 from structlog import get_logger
 
+logger = get_logger()
 DEBUG: bool = False
 
 WSHandlers: Optional[weakref.WeakSet] = None
@@ -45,4 +46,4 @@ async def send_messages() -> NoReturn:
         WebsocketMessages.task_done()
 
         if DEBUG:
-            get_logger().debug('websocket messages sent', message=msg, receivers_cnt=cnt)
+            logger.debug('websocket messages sent', message=msg, receivers_cnt=cnt)

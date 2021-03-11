@@ -12,6 +12,8 @@ from .json_encoder import json_response
 from .. import __version__
 from .. import errors
 
+logger = get_logger()
+
 
 @aiohttp.web.middleware
 async def error_handler(rq: aiohttp.web.Request, handler: Callable) -> aiohttp.web.StreamResponse:
@@ -29,10 +31,10 @@ async def error_handler(rq: aiohttp.web.Request, handler: Callable) -> aiohttp.w
         raise
     except (aiohttp.web.HTTPForbidden, aiohttp.web.HTTPUnauthorized):
         header = rq.headers.get('authorization', None)
-        get_logger().debug('unauthorized access', uri=rq.url.human_repr(), header=header)
+        logger.debug('unauthorized access', uri=rq.url.human_repr(), header=header)
         raise
     except Exception:
-        get_logger().exception('exception', exc_info=traceback.format_exc())
+        logger.exception('exception', exc_info=traceback.format_exc())
         raise
     return rsp
 
@@ -77,7 +79,7 @@ class BasicAuth(BasicAuthMiddleware):
 
         res = await super().authenticate(rq)
         if not res:
-            get_logger().info(
+            logger.info(
                 'request authentication failed',
                 uri=rq.url.human_repr(),
                 header=rq.headers.get('authorization', None)
@@ -88,7 +90,7 @@ class BasicAuth(BasicAuthMiddleware):
     async def check_credentials(self, username: str, password: str, rq: aiohttp.web.Request) -> bool:
         if self._http_auth.check_password(username, password):
             if rq.app['debug']:
-                get_logger().debug('request authenticated', uri=rq.url.human_repr(), username=username)
+                logger.debug('request authenticated', uri=rq.url.human_repr(), username=username)
             return True
 
         return False

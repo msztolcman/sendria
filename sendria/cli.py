@@ -24,11 +24,12 @@ from . import http
 from . import notifier
 from . import smtp
 
+logger = get_logger()
 SHUTDOWN = []
 
 
 def exit_err(msg, exit_code=1, **kwargs):
-    get_logger().error(msg, **kwargs)
+    logger.error(msg, **kwargs)
     sys.exit(exit_code)
 
 
@@ -95,7 +96,7 @@ def parse_argv(argv):
 
     # Default to foreground mode if no pid file is specified
     if not args.pidfile and not args.foreground:
-        get_logger().info('no PID file specified; runnning in foreground')
+        logger.info('no PID file specified; runnning in foreground')
         args.foreground = True
 
     # Warn about relative paths and absolutize them
@@ -212,7 +213,7 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
 
     # start smtp server
     smtp.run(args.smtp_ip, args.smtp_port, args.smtp_auth, args.smtp_ident, args.debug)
-    get_logger().info('smtp server started', host=args.smtp_ip, port=args.smtp_port,
+    logger.info('smtp server started', host=args.smtp_ip, port=args.smtp_port,
         auth='enabled' if args.smtp_auth else 'disabled',
         password_file=str(args.smtp_auth.path) if args.smtp_auth else None,
         url=f'smtp://{args.smtp_ip}:{args.smtp_port}'
@@ -228,7 +229,7 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
     server = site.start()
     loop.run_until_complete(server)
 
-    get_logger().info('http server started',
+    logger.info('http server started',
         host=args.http_ip, port=args.http_port,
         url=f'http://{args.http_ip}:{args.http_port}',
         auth='enabled' if args.http_auth else 'disabled',
@@ -239,7 +240,7 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
     notifier.setup(app['websockets'], app['debug'])
     loop.create_task(notifier.ping())
     loop.create_task(notifier.send_messages())
-    get_logger().info('notifier initialized')
+    logger.info('notifier initialized')
 
     # prepare for clean terminate
     async def _initialize_aiohttp_services__stop():
@@ -280,14 +281,14 @@ def main():
 
     # Do we just want to stop a running daemon?
     if args.stop:
-        get_logger().info('stopping Sendria',
+        logger.info('stopping Sendria',
             debug='enabled' if args.debug else 'disabled',
             pidfile=str(args.pidfile) if args.pidfile else None,
         )
         stop(args.pidfile)
         sys.exit(0)
 
-    get_logger().info('starting Sendria',
+    logger.info('starting Sendria',
         debug='enabled' if args.debug else 'disabled',
         pidfile=str(args.pidfile) if args.pidfile else None,
         db=str(args.db),
@@ -323,7 +324,7 @@ def main():
                 exit_err(f'Cannot read pid file: {exc}', 1)
 
             if not pid_exists(pid):
-                get_logger().warning('deleting obsolete PID file (process %s does not exist)' % pid, pid=pid)
+                logger.warning('deleting obsolete PID file (process %s does not exist)' % pid, pid=pid)
                 args.pidfile.unlink()
         daemon_kw['pidfile'] = TimeoutPIDLockFile(str(args.pidfile), 5)
 
@@ -339,8 +340,8 @@ def main():
 
         loop.run_forever()
 
-    get_logger().info('stop signal received')
+    logger.info('stop signal received')
     loop.close()
 
-    get_logger().info('terminating')
+    logger.info('terminating')
     sys.exit(0)
