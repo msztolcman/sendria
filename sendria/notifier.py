@@ -4,7 +4,7 @@ from typing import Optional, NoReturn
 
 import aiohttp.web
 
-from .logger import get_logger
+from structlog import get_logger
 
 DEBUG: bool = False
 

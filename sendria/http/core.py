@@ -16,7 +16,7 @@ from passlib.apache import HtpasswdFile
 from .. import STATIC_DIR, STATIC_URL, TEMPLATES_DIR
 from .. import __version__
 from .. import db
-from ..logger import get_logger
+from structlog import get_logger
 from . import middlewares
 
 RE_CID = re.compile(r'(?P<replace>cid:(?P<cid>.+))')

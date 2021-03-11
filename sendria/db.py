@@ -16,7 +16,7 @@ from email.message import Message
 from email.header import decode_header as _decode_header
 from email.utils import getaddresses
 
-from .logger import get_logger
+from structlog import get_logger
 from . import callback
 from . import notifier
 

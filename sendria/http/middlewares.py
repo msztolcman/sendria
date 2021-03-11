@@ -8,7 +8,7 @@ from aiohttp_basicauth import BasicAuthMiddleware
 from passlib.apache import HtpasswdFile
 
 from .. import errors
-from ..logger import get_logger
+from structlog import get_logger
 from .. import __version__
 from .json_encoder import json_response
 

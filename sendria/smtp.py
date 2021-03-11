@@ -9,7 +9,7 @@ import aiosmtpd.smtp
 from passlib.apache import HtpasswdFile
 
 from . import db
-from .logger import get_logger
+from structlog import get_logger
 
 
 class AsyncMessage(aiosmtpd.handlers.AsyncMessage):

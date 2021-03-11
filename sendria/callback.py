@@ -10,7 +10,7 @@ from typing import Any, Optional, NoReturn
 import aiohttp
 
 from . import __version__
-from .logger import get_logger
+from structlog import get_logger
 
 WEBHOOK_METHOD: str = 'POST'
 WEBHOOK_URL: Optional[str] = None

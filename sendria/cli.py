@@ -11,6 +11,7 @@ from typing import NoReturn
 
 import aiohttp.web
 import daemon
+import structlog
 from daemon.pidfile import TimeoutPIDLockFile
 from passlib.apache import HtpasswdFile
 
@@ -18,7 +19,7 @@ from . import STATIC_DIR, ASSETS_DIR
 from . import __version__
 from . import db
 from . import http
-from .logger import get_logger
+from structlog import get_logger
 from . import notifier
 from . import smtp
 from . import callback
@@ -67,6 +68,8 @@ def parse_argv(argv):
     parser.add_argument('--callback-webhook-auth',
         help='Optional credentials ("login:password") for webhook (only Basic Auth supported). If empty, then no '
             'authorization header is sent')
+    parser.add_argument('--log-file', default='sendria.log',
+        help='Where logs have to come if working in background. Ignored if working in foreground.')
 
     args = parser.parse_args(argv)
 
@@ -74,6 +77,11 @@ def parse_argv(argv):
         args.pidfile = pathlib.Path(args.pidfile)
         if not args.pidfile.is_absolute():
             args.pidfile = args.pidfile.resolve()
+
+    if args.foreground or not args.pidfile or args.log_file == '-':
+        args.log_handler = sys.stdout
+    else:
+        args.log_handler = open(args.log_file, 'a')
 
     if args.stop or args.version:
         return args
@@ -110,6 +118,32 @@ def parse_argv(argv):
         args.smtp_auth = HtpasswdFile(args.smtp_auth)
 
     return args
+
+
+def configure_logger(log_handler):
+    if log_handler.name == '<stdout>':
+        processors = (
+            structlog.dev.ConsoleRenderer(),
+        )
+    else:
+        processors = (
+            structlog.processors.JSONRenderer(),
+        )
+
+    structlog.configure(
+        processors=[
+            structlog.processors.add_log_level,
+            structlog.processors.StackInfoRenderer(),
+            structlog.dev.set_exc_info,
+            structlog.processors.format_exc_info,
+            structlog.processors.TimeStamper("ISO"),
+            *processors,
+        ],
+        wrapper_class=structlog.BoundLogger,
+        context_class=dict,
+        logger_factory=structlog.PrintLoggerFactory(file=log_handler),
+        cache_logger_on_first_use=True,
+    )
 
 
 def pid_exists(pid: int):
@@ -238,6 +272,7 @@ def stop(pidfile: pathlib.Path) -> NoReturn:
 
 def main():
     args = parse_argv(sys.argv[1:])
+    configure_logger(args.log_handler)
 
     if args.version:
         print('Sendria %s' % __version__)
@@ -267,6 +302,9 @@ def main():
         exit_err('assets not found. Generate assets using: webassets -m sendria.build_assets build', 0)
 
     daemon_kw = {}
+
+    if args.log_handler.name != '<stdout>':
+        daemon_kw['files_preserve'] = [args.log_handler]
 
     if args.foreground:
         # Do not detach and keep std streams open
