@@ -278,6 +278,7 @@ async def delete_message(conn: aiosqlite.Connection, message_id: int) -> NoRetur
     try:
         await cur.execute('DELETE FROM message WHERE id = ?', (message_id,))
         await cur.execute('DELETE FROM message_part WHERE message_id = ?', (message_id,))
+        await cur.execute('COMMIT')
     finally:
         await cur.close()
     logger.debug('message deleted', message_id=message_id)
@@ -289,6 +290,7 @@ async def delete_messages(conn: aiosqlite.Connection) -> NoReturn:
     try:
         await cur.execute('DELETE FROM message')
         await cur.execute('DELETE FROM message_part')
+        await cur.execute('COMMIT')
     finally:
         await cur.close()
     logger.debug('all messages deleted')
