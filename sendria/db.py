@@ -21,15 +21,15 @@ from . import callback
 from .http import notifier
 
 logger = get_logger()
-_db: Optional[str] = None
-CallbackMessagesQueue: Optional[asyncio.Queue] = None
+DB_PATH: Optional[str] = None
+DbMessagesQueue: Optional[asyncio.Queue] = None
 
 
 async def setup(db: Union[str, pathlib.Path]) -> NoReturn:
-    global _db, CallbackMessagesQueue
-    _db = str(db)
+    global DB_PATH, DbMessagesQueue
+    DB_PATH = str(db)
 
-    Messages = asyncio.Queue()
+    DbMessagesQueue = asyncio.Queue()
 
     async with connection() as conn:
         await create_tables(conn)
@@ -71,7 +71,7 @@ def _parse_recipients(recipients: Optional[str]) -> List[str]:
 
 @asynccontextmanager
 async def connection() -> NoReturn:
-    conn = await aiosqlite.connect(_db, detect_types=sqlite3.PARSE_DECLTYPES)
+    conn = await aiosqlite.connect(DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
     conn.row_factory = aiosqlite.Row
     conn.text_factory = str
     try:
@@ -116,8 +116,8 @@ async def create_tables(conn: aiosqlite.Connection) -> NoReturn:
 
 
 def add_message(sender, recipients_envelope, message, peer) -> NoReturn:
-    CallbackMessagesQueue._loop.call_soon_threadsafe(
-        CallbackMessagesQueue.put_nowait,
+    DbMessagesQueue._loop.call_soon_threadsafe(
+        DbMessagesQueue.put_nowait,
         {
             'sender': sender,
             'recipients_envelope': recipients_envelope,
@@ -129,10 +129,10 @@ def add_message(sender, recipients_envelope, message, peer) -> NoReturn:
 
 async def saver() -> NoReturn:
     while True:
-        payload = await CallbackMessagesQueue.get()
+        payload = await DbMessagesQueue.get()
         async with connection() as conn:
             await save_message(conn, payload['sender'], payload['recipients_envelope'], payload['message'], payload['peer'])
-        CallbackMessagesQueue.task_done()
+        DbMessagesQueue.task_done()
 
 
 async def save_message(conn: aiosqlite.Connection, sender, recipients_envelope, message, peer) -> int:
