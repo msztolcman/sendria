@@ -9,7 +9,7 @@ requirements = [
     'aiohttp',
     'aiohttp-basicauth',
     'aiohttp-jinja2',
-    'aiosmtpd>=1.2.2',
+    'aiosmtpd>=1.4.2',
     'aiosqlite',
     'beautifulsoup4',
     'cssmin',
