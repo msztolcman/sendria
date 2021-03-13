@@ -44,6 +44,8 @@ class SMTP(aiosmtpd.smtp.SMTP):
         )
 
     def authenticate(self, mechanism, login, password):
+        if not self._smtp_auth:
+            return True
         return self._smtp_auth.check_password(login, password)
 
 
