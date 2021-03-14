@@ -26,3 +26,4 @@ twine = "*"
 wheel = "*"
 colorama = "*"
 sendria = {editable = true,path = "."}
+idna = "==2.5.0"
