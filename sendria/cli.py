@@ -86,7 +86,7 @@ def parse_argv(argv):
     else:
         args.log_handler = open(args.log_file, 'a')
 
-    if args.stop or args.version:
+    if args.stop:
         return args
 
     if not args.db:
@@ -274,10 +274,6 @@ def stop(pidfile: pathlib.Path) -> NoReturn:
 def main():
     args = parse_argv(sys.argv[1:])
     configure_logger(args.log_handler)
-
-    if args.version:
-        print('Sendria %s' % __version__)
-        sys.exit(0)
 
     # Do we just want to stop a running daemon?
     if args.stop:
