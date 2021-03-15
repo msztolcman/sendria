@@ -23,8 +23,8 @@ encoding = utf-8
 [file:Dockerfile]
 enabled = true
 match = line
-search = \bpip install sendria==\d+\.\d+\.\d+\b
-replace = pip install sendria==%(version)s
+search = \bpip install --user sendria==\d+.\d+.\d+\b
+replace = pip install --user sendria==%(version)s
 encoding = utf-8
 
 [file:sendria/__init__.py]
