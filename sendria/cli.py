@@ -33,7 +33,11 @@ def exit_err(msg, exit_code=1, **kwargs):
 
 
 def parse_argv(argv):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser('Sendria')
+    version = f'%(prog)s {__version__} (https://github.com/msztolcman/sendria (c) 2018 Marcin Sztolcman)'
+    parser.add_argument('-v', '--version', action='version', version=version,
+        help='Display the version and exit')
+
     parser.add_argument('--template-header-name', default='', help='Additional name of application')
     parser.add_argument('--template-header-url', default='', help='Url of application')
     parser.add_argument('--smtp-ip', default='127.0.0.1', metavar='IP', help='SMTP ip (default: 127.0.0.1)')
@@ -49,7 +53,6 @@ def parse_argv(argv):
     parser.add_argument('--http-port', default=1080, type=int, metavar='PORT', help='HTTP port (default: 1080)')
     parser.add_argument('-s', '--db', metavar='PATH', help='Path to SQLite database. Will be created if doesn\'t exist')
     parser.add_argument('--http-auth', metavar='HTPASSWD', help='Apache-style htpasswd file')
-    parser.add_argument('-v', '--version', help='Display the version and exit', action='store_true')
     parser.add_argument('-f', '--foreground', help='Run in the foreground (default if no pid file is specified)',
         action='store_true')
     parser.add_argument('-d', '--debug', help='Run the web app in debug mode', action='store_true')
