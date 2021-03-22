@@ -4,6 +4,7 @@ Sendria
 [![sendria version](https://img.shields.io/pypi/v/sendria.svg)](https://pypi.python.org/pypi/sendria)
 [![sendria license](https://img.shields.io/pypi/l/sendria.svg)](https://pypi.python.org/pypi/sendria)
 [![sendria python compatibility](https://img.shields.io/pypi/pyversions/sendria.svg)](https://pypi.python.org/pypi/sendria)
+[![Downloads](https://static.pepy.tech/personalized-badge/sendria?period=total&units=international_system&left_color=grey&right_color=yellow&left_text=Downloads)](https://pepy.tech/project/sendria)
 [![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
 Sendria (formerly MailTrap) is a SMTP server designed to run in your dev/test environment, that is designed to catch any email you
