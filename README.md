@@ -68,22 +68,29 @@ If you want to run this software on Python 2.6+, just use [MailDump](https://git
 How to use
 ----------
 
-[After installing](#installation) `Sendria`, just run command:
+[After installing](#installation) `Sendria` just run command:
 
     sendria --db mails.sqlite
 
-Now send emails through `smtp://127.0.0.1:1025`, ie.:
+Now send emails through `smtp://127.0.0.1:1025`, i.e.:
 
 ```shell
 echo 'From: Sendria <sendria@example.com>\n'\
-'To: You <you@exampl.com>\n'\
+'To: You <you@example.com>\n'\
 'Subject: Welcome!\n\n'\
 'Welcome to Sendria!' | \
   curl smtp://localhost:1025 --mail-from sendria@example.com \
     --mail-rcpt you@example.com --upload-file -
 ```
 
-And finally look at `Sendria` GUI on [127.0.0.1:1080](http://127.0.0.1:1080).
+or simpler with [SMTPc](https://github.com/msztolcman/smtpc/):
+
+```shell
+smtpc send --host localhost:1025 --from sendria@example.com --to you@example.com \
+  --subject 'Welcome!' --body-plain 'Welcome to Sendria!'
+```
+
+Finally, look at `Sendria` GUI on [127.0.0.1:1080](http://127.0.0.1:1080).
 
 If you want more details, run:
 
