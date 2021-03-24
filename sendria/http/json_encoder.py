@@ -2,13 +2,14 @@ __all__ = ['json_response']
 
 import datetime
 import json
+from typing import Any
 
 import aiohttp.web
 import yarl
 
 
 class JSONEncoder(json.JSONEncoder):
-    def default(self, o):
+    def default(self, o: Any) -> Any:
         if isinstance(o, datetime.datetime):
             return o.isoformat()
         elif isinstance(o, yarl.URL):
@@ -18,7 +19,7 @@ class JSONEncoder(json.JSONEncoder):
 
 
 def json_response(*args, **kwargs) -> aiohttp.web.Response:
-    def dumps(*a, **b):
+    def dumps(*a, **b) -> str:
         b['cls'] = JSONEncoder
         return json.dumps(*a, **b)
     kwargs['dumps'] = dumps

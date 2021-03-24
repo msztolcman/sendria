@@ -1,5 +1,6 @@
+import argparse
 import pathlib
-from typing import Optional
+from typing import Optional, NoReturn
 
 import attr
 from passlib.apache import HtpasswdFile
@@ -39,7 +40,7 @@ def get(key: Optional[str] = None) -> Optional[Config]:
     return getattr(_CONFIG, key)
 
 
-def setup(args):
+def setup(args: argparse.Namespace) -> NoReturn:
     global _CONFIG
 
     _CONFIG = Config()

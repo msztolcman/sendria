@@ -1,10 +1,10 @@
-__all__ = ['Message', ]
+__all__ = ['Message']
 
 import uuid
 from email.header import decode_header as _decode_header
 from email.message import Message as EmailMessage
 from email.utils import getaddresses
-from typing import Union, List
+from typing import Union, List, Dict, Any
 
 
 class Message:
@@ -17,7 +17,7 @@ class Message:
         'source',
         'size', 'type', 'peer',
         'parts',
-        'created_at'
+        'created_at',
     )
 
     @classmethod
@@ -46,13 +46,13 @@ class Message:
 
         return o
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         return {
             k: getattr(self, k)
             for k in self.__slots__
         }
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         r = []
         for k in self.__slots__:
             if k not in ('source', 'parts'):
@@ -74,15 +74,15 @@ class Message:
         return (b''.join(headers)).decode()
 
     @classmethod
-    def split_addresses(cls, value) -> List[str]:
+    def split_addresses(cls, value: str) -> List[str]:
         return [('{0} <{1}>'.format(name, addr) if name else addr)
             for name, addr in getaddresses([value])]
 
     @classmethod
-    def iter_message_parts(cls, email: EmailMessage):
+    def iter_message_parts(cls, email: EmailMessage) -> EmailMessage:
         if email.is_multipart():
-            for email in email.get_payload():
-                for part in cls.iter_message_parts(email):
+            for payload in email.get_payload():
+                for part in cls.iter_message_parts(payload):
                     yield part
         else:
             yield email

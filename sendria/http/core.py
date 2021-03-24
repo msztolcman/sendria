@@ -4,7 +4,7 @@ import argparse
 import asyncio
 import re
 import weakref
-from typing import Union, NoReturn
+from typing import Union, NoReturn, Optional
 
 import aiohttp.web
 import aiohttp_jinja2
@@ -81,11 +81,13 @@ async def delete_message(rq: aiohttp.web.Request) -> WebHandlerResponse:
     return {}
 
 
-async def _part_url(rq: aiohttp.web.Request, part) -> yarl.URL:
+async def _part_url(rq: aiohttp.web.Request, part: dict) -> yarl.URL:
     return rq.app.router['get-message-part'].url_for(message_id=str(part['message_id']), cid=part['cid'])
 
 
-async def _part_response(rq: aiohttp.web.Request, part, body=None, charset=None) -> WebHandlerResponse:
+async def _part_response(rq: aiohttp.web.Request, part: dict, body: Optional[Union[str, bytes]] = None,
+    charset: Optional[str] = None,
+) -> WebHandlerResponse:
     charset = charset or part['charset'] or 'utf-8'
     if body is None:
         body = part['body']
@@ -127,8 +129,8 @@ async def get_message_plain(rq: aiohttp.web.Request) -> WebHandlerResponse:
     return await _part_response(rq, part) or {}
 
 
-async def _fix_cid_links(rq: aiohttp.web.Request, soup, message_id) -> NoReturn:
-    def _url_from_cid_match(m):
+async def _fix_cid_links(rq: aiohttp.web.Request, soup: bs4.BeautifulSoup, message_id: Union[str, bytes]) -> NoReturn:
+    def _url_from_cid_match(m: re.Match) -> str:
         url = rq.app.router['get-message-part'].url_for(message_id=str(message_id), cid=m.group('cid'))
         return m.group().replace(m.group('replace'), str(url))
 
@@ -148,7 +150,7 @@ async def _fix_cid_links(rq: aiohttp.web.Request, soup, message_id) -> NoReturn:
         tag.string = RE_CID_URL.sub(_url_from_cid_match, tag.string)
 
 
-def _links_target_blank(soup) -> NoReturn:
+def _links_target_blank(soup: bs4.BeautifulSoup) -> NoReturn:
     for tag in soup.descendants:
         if isinstance(tag, bs4.Tag) and tag.name == 'a':
             tag.attrs['target'] = 'blank'

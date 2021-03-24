@@ -8,6 +8,7 @@ import json
 import pathlib
 import sqlite3
 from contextlib import asynccontextmanager
+from email.message import Message as EmailMessage
 from typing import Iterable, Optional, Union, List, NoReturn
 
 import aiosqlite
@@ -118,7 +119,7 @@ async def store_message(conn: aiosqlite.Connection, message: Message) -> int:
                 message.type,
                 message.size,
                 message.peer,
-            )
+            ),
         )
         message.id = cur.lastrowid
         # Store parts (why do we do this for non-multipart at all?!)
@@ -136,7 +137,7 @@ async def store_message(conn: aiosqlite.Connection, message: Message) -> int:
     return message.id
 
 
-async def _save_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, part) -> int:
+async def _save_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, part: EmailMessage) -> int:
     sql = """
         INSERT INTO message_part
             (message_id, cid, type, is_attachment, filename, charset, body, size, created_at)
@@ -156,8 +157,8 @@ async def _save_message_part(cur: aiosqlite.Cursor, message_id: int, cid: str, p
             part.get_filename(),
             part.get_content_charset(),
             body,
-            body_len
-        )
+            body_len,
+        ),
     )
     return cur.lastrowid
 
@@ -216,7 +217,7 @@ async def _get_message_part_types(conn: aiosqlite.Connection, message_id: int, t
             is_attachment = 0
         LIMIT
             1
-    """.format(','.join('?' * len(types)))
+    """.format(','.join('?' * len(types)))  # noqa: S608
 
     async with conn.execute(sql, (message_id,) + types) as cur:
         data = await cur.fetchone()
@@ -249,7 +250,7 @@ async def _message_has_types(conn: aiosqlite.Connection, message_id: int, types:
             type IN ({0})
         LIMIT
             1
-    """.format(','.join('?' * len(types)))
+    """.format(','.join('?' * len(types)))  # noqa: S608
     async with conn.execute(sql, (message_id,) + types) as cur:
         data = await cur.fetchone()
     return data is not None

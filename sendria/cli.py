@@ -7,7 +7,7 @@ import os
 import pathlib
 import signal
 import sys
-from typing import NoReturn
+from typing import NoReturn, List, IO
 
 import aiohttp.web
 import daemon
@@ -27,12 +27,12 @@ logger = get_logger()
 SHUTDOWN = []
 
 
-def exit_err(msg, exit_code=1, **kwargs):
+def exit_err(msg: str, exit_code: int = 1, **kwargs) -> NoReturn:
     logger.error(msg, **kwargs)
     sys.exit(exit_code)
 
 
-def parse_argv(argv):
+def parse_argv(argv: List) -> argparse.Namespace:
     parser = argparse.ArgumentParser('Sendria')
     version = f'%(prog)s {__version__} (https://github.com/msztolcman/sendria (c) 2018 Marcin Sztolcman)'
     parser.add_argument('-v', '--version', action='version', version=version,
@@ -123,7 +123,7 @@ def parse_argv(argv):
     return args
 
 
-def configure_logger(log_handler):
+def configure_logger(log_handler: IO) -> NoReturn:
     if log_handler.name == '<stdout>':
         processors = (
             structlog.dev.ConsoleRenderer(),
@@ -149,7 +149,7 @@ def configure_logger(log_handler):
     )
 
 
-def pid_exists(pid: int):
+def pid_exists(pid: int) -> bool:
     """Check whether pid exists in the current process table.
     UNIX only.
     Source: https://stackoverflow.com/a/6940314/116153
@@ -201,7 +201,7 @@ async def terminate_server(sig: int, loop: asyncio.AbstractEventLoop) -> NoRetur
     loop.stop()
 
 
-def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
+def run_sendria_servers(loop: asyncio.AbstractEventLoop, args: argparse.Namespace) -> NoReturn:
     # initialize db
     loop.run_until_complete(db.setup(args.db))
 
@@ -223,7 +223,7 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
     logger.info('smtp server started', host=args.smtp_ip, port=args.smtp_port,
         auth='enabled' if args.smtp_auth else 'disabled',
         password_file=str(args.smtp_auth.path) if args.smtp_auth else None,
-        url=f'smtp://{args.smtp_ip}:{args.smtp_port}'
+        url=f'smtp://{args.smtp_ip}:{args.smtp_port}',
     )
 
     # initialize and start web server
@@ -244,7 +244,7 @@ def run_sendria_servers(loop, args: argparse.Namespace) -> NoReturn:
     )
 
     # prepare for clean terminate
-    async def _initialize_aiohttp_services__stop():
+    async def _initialize_aiohttp_services__stop() -> NoReturn:
         for ws in set(app['websockets']):
             await ws.close(code=aiohttp.WSCloseCode.GOING_AWAY, message='Server shutdown')
         await app.shutdown()
@@ -271,7 +271,7 @@ def stop(pidfile: pathlib.Path) -> NoReturn:
         exit_err('Could not send SIGTERM: %s' % e)
 
 
-def main():
+def main() -> NoReturn:
     args = parse_argv(sys.argv[1:])
     configure_logger(args.log_handler)
 

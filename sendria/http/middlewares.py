@@ -1,7 +1,7 @@
 __all__ = []
 
 import traceback
-from typing import Callable
+from typing import Callable, NoReturn
 
 import aiohttp.web
 from aiohttp_basicauth import BasicAuthMiddleware
@@ -67,7 +67,7 @@ async def set_default_headers(rq: aiohttp.web.Request, handler: Callable) -> aio
 
 
 class BasicAuth(BasicAuthMiddleware):
-    def __init__(self, http_auth: HtpasswdFile, *args, **kwargs):
+    def __init__(self, http_auth: HtpasswdFile, *args, **kwargs) -> NoReturn:
         self._http_auth = http_auth
         kwargs['realm'] = 'Sendria'
         kwargs['force'] = False
@@ -82,7 +82,7 @@ class BasicAuth(BasicAuthMiddleware):
             logger.info(
                 'request authentication failed',
                 uri=rq.url.human_repr(),
-                header=rq.headers.get('authorization', None)
+                header=rq.headers.get('authorization', None),
             )
 
         return res

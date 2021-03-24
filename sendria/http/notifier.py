@@ -13,7 +13,7 @@ WebsocketMessagesQueue: Optional[asyncio.Queue] = None
 
 def setup(*,
     websockets: weakref.WeakSet,
-    debug_mode: bool
+    debug_mode: bool,
 ) -> NoReturn:
     global WSHandlers, WebsocketMessagesQueue, DEBUG
 
