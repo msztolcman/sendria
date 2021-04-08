@@ -143,7 +143,7 @@ Server: Sendria/1.0.0 (https://github.com/msztolcman/sendria)
 
 There are available endpoints:
 
-* `GET /api/messages/` - fetch list of all emails
+* `GET /api/messages/` - fetch list of emails. There is one query string param: `page` for pagination.
 * `DELETE /api/messages/` - delete all emails
 * `GET /api/messages/{message_id}.json` - fetch email metadata
 * `GET /api/messages/{message_id}.plain` - fetch plain part of email
