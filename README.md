@@ -173,6 +173,9 @@ I'm backend developer, not a frontend guy nor designer... If you are, and want t
 I think GUI should be redesigned, or at least few minor issues could be solved. Also, project requires some logo and/or icon. Again,
 do not hesitate to [mail me](mailto:marcin@urzenia.net) if you want and can help :)
 
+Also, if you have an idea how to enhance `Sendria`, [please fill the ticket](https://github.com/msztolcman/sendria/issues).
+Every idea, every feature request can help you, me and others!
+
 Configure Rails
 ---------------
 
