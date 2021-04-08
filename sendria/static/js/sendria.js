@@ -121,6 +121,16 @@
             }
         });
 
+        $('.pagination-next').on('click', function(e) {
+            e.preventDefault();
+            Message.loadNext();
+        });
+
+        $('.pagination-prev').on('click', function(e) {
+            e.preventDefault();
+            Message.loadPrev();
+        });
+
         // Load initial message list
         Message.loadAll();
 
@@ -223,13 +233,21 @@
                 }
                 msg.dom().nextAll(':visible').first().trigger('click');
             },
-            'ctrl+up': function(e) {
+            'ctrl+shift+up': function(e) {
                 e.preventDefault();
                 $('#messages > tr:first').trigger('click');
             },
-            'ctrl+down': function(e) {
+            'ctrl+shift+down': function(e) {
                 e.preventDefault();
                 $('#messages > tr:last').trigger('click');
+            },
+            'ctrl+shift+left': function(e) {
+                e.preventDefault();
+                Message.loadPrev();
+            },
+            'ctrl+shift+right': function(e) {
+                e.preventDefault();
+                Message.loadNext();
             },
             '/': function(e) {
                 e.preventDefault();

@@ -220,6 +220,15 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+
+### v.2.2.0
+
+* added messages pagination. One page is 100 messages. Can be browsed using
+  buttons next to "Search" window or keyboard shortcuts: `Ctrl-Shift-[Cursor Left]`
+  or `Ctrl-Shift-[Cursor Right]`.
+* changed keyboard shortcuts: instead of `Ctrl-[Cursor Up]` and `Ctrl-[Cursor Down]`
+  there is now `Ctrl-Shift-[Cursor Up]` and `Ctrl-Shift-[Cursor Down]`.
+
 ### v2.1.0
 
 * auth mechanisms are now implemented in [aiosmtpd](https://aiosmtpd.readthedocs.io)

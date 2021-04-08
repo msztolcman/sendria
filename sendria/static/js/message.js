@@ -1,9 +1,11 @@
 // REST
 (function($, global) {
     'use strict';
-    var messages = {};
-    var cleared = new Aborter();
-    var filterTerm = '';
+    let messages = {};
+    let cleared = new Aborter();
+    let filterTerm = '';
+    let currentPage = 1;
+    let pagesTotal = 1;
 
     function addCacheBuster(formats) {
         $.each(formats, function(format, url) {
@@ -212,8 +214,10 @@
     Message.loadAll = function() {
         Message.deleteAll();
         $('#loading-dialog').dialog('open');
-        restCall('GET', '/api/messages/').done(function(data) {
-            data = data.data || [];
+        // restCall('GET', '/api/messages/').done(function(data) {
+        restCall('GET', '/api/messages/?page=' + currentPage).done(function(data) {
+            pagesTotal = data.meta.pages_total || 1;
+            data = (data.data || []).reverse();
             $.each(data, function(i, msg) {
                 Message.add(new Message(msg));
             });
@@ -222,6 +226,22 @@
             $('#loading-dialog').dialog('close');
         });
     };
+
+    Message.loadNext = function() {
+        if (currentPage + 1 > pagesTotal || Object.getOwnPropertyNames(messages).length === 0) {
+            return;
+        }
+        currentPage = currentPage + 1
+        Message.loadAll()
+    }
+
+    Message.loadPrev = function() {
+        if (currentPage <= 1) {
+            return
+        }
+        currentPage = currentPage - 1
+        Message.loadAll()
+    }
 
     Message.applyFilter = function(term) {
         if(term !== undefined) {

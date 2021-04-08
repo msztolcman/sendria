@@ -2,6 +2,7 @@ __all__ = ['setup', 'configure_assets']
 
 import argparse
 import asyncio
+import math
 import re
 import weakref
 from typing import Union, NoReturn, Optional
@@ -65,9 +66,28 @@ async def delete_messages(rq: aiohttp.web.Request) -> WebHandlerResponse:
 
 
 async def get_messages(rq: aiohttp.web.Request) -> WebHandlerResponse:
+    page = rq.query.get('page', 1)
+    try:
+        page = int(page)
+    except:
+        page = 1
+
+    if page < 1:
+        page = 1
+
+    limit = 100
+    offset = (page * limit) - limit
     async with db.connection() as conn:
-        messages = await db.get_messages(conn)
-    return messages or []
+        messages = await db.get_messages(conn, offset=offset, limit=limit)
+        total = await db.get_messages_count(conn)
+
+    return {
+        'code': 'OK',
+        'data': messages or [],
+        'meta': {
+            'pages_total': math.ceil(total / limit),
+        }
+    }
 
 
 async def delete_message(rq: aiohttp.web.Request) -> WebHandlerResponse:

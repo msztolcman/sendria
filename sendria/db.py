@@ -264,14 +264,20 @@ async def message_has_plain(conn: aiosqlite.Connection, message_id: int) -> bool
     return await _message_has_types(conn, message_id, ('text/plain',))
 
 
-async def get_messages(conn: aiosqlite.Connection) -> List[dict]:
-    async with conn.execute('SELECT * FROM message ORDER BY created_at ASC') as cur:
+async def get_messages(conn: aiosqlite.Connection, /, offset: int = 0, limit: int = 30) -> List[dict]:
+    async with conn.execute('SELECT * FROM message ORDER BY created_at DESC LIMIT ? OFFSET ?', (limit, offset)) as cur:
         data = await cur.fetchall()
 
     data = list(map(dict, data))
     for row in data:
         _prepare_message_row_inplace(row)
     return data
+
+
+async def get_messages_count(conn: aiosqlite.Connection) -> int:
+    async with conn.execute('SELECT count(1) FROM message') as cur:
+        cnt = await cur.fetchone()
+    return cnt[0]
 
 
 async def delete_message(conn: aiosqlite.Connection, message_id: int) -> NoReturn:
