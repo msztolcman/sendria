@@ -80,6 +80,11 @@ body {
                     &.notifications {
                         display: none;
                     }
+                    &.pagination {
+                        width: 100px;
+                        text-align: center;
+                        font-style: italic;
+                    }
                 }
             }
         }
