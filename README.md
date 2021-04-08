@@ -234,6 +234,8 @@ ChangeLog
   or `Ctrl-Shift-[Cursor Right]`.
 * changed keyboard shortcuts: instead of `Ctrl-[Cursor Up]` and `Ctrl-[Cursor Down]`
   there is now `Ctrl-Shift-[Cursor Up]` and `Ctrl-Shift-[Cursor Down]`.
+* allow configuring default `Sendria` instance using config file (see `sendria --help`
+  -> `--config-file`).
 
 ### v2.1.0
 
