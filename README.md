@@ -137,7 +137,10 @@ Server: Sendria/1.0.0 (https://github.com/msztolcman/sendria)
             "subject": "Welcome!",
             "type": "text/plain"
         }
-    ]
+    ],
+    "meta": {
+        "pages_total": 3
+    }
 }
 ```
 
