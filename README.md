@@ -88,7 +88,7 @@ or simpler with [SMTPc](https://github.com/msztolcman/smtpc/):
 
 ```shell
 smtpc send --host localhost:1025 --from sendria@example.com --to you@example.com \
-  --subject 'Welcome!' --body-plain 'Welcome to Sendria!'
+  --subject 'Welcome!' --body 'Welcome to Sendria!'
 ```
 
 Finally, look at `Sendria` GUI on [127.0.0.1:1080](http://127.0.0.1:1080).
