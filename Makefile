@@ -1,6 +1,9 @@
+.PHONY: distro distro-test clean build upload upload-test test lint help
+
 ## building
-distro: ## build and upload distro
-	clean build upload
+distro: clean build upload ## build and upload distro to prod pypi
+
+distro-test: clean build upload-test ## build and upload distro to test pypi
 
 clean: ## cleanup all distro
 	-rm -fr dist
