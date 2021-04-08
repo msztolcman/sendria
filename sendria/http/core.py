@@ -1,6 +1,5 @@
 __all__ = ['setup', 'configure_assets']
 
-import argparse
 import asyncio
 import math
 import re
@@ -13,13 +12,12 @@ import bs4
 import jinja2
 import webassets
 import yarl
-from passlib.apache import HtpasswdFile
 from structlog import get_logger
 
 from . import middlewares
 from . import notifier
-from .. import STATIC_DIR, STATIC_URL, TEMPLATES_DIR
 from .. import __version__
+from .. import config
 from .. import db
 
 logger = get_logger()
@@ -262,7 +260,7 @@ def configure_assets(debug: bool, autobuild: bool) -> webassets.Environment:
     css = webassets.Bundle('css/reset.css', 'css/jquery-ui.css', scss,
         filters=('cssrewrite', 'cssmin'), output='assets/bundle.%(version)s.css')
 
-    assets = webassets.Environment(directory=STATIC_DIR, url=STATIC_URL)
+    assets = webassets.Environment(directory=config.STATIC_DIR, url=config.STATIC_URL)
     assets.debug = debug  # yuck! but the commandline script only supports *disabling* debug
     assets.auto_build = autobuild
 
@@ -272,29 +270,29 @@ def configure_assets(debug: bool, autobuild: bool) -> webassets.Environment:
     return assets
 
 
-def setup(args: argparse.Namespace, http_auth: HtpasswdFile) -> aiohttp.web.Application:
-    app = aiohttp.web.Application(debug=args.debug)
+def setup() -> aiohttp.web.Application:
+    app = aiohttp.web.Application(debug=config.CONFIG.debug)
     app.middlewares.extend([
         middlewares.set_default_headers,
         middlewares.error_handler,
         middlewares.response_from_dict,
     ])
 
-    app['SENDRIA_NO_QUIT'] = args.no_quit
-    app['SENDRIA_NO_CLEAR'] = args.no_clear
-    app['HEADER_NAME'] = args.template_header_name
-    app['HEADER_URL'] = args.template_header_url
-    app['debug'] = args.debug
+    app['SENDRIA_NO_QUIT'] = config.CONFIG.no_quit
+    app['SENDRIA_NO_CLEAR'] = config.CONFIG.no_clear
+    app['HEADER_NAME'] = config.CONFIG.template_header_name
+    app['HEADER_URL'] = config.CONFIG.template_header_url
+    app['debug'] = config.CONFIG.debug
     app['websockets'] = weakref.WeakSet()
 
-    assets = configure_assets(args.debug, args.autobuild_assets)
+    assets = configure_assets(config.CONFIG.debug, config.CONFIG.autobuild_assets)
     app['assets'] = assets
 
     # aiohttp_jinja requirement
-    app['static_root_url'] = STATIC_URL
-    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(TEMPLATES_DIR))
+    app['static_root_url'] = config.STATIC_URL
+    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(config.TEMPLATES_DIR))
 
-    auth = middlewares.BasicAuth(http_auth)
+    auth = middlewares.BasicAuth(config.CONFIG.http_auth)
     app.add_routes([
         aiohttp.web.get('/', home, name='home'),
         aiohttp.web.delete('/api', auth.required(terminate), name='terminate'),
@@ -310,7 +308,7 @@ def setup(args: argparse.Namespace, http_auth: HtpasswdFile) -> aiohttp.web.Appl
 
         aiohttp.web.get(r'/ws', websocket_handler),
     ])
-    app.router.add_static('/static/', path=STATIC_DIR, name='static')
+    app.router.add_static('/static/', path=config.STATIC_DIR, name='static')
 
     # initialize and run websocket notifier
     notifier.setup(websockets=app['websockets'], debug_mode=app['debug'])

@@ -13,12 +13,11 @@ import aiohttp.web
 import daemon
 import structlog
 from daemon.pidfile import TimeoutPIDLockFile
-from passlib.apache import HtpasswdFile
 from structlog import get_logger
 
-from . import STATIC_DIR, ASSETS_DIR
-from . import __version__
+from . import __version__, exit_err
 from . import callback
+from . import config
 from . import db
 from . import http
 from . import smtp
@@ -27,111 +26,70 @@ logger = get_logger()
 SHUTDOWN = []
 
 
-def exit_err(msg: str, exit_code: int = 1, **kwargs) -> NoReturn:
-    logger.error(msg, **kwargs)
-    sys.exit(exit_code)
-
-
 def parse_argv(argv: List) -> argparse.Namespace:
     parser = argparse.ArgumentParser('Sendria')
     version = f'%(prog)s {__version__} (https://github.com/msztolcman/sendria (c) 2018 Marcin Sztolcman)'
     parser.add_argument('-v', '--version', action='version', version=version,
         help='Display the version and exit')
 
-    parser.add_argument('--template-header-name', default='', help='Additional name of application')
-    parser.add_argument('--template-header-url', default='', help='Url of application')
-    parser.add_argument('--smtp-ip', default='127.0.0.1', metavar='IP', help='SMTP ip (default: 127.0.0.1)')
-    parser.add_argument('--smtp-port', default=1025, type=int, metavar='PORT', help='SMTP port (default: 1025)')
+    parser.add_argument('-s', '--db', metavar='PATH', help='Path to SQLite database. Will be created if doesn\'t exist')
+    parser.add_argument('--smtp-ip', metavar='IP', help='SMTP ip (default: 127.0.0.1)')
+    parser.add_argument('--smtp-port', type=int, metavar='PORT', help='SMTP port (default: 1025)')
     parser.add_argument('--smtp-auth', metavar='HTPASSWD',
         help='Apache-style htpasswd file for SMTP authorization. '
             'WARNING: do not rely only on this as a security '
             'mechanism, use also additional methods for securing '
             'Sendria instance, ie. IP restrictions.')
-    parser.add_argument('--smtp-ident', default='ESMTP Sendria (https://github.com/msztolcman/sendria)',
+    parser.add_argument('--smtp-ident',
         help='How SMTP server will identify when connect')
-    parser.add_argument('--http-ip', default='127.0.0.1', metavar='IP', help='HTTP ip (default: 127.0.0.1)')
-    parser.add_argument('--http-port', default=1080, type=int, metavar='PORT', help='HTTP port (default: 1080)')
-    parser.add_argument('-s', '--db', metavar='PATH', help='Path to SQLite database. Will be created if doesn\'t exist')
+    parser.add_argument('--http-ip', metavar='IP', help='HTTP ip (default: 127.0.0.1)')
+    parser.add_argument('--http-port', type=int, metavar='PORT', help='HTTP port (default: 1080)')
     parser.add_argument('--http-auth', metavar='HTPASSWD', help='Apache-style htpasswd file')
-    parser.add_argument('-f', '--foreground', help='Run in the foreground (default if no pid file is specified)',
-        action='store_true')
-    parser.add_argument('-d', '--debug', help='Run the web app in debug mode', action='store_true')
-    parser.add_argument('-a', '--autobuild-assets', help='Automatically rebuild assets if necessary',
-        action='store_true')
-    parser.add_argument('-n', '--no-quit', help='Do not allow clients to terminate the application',
-        action='store_true')
-    parser.add_argument('-c', '--no-clear', help='Do not allow clients to clear email database',
-        action='store_true')
+    parser.add_argument('-f', '--foreground', action='store_true', default=None,
+        help='Run in the foreground (default if no pid file is specified)')
+    parser.add_argument('-d', '--debug', help='Run the web app in debug mode', action='store_true', default=None)
+    parser.add_argument('-a', '--autobuild-assets', action='store_true', default=None,
+        help='Automatically rebuild assets if necessary')
+    parser.add_argument('-n', '--no-quit', action='store_true', default=None,
+        help='Do not allow clients to terminate the application')
+    parser.add_argument('-c', '--no-clear', action='store_true', default=None,
+        help='Do not allow clients to clear email database')
     parser.add_argument('-p', '--pidfile', help='Use a PID file')
-    parser.add_argument('--stop', help='Sends SIGTERM to the running daemon (needs --pidfile)', action='store_true')
+    parser.add_argument('--stop', action='store_true',
+        help='Sends SIGTERM to the running daemon (needs --pidfile)')
+    parser.add_argument('--template-header-name', help='Additional name of application')
+    parser.add_argument('--template-header-url', help='Url of application')
     parser.add_argument('--callback-webhook-url',
         help='URL where webhook shoud be sent. If empty (default) then no webhook is sent.')
-    parser.add_argument('--callback-webhook-method', default='POST',
+    parser.add_argument('--callback-webhook-method',
         help='HTTP method for webhook')
     parser.add_argument('--callback-webhook-auth',
         help='Optional credentials ("login:password") for webhook (only Basic Auth supported). If empty, then no '
             'authorization header is sent')
-    parser.add_argument('--log-file', default='sendria.log',
+    parser.add_argument('--log-file',
         help='Where logs have to come if working in background. Ignored if working in foreground.')
+    parser.add_argument('--config-file', '-g',
+        help=f'configuration file to use (default: {config.CONFIG_FILE})')
 
     args = parser.parse_args(argv)
-
-    if args.pidfile:
-        args.pidfile = pathlib.Path(args.pidfile)
-        if not args.pidfile.is_absolute():
-            args.pidfile = args.pidfile.resolve()
-
-    if args.foreground or not args.pidfile or args.log_file == '-':
-        args.log_handler = sys.stdout
-    else:
-        args.log_handler = open(args.log_file, 'a')
 
     if args.stop:
         return args
 
-    if not args.db:
-        exit_err('Missing database path. Please use --db path/to/db.sqlite')
-
-    args.db = pathlib.Path(args.db)
-    if not args.db.is_absolute():
-        args.db = args.db.resolve()
-
-    # Default to foreground mode if no pid file is specified
-    if not args.pidfile and not args.foreground:
-        logger.info('no PID file specified; runnning in foreground')
-        args.foreground = True
-
-    # Warn about relative paths and absolutize them
-    if args.http_auth:
-        args.http_auth = pathlib.Path(args.http_auth)
-        if not args.http_auth.is_absolute():
-            args.http_auth = args.http_auth.resolve()
-        if not args.http_auth.is_file():
-            exit_err('HTTP auth htpasswd file does not exist')
-
-        args.http_auth = HtpasswdFile(args.http_auth)
-
-    if args.smtp_auth:
-        args.smtp_auth = pathlib.Path(args.smtp_auth)
-        if not args.smtp_auth.is_absolute():
-            args.smtp_auth = args.smtp_auth.resolve()
-        if not args.smtp_auth.is_file():
-            exit_err('SMTP auth htpasswd file does not exist')
-
-        args.smtp_auth = HtpasswdFile(args.smtp_auth)
-
     return args
 
 
-def configure_logger(log_handler: IO) -> NoReturn:
-    if log_handler.name == '<stdout>':
+def configure_logger() -> IO:
+    if config.CONFIG.foreground or not config.CONFIG.pidfile or config.CONFIG.log_file == '-':
         processors = (
             structlog.dev.ConsoleRenderer(),
         )
+        log_handler = sys.stdout
     else:
         processors = (
             structlog.processors.JSONRenderer(),
         )
+        log_handler = open(config.CONFIG.log_file, 'a')
 
     structlog.configure(
         processors=[
@@ -147,6 +105,8 @@ def configure_logger(log_handler: IO) -> NoReturn:
         logger_factory=structlog.PrintLoggerFactory(file=log_handler),
         cache_logger_on_first_use=True,
     )
+
+    return log_handler
 
 
 def pid_exists(pid: int) -> bool:
@@ -201,16 +161,16 @@ async def terminate_server(sig: int, loop: asyncio.AbstractEventLoop) -> NoRetur
     loop.stop()
 
 
-def run_sendria_servers(loop: asyncio.AbstractEventLoop, args: argparse.Namespace) -> NoReturn:
+def run_sendria_servers(loop: asyncio.AbstractEventLoop) -> NoReturn:
     # initialize db
-    loop.run_until_complete(db.setup(args.db))
+    loop.run_until_complete(db.setup(config.CONFIG.db))
 
     # initialize and start webhooks
     callbacks_enabled = callback.setup(
-        debug_mode=args.debug,
-        callback_webhook_url=args.callback_webhook_url,
-        callback_webhook_method=args.callback_webhook_method,
-        callback_webhook_auth=args.callback_webhook_auth,
+        debug_mode=config.CONFIG.debug,
+        callback_webhook_url=config.CONFIG.callback_webhook_url,
+        callback_webhook_method=config.CONFIG.callback_webhook_method,
+        callback_webhook_auth=config.CONFIG.callback_webhook_auth,
     )
     if callbacks_enabled:
         loop.create_task(callback.send_messages())
@@ -219,28 +179,28 @@ def run_sendria_servers(loop: asyncio.AbstractEventLoop, args: argparse.Namespac
     loop.create_task(db.message_saver())
 
     # start smtp server
-    smtp.run(args.smtp_ip, args.smtp_port, args.smtp_auth, args.smtp_ident, args.debug)
-    logger.info('smtp server started', host=args.smtp_ip, port=args.smtp_port,
-        auth='enabled' if args.smtp_auth else 'disabled',
-        password_file=str(args.smtp_auth.path) if args.smtp_auth else None,
-        url=f'smtp://{args.smtp_ip}:{args.smtp_port}',
+    smtp.run(config.CONFIG.smtp_ip, config.CONFIG.smtp_port, config.CONFIG.smtp_auth, config.CONFIG.smtp_ident, config.CONFIG.debug)
+    logger.info('smtp server started', host=config.CONFIG.smtp_ip, port=config.CONFIG.smtp_port,
+        auth='enabled' if config.CONFIG.smtp_auth else 'disabled',
+        password_file=str(config.CONFIG.smtp_auth.path) if config.CONFIG.smtp_auth else None,
+        url=f'smtp://{config.CONFIG.smtp_ip}:{config.CONFIG.smtp_port}',
     )
 
     # initialize and start web server
-    app = http.setup(args, args.http_auth)
+    app = http.setup()
 
     runner = aiohttp.web.AppRunner(app)
     loop.run_until_complete(runner.setup())
 
-    site = aiohttp.web.TCPSite(runner, host=args.http_ip, port=args.http_port)
+    site = aiohttp.web.TCPSite(runner, host=config.CONFIG.http_ip, port=config.CONFIG.http_port)
     server = site.start()
     loop.run_until_complete(server)
 
     logger.info('http server started',
-        host=args.http_ip, port=args.http_port,
-        url=f'http://{args.http_ip}:{args.http_port}',
-        auth='enabled' if args.http_auth else 'disabled',
-        password_file=str(args.http_auth.path) if args.http_auth else None,
+        host=config.CONFIG.http_ip, port=config.CONFIG.http_port,
+        url=f'http://{config.CONFIG.http_ip}:{config.CONFIG.http_port}',
+        auth='enabled' if config.CONFIG.http_auth else 'disabled',
+        password_file=str(config.CONFIG.http_auth.path) if config.CONFIG.http_auth else None,
     )
 
     # prepare for clean terminate
@@ -272,38 +232,44 @@ def stop(pidfile: pathlib.Path) -> NoReturn:
 
 
 def main() -> NoReturn:
+    config.ensure_config_files()
     args = parse_argv(sys.argv[1:])
-    configure_logger(args.log_handler)
+    config.setup(args)
+
+    if not config.CONFIG.db:
+        exit_err('Missing database path. Please use --db path/to/db.sqlite')
+
+    log_handler = configure_logger()
 
     # Do we just want to stop a running daemon?
     if args.stop:
         logger.info('stopping Sendria',
-            debug='enabled' if args.debug else 'disabled',
-            pidfile=str(args.pidfile) if args.pidfile else None,
+            debug='enabled' if config.CONFIG.debug else 'disabled',
+            pidfile=str(config.CONFIG.pidfile) if config.CONFIG.pidfile else None,
         )
-        stop(args.pidfile)
+        stop(config.CONFIG.pidfile)
         sys.exit(0)
 
     logger.info('starting Sendria',
-        debug='enabled' if args.debug else 'disabled',
-        pidfile=str(args.pidfile) if args.pidfile else None,
-        db=str(args.db),
-        foreground='true' if args.foreground else 'false',
+        debug='enabled' if config.CONFIG.debug else 'disabled',
+        pidfile=str(config.CONFIG.pidfile) if config.CONFIG.pidfile else None,
+        db=str(config.CONFIG.db),
+        foreground='true' if config.CONFIG.foreground else 'false',
     )
 
     # Check if the static folder is writable
-    if args.autobuild_assets and not os.access(STATIC_DIR, os.W_OK):
-        exit_err('autobuilding assets requires write access to %s' % STATIC_DIR)
+    if config.CONFIG.autobuild_assets and not os.access(config.STATIC_DIR, os.W_OK):
+        exit_err('autobuilding assets requires write access to %s' % config.STATIC_DIR)
 
-    if not args.autobuild_assets and (not ASSETS_DIR.exists() or not list(ASSETS_DIR.glob('*'))):
+    if not config.CONFIG.autobuild_assets and (not config.ASSETS_DIR.exists() or not list(config.ASSETS_DIR.glob('*'))):
         exit_err('assets not found. Generate assets using: webassets -m sendria.build_assets build', 0)
 
     daemon_kw = {}
 
-    if args.log_handler.name != '<stdout>':
-        daemon_kw['files_preserve'] = [args.log_handler]
+    if log_handler.name != '<stdout>':
+        daemon_kw['files_preserve'] = [log_handler]
 
-    if args.foreground:
+    if config.CONFIG.foreground:
         # Do not detach and keep std streams open
         daemon_kw.update({
             'detach_process': False,
@@ -312,17 +278,17 @@ def main() -> NoReturn:
             'stderr': sys.stderr,
         })
 
-    if args.pidfile:
-        if args.pidfile.exists():
+    if config.CONFIG.pidfile:
+        if config.CONFIG.pidfile.exists():
             try:
-                pid = read_pidfile(args.pidfile)
+                pid = read_pidfile(config.CONFIG.pidfile)
             except Exception as exc:
                 exit_err(f'Cannot read pid file: {exc}', 1)
 
             if not pid_exists(pid):
                 logger.warning('deleting obsolete PID file (process %s does not exist)' % pid, pid=pid)
-                args.pidfile.unlink()
-        daemon_kw['pidfile'] = TimeoutPIDLockFile(str(args.pidfile), 5)
+                config.CONFIG.pidfile.unlink()
+        daemon_kw['pidfile'] = TimeoutPIDLockFile(str(config.CONFIG.pidfile), 5)
 
     # Unload threading module to avoid error on exit (it's loaded by lockfile)
     if 'threading' in sys.modules:
@@ -332,7 +298,7 @@ def main() -> NoReturn:
     with context:
         loop = asyncio.get_event_loop()
 
-        run_sendria_servers(loop, args)
+        run_sendria_servers(loop)
 
         loop.run_forever()
 

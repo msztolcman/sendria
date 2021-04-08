@@ -1,11 +1,16 @@
-__all__ = ['__version__', 'ROOT_DIR', 'STATIC_DIR', 'STATIC_URL', 'TEMPLATES_DIR', 'ASSETS_DIR']
+__all__ = ['__version__']
 
-import pathlib
-import pkgutil
+import sys
+from typing import NoReturn
+
+import structlog
 
 __version__ = '2.1.0'
-ROOT_DIR = pathlib.Path(pkgutil.get_loader('sendria').get_filename()).parent
-STATIC_DIR = ROOT_DIR / 'static'
-TEMPLATES_DIR = ROOT_DIR / 'templates'
-ASSETS_DIR = STATIC_DIR / 'assets'
-STATIC_URL = '/static/'
+
+logger = structlog.get_logger()
+
+
+def exit_err(msg: str, exit_code: int = 1, **kwargs) -> NoReturn:
+    logger.error(msg, **kwargs)
+    sys.exit(exit_code)
+

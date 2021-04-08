@@ -19,6 +19,8 @@ python-daemon = "*"
 pytz = "*"
 structlog = "*"
 webassets = "*"
+toml = "*"
+fileperms = "*"
 
 [dev-packages]
 versionner = "*"
