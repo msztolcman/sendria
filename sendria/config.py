@@ -134,7 +134,7 @@ class Config:
 
 
 def setup(args: argparse.Namespace) -> NoReturn:
-    global CONFIG
+    global CONFIG, CONFIG_FILE
     CONFIG = Config()
 
     with CONFIG_FILE.open('r') as fh:

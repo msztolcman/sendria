@@ -67,7 +67,7 @@ async def get_messages(rq: aiohttp.web.Request) -> WebHandlerResponse:
     page = rq.query.get('page', 1)
     try:
         page = int(page)
-    except:
+    except:  # noqa: E722
         page = 1
 
     if page < 1:
@@ -84,7 +84,7 @@ async def get_messages(rq: aiohttp.web.Request) -> WebHandlerResponse:
         'data': messages or [],
         'meta': {
             'pages_total': math.ceil(total / limit),
-        }
+        },
     }
 
 

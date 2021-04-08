@@ -13,4 +13,3 @@ logger = structlog.get_logger()
 def exit_err(msg: str, exit_code: int = 1, **kwargs) -> NoReturn:
     logger.error(msg, **kwargs)
     sys.exit(exit_code)
-
