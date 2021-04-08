@@ -236,6 +236,8 @@ ChangeLog
   there is now `Ctrl-Shift-[Cursor Up]` and `Ctrl-Shift-[Cursor Down]`.
 * allow configuring default `Sendria` instance using config file (see `sendria --help`
   -> `--config-file`).
+* some fixes after hints from linters
+* minor changes and fixes
 
 ### v2.1.0
 
