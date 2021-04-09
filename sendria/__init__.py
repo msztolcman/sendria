@@ -5,7 +5,7 @@ from typing import NoReturn
 
 import structlog
 
-__version__ = '2.2.1'
+__version__ = '2.2.2'
 
 logger = structlog.get_logger()
 

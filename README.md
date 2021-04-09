@@ -23,7 +23,7 @@ Icon made by [Freepik](http://www.freepik.com/) from [www.flaticon.com](https://
 Current stable version
 ----------------------
 
-2.2.1
+2.2.2
 
 Features
 --------
