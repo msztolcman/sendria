@@ -13,6 +13,7 @@ requirements = [
     'aiosqlite',
     'beautifulsoup4',
     'cssmin',
+    'fileperms',
     'html5lib',
     'lockfile',
     'passlib',
@@ -20,6 +21,7 @@ requirements = [
     'pytz',
     'pyscss',
     'structlog',
+    'toml',
     'webassets',
 ]
 
