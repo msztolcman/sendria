@@ -23,7 +23,7 @@ Icon made by [Freepik](http://www.freepik.com/) from [www.flaticon.com](https://
 Current stable version
 ----------------------
 
-2.2.0
+2.2.1
 
 Features
 --------
@@ -226,6 +226,9 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+
+### v2.2.1
+* updated deps in setup.py
 
 ### v.2.2.0
 
