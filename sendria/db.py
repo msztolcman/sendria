@@ -264,7 +264,7 @@ async def message_has_plain(conn: aiosqlite.Connection, message_id: int) -> bool
     return await _message_has_types(conn, message_id, ('text/plain',))
 
 
-async def get_messages(conn: aiosqlite.Connection, /, offset: int = 0, limit: int = 30) -> List[dict]:
+async def get_messages(conn: aiosqlite.Connection, offset: int = 0, limit: int = 30) -> List[dict]:
     async with conn.execute('SELECT * FROM message ORDER BY created_at DESC LIMIT ? OFFSET ?', (limit, offset)) as cur:
         data = await cur.fetchall()
 

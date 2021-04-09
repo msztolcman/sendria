@@ -20,7 +20,7 @@ requirements = [
     'python-daemon',
     'pytz',
     'pyscss',
-    'structlog',
+    'structlog>=21.1.0',
     'toml',
     'webassets',
 ]
