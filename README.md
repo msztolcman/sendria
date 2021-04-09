@@ -227,7 +227,12 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 ChangeLog
 ---------
 
+### v2.2.2
+
+* more dependencies fixes for Python 3.7
+
 ### v2.2.1
+
 * updated deps in setup.py
 
 ### v.2.2.0
