@@ -62,7 +62,7 @@ async def response_from_dict(rq: aiohttp.web.Request, handler: Callable) -> aioh
 @aiohttp.web.middleware
 async def set_default_headers(rq: aiohttp.web.Request, handler: Callable) -> aiohttp.web.StreamResponse:
     rsp = await handler(rq)
-    rsp.headers['Server'] = f'Sendria/{__version__} (https://github.com/msztolcman/sendria)'
+    rsp.headers['Server'] = f'Sendria/{__version__} (https://sendria.net)'
     return rsp
 
 

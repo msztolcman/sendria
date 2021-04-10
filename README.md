@@ -113,7 +113,7 @@ HTTP/1.1 200 OK
 Content-Length: 620
 Content-Type: application/json; charset=utf-8
 Date: Wed, 22 Jul 2020 20:04:46 GMT
-Server: Sendria/1.0.0 (https://github.com/msztolcman/sendria)
+Server: Sendria/2.2.2 (https://sendria.net)
 
 {
     "code": "OK",
