@@ -29,7 +29,7 @@ TEMPLATES_DIR = ROOT_DIR / 'templates'
 ASSETS_DIR = STATIC_DIR / 'assets'
 STATIC_URL = '/static/'
 DEFAULT_OPTIONS = {
-    'smtp_ident': 'ESMTP Sendria (https://github.com/msztolcman/sendria)',
+    'smtp_ident': 'ESMTP Sendria (https://sendria.net)',
     'smtp_ip': '127.0.0.1',
     'smtp_port': 1025,
     'http_ip': '127.0.0.1',

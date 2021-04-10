@@ -58,7 +58,7 @@ async def get_session() -> aiohttp.ClientSession:
         auth = aiohttp.BasicAuth(*WEBHOOK_AUTH)
 
     headers = {
-        'User-agent': f'Sendria/{__version__} (https://github.com/msztolcman/sendria)',
+        'User-agent': f'Sendria/{__version__} (https://sendria.net)',
         'Content-type': 'application/javascript',
     }
 

@@ -28,7 +28,7 @@ SHUTDOWN = []
 
 def parse_argv(argv: List) -> argparse.Namespace:
     parser = argparse.ArgumentParser('Sendria')
-    version = f'%(prog)s {__version__} (https://github.com/msztolcman/sendria (c) 2018 Marcin Sztolcman)'
+    version = f'%(prog)s {__version__} (https://sendria.net (c) 2018 Marcin Sztolcman)'
     parser.add_argument('-v', '--version', action='version', version=version,
         help='Display the version and exit')
 
