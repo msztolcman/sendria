@@ -38,6 +38,7 @@ async def home(rq: aiohttp.web.Request) -> WebHandlerResponse:
         'css_all': assets['css_all'].urls(),
         'header_name': rq.app['HEADER_NAME'],
         'header_url': rq.app['HEADER_URL'],
+        'url_prefix': rq.app['URL_PREFIX']
     }
 
 
@@ -260,7 +261,7 @@ def configure_assets(debug: bool, autobuild: bool) -> webassets.Environment:
     css = webassets.Bundle('css/reset.css', 'css/jquery-ui.css', scss,
         filters=('cssrewrite', 'cssmin'), output='assets/bundle.%(version)s.css')
 
-    assets = webassets.Environment(directory=config.STATIC_DIR, url=config.STATIC_URL)
+    assets = webassets.Environment(directory=config.STATIC_DIR, url=config.CONFIG.url_static)
     assets.debug = debug  # yuck! but the commandline script only supports *disabling* debug
     assets.auto_build = autobuild
 
@@ -282,6 +283,7 @@ def setup() -> aiohttp.web.Application:
     app['SENDRIA_NO_CLEAR'] = config.CONFIG.no_clear
     app['HEADER_NAME'] = config.CONFIG.template_header_name
     app['HEADER_URL'] = config.CONFIG.template_header_url
+    app['URL_PREFIX'] = config.CONFIG.http_url_prefix
     app['debug'] = config.CONFIG.debug
     app['websockets'] = weakref.WeakSet()
 
@@ -289,7 +291,7 @@ def setup() -> aiohttp.web.Application:
     app['assets'] = assets
 
     # aiohttp_jinja requirement
-    app['static_root_url'] = config.STATIC_URL
+    app['static_root_url'] = config.CONFIG.url_static
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(config.TEMPLATES_DIR))
 
     auth = middlewares.BasicAuth(config.CONFIG.http_auth)

@@ -27,7 +27,7 @@ ROOT_DIR = pathlib.Path(pkgutil.get_loader('sendria').get_filename()).parent
 STATIC_DIR = ROOT_DIR / 'static'
 TEMPLATES_DIR = ROOT_DIR / 'templates'
 ASSETS_DIR = STATIC_DIR / 'assets'
-STATIC_URL = '/static/'
+STATIC_URL_SUFFIX = '/static/'
 DEFAULT_OPTIONS = {
     'smtp_ident': 'ESMTP Sendria (https://sendria.net)',
     'smtp_ip': '127.0.0.1',
@@ -36,6 +36,7 @@ DEFAULT_OPTIONS = {
     'http_port': 1080,
     'callback_webhook_method': 'POST',
     'log_file': 'sendria.log',
+    'http_url_prefix': '/',
 }
 
 
@@ -129,6 +130,8 @@ class Config:
     callback_webhook_url: Optional[str] = attr.ib(init=False)
     callback_webhook_method: Optional[str] = attr.ib(init=False)
     callback_webhook_auth: Optional[str] = attr.ib(init=False)
+    http_url_prefix: Optional[str] = attr.ib(init=False)
+    url_static: Optional[str] = attr.ib(init=False)
     log_file: Optional[pathlib.Path] = attr.ib(init=False)
     debug: bool = attr.ib(init=False)
 
@@ -142,6 +145,9 @@ def setup(args: argparse.Namespace) -> NoReturn:
 
     for key in attr.fields(Config):
         name = key.name
+        if name in ('url_static', ):
+            continue
+
         value = getattr(args, name)
         if value is None:
             value = cfg.get(name)
@@ -175,3 +181,6 @@ def setup(args: argparse.Namespace) -> NoReturn:
 
     if CONFIG.debug is None:
         CONFIG.debug = False
+
+    if not hasattr(CONFIG, 'url_static') or not CONFIG.url_static:
+        CONFIG.url_static = CONFIG.http_url_prefix.rstrip('/') + '/' + STATIC_URL_SUFFIX.lstrip('/')

@@ -45,6 +45,8 @@ def parse_argv(argv: List) -> argparse.Namespace:
     parser.add_argument('--http-ip', metavar='IP', help='HTTP ip (default: 127.0.0.1)')
     parser.add_argument('--http-port', type=int, metavar='PORT', help='HTTP port (default: 1080)')
     parser.add_argument('--http-auth', metavar='HTPASSWD', help='Apache-style htpasswd file')
+    parser.add_argument('--http-url-prefix',
+        help='')
     parser.add_argument('-f', '--foreground', action='store_true', default=None,
         help='Run in the foreground (default if no pid file is specified)')
     parser.add_argument('-d', '--debug', help='Run the web app in debug mode', action='store_true', default=None)
