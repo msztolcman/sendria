@@ -79,7 +79,7 @@
             this.dom().addClass('deleted');
             this.selectSibling();
             this.closeNotification();
-            restCall('DELETE', '/api/messages/' + this.id).fail(function() {
+            restCall('DELETE', sendriaApi('messages/' + this.id)).fail(function() {
                 self._deleted = false;
                 self.dom().removeClass('deleted');
             });
@@ -141,7 +141,7 @@
                 deferred.resolveWith(this);
             }
             else {
-                cleared.watch(restCall('GET', '/api/messages/' + this.id + '.json')).done(function(data) {
+                cleared.watch(restCall('GET', sendriaApi('messages/' + this.id + '.json'))).done(function(data) {
                     data = data.data;
                     self._loaded = true;
                     self.href = data.href;
@@ -156,7 +156,7 @@
             var self = this;
             var msg = 'From ' + this.sender_envelope + '\xa0 to \xa0' + this.recipients_envelope.join(', ');
             this._closeNotification = NotificationUtil.show(this.subject, msg, {
-                icon: '/static/images/icon_128x128.png'
+                icon: './images/icon_128x128.png'
             }, 10000, function() {
                 self.select();
             });
@@ -192,7 +192,7 @@
     };
 
     Message.load = function(id, notify) {
-        cleared.watch(restCall('GET', '/api/messages/' + id + '.json')).done(function(msg) {
+        cleared.watch(restCall('GET', sendriaApi('messages/' + id + '.json'))).done(function(msg) {
             var message = Message.add(msg.data, true);
             Message.applyFilter();
             if (notify) {
@@ -214,8 +214,7 @@
     Message.loadAll = function() {
         Message.deleteAll();
         $('#loading-dialog').dialog('open');
-        // restCall('GET', '/api/messages/').done(function(data) {
-        restCall('GET', '/api/messages/?page=' + currentPage).done(function(data) {
+        restCall('GET', sendriaApi('messages/?page=' + currentPage)).done(function(data) {
             pagesTotal = data.meta.pages_total || 1;
             data = (data.data || []).reverse();
             $.each(data, function(i, msg) {

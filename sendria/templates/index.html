@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" type="image/png" href="{{ static('images/icon_128x128.png') }}">
+    <script type="text/javascript">
+        let SENDRIA_PREFIX = "{{ SENDRIA_PREFIX }}";
+        function sendriaApi(suffix = '') {
+            return SENDRIA_PREFIX + '/api/' + suffix;
+        }
+    </script>
     {%  if not header_name %}
         <title>Sendria:{{ version }}</title>
     {% else %}

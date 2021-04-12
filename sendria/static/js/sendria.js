@@ -35,7 +35,7 @@
             if(!confirm('Do you really want to terminate the Sendria application?')) {
                 return;
             }
-            restCall('DELETE', '/api');
+            restCall('DELETE', sendriaApi());
         });
 
         $('nav.app .clear a').on('click', function(e) {
@@ -43,7 +43,7 @@
             if (!confirm('Do you really want to delete all messages?')) {
                 return;
             }
-            restCall('DELETE', '/api/messages/');
+            restCall('DELETE', sendriaApi('messages/'));
         });
 
         if (NotificationUtil.available) {
