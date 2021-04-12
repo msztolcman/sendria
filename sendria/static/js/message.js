@@ -14,7 +14,7 @@
         return formats;
     }
 
-    var Message = global.Message = function Message(msg, loadedEverything) {
+    let Message = global.Message = function Message(msg, loadedEverything) {
         this._loaded = loadedEverything || false;
         this._deleted = false;
         this.id = msg.id;
@@ -44,20 +44,20 @@
             return this._dom || (this._dom = renderTemplate('message', this));
         },
         display: function() {
-            var self = this;
+            let self = this;
             $('#message-metadata').html(renderTemplate('message-metadata', this));
             $('.action.download a').attr('href', this.href);
             $('.views .format').each(function() {
-                var $this = $(this);
-                var format = $this.data('messageFormat');
+                let $this = $(this);
+                let format = $this.data('messageFormat');
                 $this.toggle(format in self.formats);
                 $('a', this).attr('href', self.formats[format] || '#');
             }).removeClass('selected').filter(':visible:first').addClass('selected');
             this.updateFormat();
         },
         updateFormat: function() {
-            var format = $('.views .format.selected').data('messageFormat');
-            if ($('#message-body').attr('src') != this.formats[format]) {
+            let format = $('.views .format.selected').data('messageFormat');
+            if ($('#message-body').attr('src') !== this.formats[format]) {
                 $('#message-body').attr('src', this.formats[format]);
             }
         },
@@ -71,7 +71,7 @@
             }
         },
         delRemote: function() {
-            var self = this;
+            let self = this;
             if (this._deleted) {
                 return;
             }
@@ -85,14 +85,14 @@
             });
         },
         selected: function() {
-            return $('#messages > .selected').data('messageId') == this.id;
+            return $('#messages > .selected').data('messageId') === this.id;
         },
         selectSibling: function() {
             if (!this._dom || !this.selected()) {
                 return;
             }
             this.deselect();
-            var sibling = this._dom.nextAll(':visible:not(.deleted)').first();
+            let sibling = this._dom.nextAll(':visible:not(.deleted)').first();
             if (!sibling.length) {
                 sibling = this._dom.prevAll(':visible:not(.deleted)').first();
             }
@@ -102,14 +102,14 @@
             if (!this._dom) {
                 console.error('Cannot select message that has not been rendered.');
             }
-            var row = this.dom();
+            let row = this.dom();
             this.closeNotification();
             $('#message').removeClass('no-message').addClass('loading-message');
             $('#messages > tr.selected').removeClass('selected');
             row.addClass('selected');
             if (row.position().top <= 0 || row.position().top + row.height() > row.offsetParent().height()) {
                 // Scroll to row if necessary
-                if (row.index() == 0) {
+                if (row.index() === 0) {
                     // First element? Include header
                     row.closest('table').find('thead')[0].scrollIntoView();
                 }
@@ -135,8 +135,8 @@
             $('#message-body').attr('src', 'about:blank');
         },
         load: function() {
-            var self = this;
-            var deferred = $.Deferred();
+            let self = this;
+            let deferred = $.Deferred();
             if(this._loaded) {
                 deferred.resolveWith(this);
             }
@@ -153,8 +153,8 @@
             return deferred.promise();
         },
         showNotification: function() {
-            var self = this;
-            var msg = 'From ' + this.sender_envelope + '\xa0 to \xa0' + this.recipients_envelope.join(', ');
+            let self = this;
+            let msg = 'From ' + this.sender_envelope + '\xa0 to \xa0' + this.recipients_envelope.join(', ');
             this._closeNotification = NotificationUtil.show(this.subject, msg, {
                 icon: './images/icon_128x128.png'
             }, 10000, function() {
@@ -193,7 +193,7 @@
 
     Message.load = function(id, notify) {
         cleared.watch(restCall('GET', sendriaApi('messages/' + id + '.json'))).done(function(msg) {
-            var message = Message.add(msg.data, true);
+            let message = Message.add(msg.data, true);
             Message.applyFilter();
             if (notify) {
                 message.showNotification();
@@ -215,7 +215,7 @@
         Message.deleteAll();
         $('#loading-dialog').dialog('open');
         restCall('GET', sendriaApi('messages/?page=' + currentPage)).done(function(data) {
-            pagesTotal = data.meta.pages_total || 1;
+            pagesTotal = data['meta']['pages_total'] || 1;
             data = (data.data || []).reverse();
             $.each(data, function(i, msg) {
                 Message.add(new Message(msg));
@@ -246,12 +246,12 @@
         if(term !== undefined) {
             filterTerm = term;
         }
-        var all = $('#messages > tr').show();
+        let all = $('#messages > tr').show();
         if (filterTerm) {
             all.filter(function() {
                 return !~$(this).text().toLowerCase().indexOf(filterTerm);
             }).hide();
-            var selected = Message.getSelected();
+            let selected = Message.getSelected();
             if(selected && !selected.dom().is(':visible')) {
                 selected.deselect();
             }

@@ -1,14 +1,14 @@
 // Templating
 (function($, global) {
     'use strict';
-    var templates = null;
+    let templates = null;
 
     Handlebars.registerHelper('join', function(context, opts) {
         return context.join(', ');
     });
 
     Handlebars.registerHelper('date', function(context, opts) {
-        var ts = moment(context);
+        let ts = moment(context);
         return ts.format(opts.hash.format || 'YYYY-MM-DD HH:mm:ss');
     });
 
@@ -20,7 +20,7 @@
         }
         templates = {};
         $('script.template').each(function() {
-            var $this = $(this);
+            let $this = $(this);
             templates[$this.data('id')] = Handlebars.compile($this.html().trim());
         }).remove();
         return true;
@@ -30,7 +30,7 @@
         if(templates === null && !loadTemplates()) {
             return 'Cannot use templates before DOMReady. ';
         }
-        var tplFunc = templates[name] || function() {
+        let tplFunc = templates[name] || function() {
             console.error('Template not found: ' + name);
             console.trace();
             return 'Template "' + name + '" not found. ';
@@ -67,7 +67,7 @@
     * promise object instead of a real deferred.
     * */
 
-    var Aborter = global.Aborter = function Aborter() {
+    let Aborter = global.Aborter = function Aborter() {
         this.aborted = $.Deferred();
     };
     Aborter.prototype = {
@@ -77,7 +77,7 @@
         },
         watch: function watch(deferred) {
             // We need to create a new deferred in case someone passed us a promise object
-            var newDeferred = $.Deferred();
+            let newDeferred = $.Deferred();
             // Forward original deferred's events
             deferred.then(function() {
                 newDeferred.resolveWith(this, Array.prototype.slice.call(arguments));
@@ -110,7 +110,7 @@
 (function($, global) {
     'use strict';
 
-    var permissionMap = {
+    let permissionMap = {
         // mozilla / standard
         'granted': true,
         'default': undefined,
@@ -124,7 +124,7 @@
     function show(title, text, opts, timeout, onclick) {
         opts = $.extend({}, opts || {});
         opts.body = text;
-        var notification = new Notification(title, opts);
+        let notification = new Notification(title, opts);
         if (onclick) {
             notification.onclick = onclick;
         }
@@ -139,7 +139,7 @@
     }
 
     function checkPermission() {
-        var perm = Notification.permission;
+        let perm = Notification.permission;
         // yay for webkit not having this option: http://code.google.com/p/chromium/issues/detail?id=244030
         if (perm === undefined && window.webkitNotifications) {
             perm = window.webkitNotifications.checkPermission();

@@ -4,11 +4,11 @@
     $(document).ready(function() {
         // Misc stuff and initialization
         $('.resizer').on('mousedown', function(e) {
-            if(e.button != 0) {
+            if(e.button !== 0) {
                 return;
             }
-            var $this = $(this);
-            var target = $this.data('sibling') == 'prev' ? $this.prev() : $this.next();
+            let $this = $(this);
+            let target = $this.data('sibling') === 'prev' ? $this.prev() : $this.next();
             e.preventDefault();
             $(document).on('mousemove.resizer', function(e) {
                 e.preventDefault();
@@ -47,10 +47,10 @@
         });
 
         if (NotificationUtil.available) {
-            var notificationButton = $('nav.app .notifications a');
+            let notificationButton = $('nav.app .notifications a');
 
-            var updateNotificationButton = function updateNotificationButton() {
-                var enabled = $.jStorage.get('notifications') && NotificationUtil.checkPermission();
+            let updateNotificationButton = function updateNotificationButton() {
+                let enabled = $.jStorage.get('notifications') && NotificationUtil.checkPermission();
                 notificationButton.text(enabled ? 'Disable notifications' : 'Enable notifications');
             };
 
@@ -78,13 +78,13 @@
         }
 
         $('#search').on('keyup', function() {
-            var term = $(this).val().trim().toLowerCase();
+            let term = $(this).val().trim().toLowerCase();
             Message.applyFilter(term);
         });
 
         // Message navigation
         $('#messages').on('click', '> tr:not(.deleted)', function(e) {
-            var msg;
+            let msg;
             if (e.ctrlKey) {
                 msg = Message.getSelected();
                 if (msg) {
@@ -96,7 +96,7 @@
             }
             else {
                 msg = Message.get($(this).data('messageId'));
-                if (msg && msg != Message.getSelected()) {
+                if (msg && msg !== Message.getSelected()) {
                     msg.select();
                     $('#message').show();
                 }
@@ -105,7 +105,7 @@
 
         $('.tab.format').on('click', function(e) {
             e.preventDefault();
-            var msg = Message.getSelected();
+            let msg = Message.getSelected();
             if (msg) {
                 $('.tab.format.selected').removeClass('selected');
                 $(this).addClass('selected');
@@ -115,7 +115,7 @@
 
         $('.action.delete').on('click', function(e) {
             e.preventDefault();
-            var msg = Message.getSelected();
+            let msg = Message.getSelected();
             if (msg) {
                 msg.delRemote();
             }
@@ -135,15 +135,16 @@
         Message.loadAll();
 
         // Real-time updates
-        var wsConnected = false;
+        let wsConnected = false;
         function wsConnect() {
-            var wsUrl = window.location.host + '/ws';
+            let wsUrl = window.location.host + '/ws';
+            let terminating = false;
+            let socket;
             try {
-                var socket = new WebSocket('ws://' + wsUrl);
+                socket = new WebSocket('ws://' + wsUrl);
             } catch (err) {
-                var socket = new WebSocket('wss://' + wsUrl);
+                socket = new WebSocket('wss://' + wsUrl);
             }
-            var terminating = false;
             window.onbeforeunload = function () {
                 terminating = true;
                 socket.close();
@@ -174,11 +175,11 @@
                 );
             };
             socket.onmessage = function (ev) {
-                var split = ev.data.split(',')
+                let split = ev.data.split(',')
                 if (split[0] === 'add_message') {
                     Message.load(split[1], $.jStorage.get('notifications'));
                 } else if (split[0] === 'delete_message') {
-                    var msg = Message.get(split[1]);
+                    let msg = Message.get(split[1]);
                     if (msg) {
                         msg.del();
                     }
@@ -194,7 +195,7 @@
         // Keyboard shortcuts
         registerHotkeys({
             'del': function() {
-                var msg = Message.getSelected();
+                let msg = Message.getSelected();
                 if (msg) {
                     msg.delRemote();
                 }
@@ -217,7 +218,7 @@
             },
             'up': function(e) {
                 e.preventDefault();
-                var msg = Message.getSelected();
+                let msg = Message.getSelected();
                 if (!msg) {
                     $('#messages > tr:last').trigger('click');
                     return;
@@ -226,7 +227,7 @@
             },
             'down': function(e) {
                 e.preventDefault();
-                var msg = Message.getSelected();
+                let msg = Message.getSelected();
                 if (!msg) {
                     $('#messages > tr:first').trigger('click');
                     return;
