@@ -78,7 +78,7 @@ setup(
         ],
     },
     install_requires=requirements,
-    cmdclass={'build_py': BuildPyWithAssets},
+    # cmdclass={'build_py': BuildPyWithAssets},
     classifiers=[
         'Development Status :: 4 - Beta',
         'Programming Language :: Python',
