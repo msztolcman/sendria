@@ -125,16 +125,24 @@ async def _part_response(rq: aiohttp.web.Request, part: dict, body: Optional[Uni
 
 async def get_message_info(rq: aiohttp.web.Request) -> WebHandlerResponse:
     message_id = rq.match_info.get('message_id')
+
+    def adjust_uri(uri: yarl.URL) -> yarl.URL:
+        path = uri.path
+        if path.startswith('/api'):
+            path = path[4:]
+        uri = uri.with_path(path)
+        return uri
+
     async with db.connection() as conn:
         message = await db.get_message(conn, message_id)
         if not message:
             raise aiohttp.web.HTTPNotFound(text='404: message does not exist')
-        message['href'] = rq.app.router['get-message-eml'].url_for(message_id=message_id)
-        message['formats'] = {'source': rq.app.router['get-message-source'].url_for(message_id=message_id)}
+        message['href'] = adjust_uri(rq.app.router['get-message-eml'].url_for(message_id=message_id))
+        message['formats'] = {'source': adjust_uri(rq.app.router['get-message-source'].url_for(message_id=message_id))}
         if await db.message_has_plain(conn, message_id):
-            message['formats']['plain'] = rq.app.router['get-message-plain'].url_for(message_id=message_id)
+            message['formats']['plain'] = adjust_uri(rq.app.router['get-message-plain'].url_for(message_id=message_id))
         if await db.message_has_html(conn, message_id):
-            message['formats']['html'] = rq.app.router['get-message-html'].url_for(message_id=message_id)
+            message['formats']['html'] = adjust_uri(rq.app.router['get-message-html'].url_for(message_id=message_id))
         message['attachments'] = [dict(part, href=await _part_url(rq, part)) for part in await db.get_message_attachments(conn, message_id)]
     return message or {}
 

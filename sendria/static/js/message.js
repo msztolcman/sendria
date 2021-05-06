@@ -28,7 +28,10 @@
         this.subject = msg.subject;
         this.size = msg.size;
         if(this._loaded) {
-            this.href = msg.href;
+            this.href = sendriaApi(msg.href);
+            $.each(msg.formats, function(format, url) {
+                msg.formats[format] = sendriaApi(url);
+            });
             this.formats = addCacheBuster(msg.formats);
             this.attachments = msg.attachments;
         }
@@ -144,8 +147,11 @@
                 cleared.watch(restCall('GET', sendriaApi('messages/' + this.id + '.json'))).done(function(data) {
                     data = data.data;
                     self._loaded = true;
-                    self.href = data.href;
+                    self.href = sendriaApi(data.href);
                     self.attachments = data.attachments;
+                    $.each(data.formats, function(format, url) {
+                        data.formats[format] = sendriaApi(url);
+                    });
                     self.formats = addCacheBuster(data.formats);
                     deferred.resolveWith(self);
                 });

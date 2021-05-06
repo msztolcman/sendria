@@ -137,7 +137,7 @@
         // Real-time updates
         let wsConnected = false;
         function wsConnect() {
-            let wsUrl = window.location.host + '/ws';
+            let wsUrl = window.location.host + SENDRIA_PREFIX + 'ws';
             let terminating = false;
             let socket;
             try {
