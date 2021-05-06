@@ -197,6 +197,22 @@ To configure Django to work with `Sendria`, add the following to your projects' 
         EMAIL_PORT = 1025
         EMAIL_USE_TLS = False
 
+Configure Laravel
+----------------
+
+To use `Sendria` in a Laravel project, configure your `.env` file as follow:
+
+    MAIL_DRIVER=smtp
+    MAIL_HOST=127.0.0.1
+    MAIL_PORT=1025
+    MAIL_USERNAME=
+    MAIL_PASSWORD=
+    MAIL_ENCRYPTION=tcp
+    MAIL_FROM_ADDRESS=your@domain.com
+
+As Sendria does not support TLS or SSL, it's very important to specify `MAIL_ENCRYPTION=tcp` (instead of the default `MAIL_ENCRYPTION=null`), 
+otherwise you will get a `Swift_TransportException` (with error `stream_socket_client(): unable to connect to null://127.0.0.1`).
+
 Behind nginx
 ------------
 
