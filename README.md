@@ -210,7 +210,7 @@ To use `Sendria` in a Laravel project, configure your `.env` file as follow:
     MAIL_ENCRYPTION=tcp
     MAIL_FROM_ADDRESS=your@domain.com
 
-As Sendria does not support TLS or SSL, it's very important to specify `MAIL_ENCRYPTION=tcp` (instead of the default `MAIL_ENCRYPTION=null`), 
+As Sendria does not support TLS or SSL, it's very important to specify `MAIL_ENCRYPTION=tcp` (instead of the default `MAIL_ENCRYPTION=null`),
 otherwise you will get a `Swift_TransportException` (with error `stream_socket_client(): unable to connect to null://127.0.0.1`).
 
 Behind nginx
@@ -242,6 +242,11 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+
+### v2.3.0
+
+* added configuration description for Laravel (thanks
+  [tuxfamily](https://github.com/tuxfamily) for PR)
 
 ### v2.2.2
 
