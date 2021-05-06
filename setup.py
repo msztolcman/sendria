@@ -79,6 +79,7 @@ setup(
     },
     install_requires=requirements,
     cmdclass={'build_py': BuildPyWithAssets},
+    # see: https://pypi.python.org/pypi?:action=list_classifiers
     classifiers=[
         'Development Status :: 4 - Beta',
         'Programming Language :: Python',
