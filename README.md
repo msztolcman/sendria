@@ -7,9 +7,9 @@ Sendria
 [![Downloads](https://static.pepy.tech/personalized-badge/sendria?period=total&units=international_system&left_color=grey&right_color=yellow&left_text=Downloads)](https://pepy.tech/project/sendria)
 [![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
-Sendria (formerly MailTrap) is a SMTP server designed to run in your dev/test environment, that is designed to catch any email you
+Sendria (formerly MailTrap) is a SMTP server designed to run in your dev/test environment, catch any email you
 or your application is sending, and display it in a web interface instead of sending to real world.
-It help you prevents sending any dev/test emails to real people, no matter what address you provide.
+It help you prevent sending any dev/test emails to real people, no matter what address you provide.
 Just point your app/email client to `smtp://127.0.0.1:1025` and look at your emails on `http://127.0.0.1:1080`.
 
 Sendria is built on shoulders of:
