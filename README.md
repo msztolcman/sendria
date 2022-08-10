@@ -163,7 +163,7 @@ There is also available [Docker image of Sendria](https://hub.docker.com/r/mszto
 If you want to try, just run:
 
 ```shell
-docker run -p 1025:1025 -p 1080:1080 msztolcman/sendria
+docker run -p 1025:1025 -p 1080:1080 msztolcman/sendria:v2.2.2.0
 ```
 
 Help!
