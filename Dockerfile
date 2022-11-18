@@ -7,6 +7,7 @@ RUN addgroup -S sendria && adduser -S sendria -G sendria
 WORKDIR /home/sendria
 USER sendria
 RUN python3 -m pip install --user sendria==$VERSION
+RUN chmod 0755 .local
 ENV PATH="/home/sendria/.local/bin:$PATH"
 
 EXPOSE 1025 1080
